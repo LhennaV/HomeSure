@@ -7,7 +7,8 @@ const properties = [
     price: "₱1,000",
     period: "/mo",
     verified: false,
-    image: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=400&q=80",
+    image:
+      "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=400&q=80",
   },
   {
     title: "Cozy Studio Apartment",
@@ -15,7 +16,8 @@ const properties = [
     price: "₱8,000",
     period: "/month",
     verified: true,
-    image: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=400&q=80",
+    image:
+      "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=400&q=80",
   },
   {
     title: "Modern 2BR Apartment",
@@ -23,7 +25,8 @@ const properties = [
     price: "₱12,000",
     period: "/month",
     verified: true,
-    image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&q=80",
+    image:
+      "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&q=80",
   },
   {
     title: "Spacious Family Home",
@@ -31,7 +34,8 @@ const properties = [
     price: "₱15,000",
     period: "/month",
     verified: true,
-    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&q=80",
+    image:
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&q=80",
   },
   {
     title: "Studio Loft Unit",
@@ -39,7 +43,8 @@ const properties = [
     price: "₱6,500",
     period: "/month",
     verified: false,
-    image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&q=80",
+    image:
+      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&q=80",
   },
   {
     title: "Townhouse for Rent",
@@ -47,7 +52,8 @@ const properties = [
     price: "₱10,500",
     period: "/month",
     verified: true,
-    image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&q=80",
+    image:
+      "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&q=80",
   },
 ];
 
@@ -72,20 +78,6 @@ const categories = [
     color: "#f59e0b",
     bg: "rgba(245,158,11,0.15)",
     icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><path d="M1 22h22"/><path d="M5 22V7l7-5 7 5v15"/><path d="M9 22V12h6v10"/></svg>`,
-  },
-  {
-    name: "For Sale",
-    count: "289 listings",
-    color: "#3b82f6",
-    bg: "rgba(59,130,246,0.15)",
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
-  },
-  {
-    name: "For Rent",
-    count: "421 listings",
-    color: "#10b981",
-    bg: "rgba(16,185,129,0.15)",
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
   },
 ];
 
@@ -139,21 +131,24 @@ const statsData = [
 const testimonials = [
   {
     stars: 5,
-    quote: "Found my apartment in just two days. Every seller was verified — no scams, no stress.",
+    quote:
+      "Found my apartment in just two days. Every seller was verified — no scams, no stress.",
     name: "Maria Santos",
     role: "Tenant, Poblacion",
     initials: "MS",
   },
   {
     stars: 5,
-    quote: "Listed my townhouse and got genuine buyers in under a week. The platform is so easy to use.",
+    quote:
+      "Listed my townhouse and got genuine buyers in under a week. The platform is so easy to use.",
     name: "Rolando Cruz",
     role: "Property Owner, Bagbaguin",
     initials: "RC",
   },
   {
     stars: 4,
-    quote: "Direct messaging made negotiating with the seller so much smoother than the usual process.",
+    quote:
+      "Direct messaging made negotiating with the seller so much smoother than the usual process.",
     name: "Jessa Reyes",
     role: "Buyer, Tumana",
     initials: "JR",
@@ -184,14 +179,33 @@ function Navbar() {
     React.createElement(
       "a",
       { className: "nav-logo", href: "#" },
-      React.createElement("img", { src: LOGO_SRC, alt: "HomeSure", height: 32, style: { display: "block" } }),
+      React.createElement("img", {
+        src: LOGO_SRC,
+        alt: "HomeSure",
+        height: 32,
+        style: { display: "block" },
+      }),
       "HomeSure",
     ),
     React.createElement(
       "div",
       { className: "nav-btns" },
-      React.createElement("button", { className: "btn-outline", onClick: () => (window.location.href = "auth/signin.html") }, "Sign In"),
-      React.createElement("button", { className: "btn-solid", onClick: () => (window.location.href = "auth/signup.html") }, "Sign Up"),
+      React.createElement(
+        "button",
+        {
+          className: "btn-outline",
+          onClick: () => (window.location.href = "auth/signin.html"),
+        },
+        "Sign In",
+      ),
+      React.createElement(
+        "button",
+        {
+          className: "btn-solid",
+          onClick: () => (window.location.href = "auth/signup.html"),
+        },
+        "Sign Up",
+      ),
     ),
   );
 }
@@ -216,7 +230,11 @@ function Hero() {
         "h1",
         { className: "hero-title" },
         "Find Verified Homes ",
-        React.createElement("span", { className: "hero-title-accent" }, "with Confidence"),
+        React.createElement(
+          "span",
+          { className: "hero-title-accent" },
+          "with Confidence",
+        ),
       ),
       React.createElement(
         "p",
@@ -235,7 +253,9 @@ function Hero() {
         React.createElement(
           "button",
           { className: "hero-search-btn" },
-          React.createElement("span", { dangerouslySetInnerHTML: { __html: searchIcon } }),
+          React.createElement("span", {
+            dangerouslySetInnerHTML: { __html: searchIcon },
+          }),
           "Search",
         ),
       ),
@@ -245,19 +265,28 @@ function Hero() {
         React.createElement(
           "span",
           { className: "hero-trust-item" },
-          React.createElement("span", { className: "hero-trust-icon", dangerouslySetInnerHTML: { __html: shieldIcon } }),
+          React.createElement("span", {
+            className: "hero-trust-icon",
+            dangerouslySetInnerHTML: { __html: shieldIcon },
+          }),
           "Verified Listings",
         ),
         React.createElement(
           "span",
           { className: "hero-trust-item" },
-          React.createElement("span", { className: "hero-trust-icon", dangerouslySetInnerHTML: { __html: starIcon } }),
+          React.createElement("span", {
+            className: "hero-trust-icon",
+            dangerouslySetInnerHTML: { __html: starIcon },
+          }),
           "4.8/5 Rating",
         ),
         React.createElement(
           "span",
           { className: "hero-trust-item" },
-          React.createElement("span", { className: "hero-trust-icon", dangerouslySetInnerHTML: { __html: lockIcon } }),
+          React.createElement("span", {
+            className: "hero-trust-icon",
+            dangerouslySetInnerHTML: { __html: lockIcon },
+          }),
           "Secure Messaging",
         ),
       ),
@@ -270,9 +299,21 @@ function Categories() {
   return React.createElement(
     "section",
     { className: "section" },
-    React.createElement("span", { className: "section-label" }, "Browse by Type"),
-    React.createElement("h2", { className: "section-title" }, "Find What You're Looking For"),
-    React.createElement("p", { className: "section-sub" }, "Filter by property type or listing category"),
+    React.createElement(
+      "span",
+      { className: "section-label" },
+      "Browse by Type",
+    ),
+    React.createElement(
+      "h2",
+      { className: "section-title" },
+      "Find What You're Looking For",
+    ),
+    React.createElement(
+      "p",
+      { className: "section-sub" },
+      "Filter by property type or listing category",
+    ),
     React.createElement(
       "div",
       { className: "categories-grid" },
@@ -312,74 +353,157 @@ function Carousel() {
     setAutoKey((k) => k + 1);
   };
 
-  const leftProp   = properties[(idx - 1 + len) % len];
+  const leftProp = properties[(idx - 1 + len) % len];
   const centerProp = properties[idx];
-  const rightProp  = properties[(idx + 1) % len];
+  const rightProp = properties[(idx + 1) % len];
 
   const SideCard = (prop) =>
     React.createElement(
       "div",
       { className: "crd-side" },
-      React.createElement("img", { className: "crd-img", src: prop.image, alt: prop.title }),
+      React.createElement("img", {
+        className: "crd-img",
+        src: prop.image,
+        alt: prop.title,
+      }),
       React.createElement(
         "div",
         { className: "crd-body-side" },
-        React.createElement("div", { className: "card-title-side" }, prop.title),
-        React.createElement("div", { className: "card-loc", dangerouslySetInnerHTML: { __html: pinIcon + `<span>${prop.location}</span>` } }),
-        React.createElement("div", { className: "card-price-side" }, prop.price),
+        React.createElement(
+          "div",
+          { className: "card-title-side" },
+          prop.title,
+        ),
+        React.createElement("div", {
+          className: "card-loc",
+          dangerouslySetInnerHTML: {
+            __html: pinIcon + `<span>${prop.location}</span>`,
+          },
+        }),
+        React.createElement(
+          "div",
+          { className: "card-price-side" },
+          prop.price,
+        ),
       ),
     );
 
   return React.createElement(
     "section",
     { className: "section-alt" },
-    React.createElement("span", { className: "section-label" }, "Featured Properties"),
-    React.createElement("h2", { className: "section-title" }, "Curated Listings Near You"),
-    React.createElement("p", { className: "section-sub" }, "Hand-picked from verified sellers in Sta. Maria, Bulacan"),
+    React.createElement(
+      "span",
+      { className: "section-label" },
+      "Featured Properties",
+    ),
+    React.createElement(
+      "h2",
+      { className: "section-title" },
+      "Curated Listings Near You",
+    ),
+    React.createElement(
+      "p",
+      { className: "section-sub" },
+      "Hand-picked from verified sellers in Sta. Maria, Bulacan",
+    ),
     React.createElement(
       "div",
       { className: "crs-stage" },
       React.createElement(
         "div",
         { className: "crs-row" },
-        React.createElement("button", { className: "crs-btn", onClick: () => go(idx - 1), dangerouslySetInnerHTML: { __html: chevronLeft } }),
+        React.createElement("button", {
+          className: "crs-btn",
+          onClick: () => go(idx - 1),
+          dangerouslySetInnerHTML: { __html: chevronLeft },
+        }),
         React.createElement(
           "div",
           { className: "crs-clip" },
-          React.createElement("div", { className: "crd-side-wrap crd-side-left", onClick: () => go(idx - 1) }, SideCard(leftProp)),
+          React.createElement(
+            "div",
+            {
+              className: "crd-side-wrap crd-side-left",
+              onClick: () => go(idx - 1),
+            },
+            SideCard(leftProp),
+          ),
           React.createElement(
             "div",
             { className: "crd-center" },
             React.createElement(
               "div",
               { style: { position: "relative" } },
-              React.createElement("img", { className: "crd-img-center", src: centerProp.image, alt: centerProp.title }),
+              React.createElement("img", {
+                className: "crd-img-center",
+                src: centerProp.image,
+                alt: centerProp.title,
+              }),
               centerProp.verified &&
-                React.createElement("div", { className: "verified-badge", dangerouslySetInnerHTML: { __html: checkIcon + " Verified" } }),
+                React.createElement("div", {
+                  className: "verified-badge",
+                  dangerouslySetInnerHTML: { __html: checkIcon + " Verified" },
+                }),
             ),
             React.createElement(
               "div",
               { className: "crd-body-center" },
-              React.createElement("div", { className: "card-title" }, centerProp.title),
-              React.createElement("div", { className: "card-loc", dangerouslySetInnerHTML: { __html: pinIcon + `<span>${centerProp.location}</span>` } }),
+              React.createElement(
+                "div",
+                { className: "card-title" },
+                centerProp.title,
+              ),
+              React.createElement("div", {
+                className: "card-loc",
+                dangerouslySetInnerHTML: {
+                  __html: pinIcon + `<span>${centerProp.location}</span>`,
+                },
+              }),
               React.createElement(
                 "div",
                 { className: "card-footer-row" },
-                React.createElement("div", { className: "card-price" }, centerProp.price, React.createElement("span", null, centerProp.period)),
-                React.createElement("span", { className: "card-link" }, "View Details"),
+                React.createElement(
+                  "div",
+                  { className: "card-price" },
+                  centerProp.price,
+                  React.createElement("span", null, centerProp.period),
+                ),
+                React.createElement(
+                  "span",
+                  {
+                    className: "card-link",
+                    onClick: () => (window.location.href = "auth/signin.html"),
+                  },
+                  "View Details",
+                ),
               ),
             ),
           ),
-          React.createElement("div", { className: "crd-side-wrap crd-side-right", onClick: () => go(idx + 1) }, SideCard(rightProp)),
+          React.createElement(
+            "div",
+            {
+              className: "crd-side-wrap crd-side-right",
+              onClick: () => go(idx + 1),
+            },
+            SideCard(rightProp),
+          ),
         ),
-        React.createElement("button", { className: "crs-btn", onClick: () => go(idx + 1), dangerouslySetInnerHTML: { __html: chevronRight } }),
+        React.createElement("button", {
+          className: "crs-btn",
+          onClick: () => go(idx + 1),
+          dangerouslySetInnerHTML: { __html: chevronRight },
+        }),
       ),
     ),
     React.createElement(
       "div",
       { className: "dots" },
       properties.map((_, i) =>
-        React.createElement("button", { key: i, className: "dot" + (i === idx ? " active" : ""), onClick: () => go(i) }),
+        React.createElement("button", {
+          key: i,
+          className: "dot" + (i === idx ? " active" : ""),
+          onClick: () => go(i),
+        }),
       ),
     ),
   );
@@ -391,8 +515,16 @@ function HowItWorks() {
     "section",
     { className: "section" },
     React.createElement("span", { className: "section-label" }, "How It Works"),
-    React.createElement("h2", { className: "section-title" }, "Simple Steps to Your Next Home"),
-    React.createElement("p", { className: "section-sub" }, "Get started in minutes — no complicated process"),
+    React.createElement(
+      "h2",
+      { className: "section-title" },
+      "Simple Steps to Your Next Home",
+    ),
+    React.createElement(
+      "p",
+      { className: "section-sub" },
+      "Get started in minutes — no complicated process",
+    ),
     React.createElement(
       "div",
       { className: "how-steps" },
@@ -417,9 +549,21 @@ function Features() {
     React.createElement(
       "div",
       { className: "features-inner" },
-      React.createElement("span", { className: "section-label" }, "Why HomeSure"),
-      React.createElement("h2", { className: "section-title" }, "Built for Trust & Transparency"),
-      React.createElement("p", { className: "section-sub" }, "A platform designed with security and convenience at its core"),
+      React.createElement(
+        "span",
+        { className: "section-label" },
+        "Why HomeSure",
+      ),
+      React.createElement(
+        "h2",
+        { className: "section-title" },
+        "Built for Trust & Transparency",
+      ),
+      React.createElement(
+        "p",
+        { className: "section-sub" },
+        "A platform designed with security and convenience at its core",
+      ),
       React.createElement(
         "div",
         { className: "features-card-wrap" },
@@ -427,7 +571,10 @@ function Features() {
           React.createElement(
             "div",
             { key: i, className: "feature-card" },
-            React.createElement("div", { className: "feature-icon", dangerouslySetInnerHTML: { __html: f.icon } }),
+            React.createElement("div", {
+              className: "feature-icon",
+              dangerouslySetInnerHTML: { __html: f.icon },
+            }),
             React.createElement("div", { className: "feature-title" }, f.title),
             React.createElement("div", { className: "feature-desc" }, f.desc),
           ),
@@ -446,8 +593,10 @@ function useCounter(end, duration, active) {
     const step = Math.ceil(end / (duration / 16));
     const timer = setInterval(() => {
       start += step;
-      if (start >= end) { setVal(end); clearInterval(timer); }
-      else setVal(start);
+      if (start >= end) {
+        setVal(end);
+        clearInterval(timer);
+      } else setVal(start);
     }, 16);
     return () => clearInterval(timer);
   }, [active]);
@@ -458,7 +607,12 @@ function StatBox({ stat }) {
   const ref = useRef(null);
   const [active, setActive] = useState(false);
   useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setActive(true); }, { threshold: 0.4 });
+    const obs = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) setActive(true);
+      },
+      { threshold: 0.4 },
+    );
     if (ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
@@ -466,7 +620,11 @@ function StatBox({ stat }) {
   return React.createElement(
     "div",
     { className: "stat-box", ref },
-    React.createElement("div", { className: "stat-value" }, count.toLocaleString() + stat.suffix),
+    React.createElement(
+      "div",
+      { className: "stat-value" },
+      count.toLocaleString() + stat.suffix,
+    ),
     React.createElement("div", { className: "stat-label" }, stat.label),
   );
 }
@@ -478,13 +636,27 @@ function Stats() {
     React.createElement(
       "div",
       { className: "stats-inner" },
-      React.createElement("span", { className: "section-label" }, "Our Numbers"),
-      React.createElement("h2", { className: "section-title" }, "Trusted by Thousands"),
-      React.createElement("p", { className: "section-sub" }, "Building a safer housing marketplace for everyone in Sta. Maria"),
+      React.createElement(
+        "span",
+        { className: "section-label" },
+        "Our Numbers",
+      ),
+      React.createElement(
+        "h2",
+        { className: "section-title" },
+        "Trusted by Thousands",
+      ),
+      React.createElement(
+        "p",
+        { className: "section-sub" },
+        "Building a safer housing marketplace for everyone in Sta. Maria",
+      ),
       React.createElement(
         "div",
         { className: "stats-grid" },
-        statsData.map((s, i) => React.createElement(StatBox, { key: i, stat: s })),
+        statsData.map((s, i) =>
+          React.createElement(StatBox, { key: i, stat: s }),
+        ),
       ),
     ),
   );
@@ -496,8 +668,16 @@ function Testimonials() {
     "section",
     { className: "section-alt" },
     React.createElement("span", { className: "section-label" }, "Testimonials"),
-    React.createElement("h2", { className: "section-title" }, "What Our Users Say"),
-    React.createElement("p", { className: "section-sub" }, "Real stories from real people in the community"),
+    React.createElement(
+      "h2",
+      { className: "section-title" },
+      "What Our Users Say",
+    ),
+    React.createElement(
+      "p",
+      { className: "section-sub" },
+      "Real stories from real people in the community",
+    ),
     React.createElement(
       "div",
       { className: "testimonials-grid" },
@@ -505,7 +685,11 @@ function Testimonials() {
         React.createElement(
           "div",
           { key: i, className: "testimonial-card" },
-          React.createElement("div", { className: "t-stars" }, "★".repeat(t.stars) + (t.stars < 5 ? "☆".repeat(5 - t.stars) : "")),
+          React.createElement(
+            "div",
+            { className: "t-stars" },
+            "★".repeat(t.stars) + (t.stars < 5 ? "☆".repeat(5 - t.stars) : ""),
+          ),
           React.createElement("p", { className: "t-quote" }, `"${t.quote}"`),
           React.createElement(
             "div",
@@ -532,13 +716,35 @@ function CTA() {
     React.createElement(
       "div",
       { className: "cta-inner" },
-      React.createElement("h2", { className: "cta-title" }, "Ready to Find Your Next Home?"),
-      React.createElement("p", { className: "cta-sub" }, "Join thousands of verified users discovering trusted properties in Sta. Maria, Bulacan"),
+      React.createElement(
+        "h2",
+        { className: "cta-title" },
+        "Ready to Find Your Next Home?",
+      ),
+      React.createElement(
+        "p",
+        { className: "cta-sub" },
+        "Join thousands of verified users discovering trusted properties in Sta. Maria, Bulacan",
+      ),
       React.createElement(
         "div",
         { className: "cta-btns" },
-        React.createElement("button", { className: "cta-btn-white", onClick: () => (window.location.href = "auth/signup.html") }, "Sign Up as Buyer"),
-        React.createElement("button", { className: "cta-btn-ghost", onClick: () => (window.location.href = "auth/signup.html") }, "List Your Property"),
+        React.createElement(
+          "button",
+          {
+            className: "cta-btn-white",
+            onClick: () => (window.location.href = "auth/signup.html"),
+          },
+          "Sign Up as Buyer",
+        ),
+        React.createElement(
+          "button",
+          {
+            className: "cta-btn-ghost",
+            onClick: () => (window.location.href = "auth/signup.html"),
+          },
+          "List Your Property",
+        ),
       ),
     ),
   );
@@ -547,8 +753,8 @@ function CTA() {
 // Footer
 function Footer() {
   const platformLinks = ["Browse Listings", "List Your Property", "About Us"];
-  const supportLinks  = ["Contact Us", "Report a Listing"];
-  const legalLinks    = ["Privacy Policy", "Terms of Service"];
+  const supportLinks = ["Contact Us", "Report a Listing"];
+  const legalLinks = ["Privacy Policy", "Terms of Service"];
 
   return React.createElement(
     "footer",
@@ -562,32 +768,71 @@ function Footer() {
         React.createElement(
           "div",
           { className: "footer-logo" },
-          React.createElement("img", { src: LOGO_SRC, alt: "HomeSure", height: 28, style: { display: "block" } }),
+          React.createElement("img", {
+            src: LOGO_SRC,
+            alt: "HomeSure",
+            height: 28,
+            style: { display: "block" },
+          }),
           "HomeSure",
         ),
-        React.createElement("p", { className: "footer-tagline" }, "A verified housing platform for secure property rentals and purchases in Sta. Maria, Bulacan."),
+        React.createElement(
+          "p",
+          { className: "footer-tagline" },
+          "A verified housing platform for secure property rentals and purchases in Sta. Maria, Bulacan.",
+        ),
       ),
       React.createElement(
         "div",
         null,
-        React.createElement("div", { className: "footer-col-title" }, "Platform"),
-        ...platformLinks.map((l) => React.createElement("a", { key: l, className: "footer-link", href: "#" }, l)),
+        React.createElement(
+          "div",
+          { className: "footer-col-title" },
+          "Platform",
+        ),
+        ...platformLinks.map((l) =>
+          React.createElement(
+            "a",
+            { key: l, className: "footer-link", href: "#" },
+            l,
+          ),
+        ),
       ),
       React.createElement(
         "div",
         null,
-        React.createElement("div", { className: "footer-col-title" }, "Support"),
-        ...supportLinks.map((l) => React.createElement("a", { key: l, className: "footer-link", href: "#" }, l)),
+        React.createElement(
+          "div",
+          { className: "footer-col-title" },
+          "Support",
+        ),
+        ...supportLinks.map((l) =>
+          React.createElement(
+            "a",
+            { key: l, className: "footer-link", href: "#" },
+            l,
+          ),
+        ),
       ),
       React.createElement(
         "div",
         null,
         React.createElement("div", { className: "footer-col-title" }, "Legal"),
-        ...legalLinks.map((l) => React.createElement("a", { key: l, className: "footer-link", href: "#" }, l)),
+        ...legalLinks.map((l) =>
+          React.createElement(
+            "a",
+            { key: l, className: "footer-link", href: "#" },
+            l,
+          ),
+        ),
       ),
     ),
     React.createElement("div", { className: "footer-divider" }),
-    React.createElement("div", { className: "footer-copy" }, "© 2026 HomeSure. All rights reserved."),
+    React.createElement(
+      "div",
+      { className: "footer-copy" },
+      "© 2026 HomeSure. All rights reserved.",
+    ),
   );
 }
 
