@@ -68,7 +68,16 @@ function submitSignin() {
   } else { clearError(pw); }
 
   if (!valid) return;
-  // Proceed with sign-in logic here
+
+  // ── Fake Auth (replace with real API call once back-end is ready) ────────────
+  const user = fakeLogin(email.value.trim(), pw.value);
+  if (!user) {
+    showError(email, 'No account found with these credentials');
+    showError(pw, 'Incorrect email or password');
+    return;
+  }
+  saveSession(user);
+  redirectToDashboard(user.role);
 }
 
 // ── Sign Up validation ────────────────────────────────────────────────────────
