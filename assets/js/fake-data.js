@@ -10,7 +10,7 @@ const FAKE_USERS = [
     firstName: 'Maria', lastName: 'Santos',
     email: 'buyer@homesure.com', password: 'buyer1234',
     phone: '09171234567', avatar: null, verified: true,
-    savedListings: ['prop-002', 'prop-004'], joinedAt: '2025-11-10',
+    savedListings: ['prop-002', 'prop-004', 'prop-006', 'prop-007', 'prop-009'], joinedAt: '2025-11-10',
   },
   {
     id: 'usr-002', role: 'buyer',
@@ -268,6 +268,7 @@ function saveSession(user) {
     firstName: user.firstName, lastName: user.lastName,
     email: user.email, phone: user.phone,
     verified: user.verified, accountStatus: user.accountStatus || null,
+    savedListings: user.savedListings || [],
   };
   sessionStorage.setItem('homesure_user', JSON.stringify(session));
 }

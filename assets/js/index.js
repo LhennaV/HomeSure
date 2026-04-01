@@ -221,12 +221,6 @@ function Hero() {
       "div",
       { className: "hero-content" },
       React.createElement(
-        "div",
-        { className: "hero-badge" },
-        React.createElement("span", { className: "hero-badge-dot" }),
-        "Now Live in Sta. Maria, Bulacan",
-      ),
-      React.createElement(
         "h1",
         { className: "hero-title" },
         "Find Verified Homes ",

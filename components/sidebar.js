@@ -364,6 +364,21 @@
       });
     }
 
+    // Nav routing
+    const NAV_ROUTES = {
+      buyer:      { dashboard: 'buyer.html', saved: 'saved.html', messages: 'messages.html', profile: 'profile.html', settings: 'settings.html' },
+      seller:     { dashboard: 'seller.html', listings: 'listings.html', post: 'post.html', messages: 'messages.html', profile: 'profile.html', settings: 'settings.html' },
+      admin:      { dashboard: 'admin.html', approvals: 'approvals.html', users: 'users.html', reports: 'reports.html', settings: 'settings.html' },
+      superadmin: { dashboard: 'super-admin.html', admins: 'admins.html', users: 'users.html', reports: 'reports.html', settings: 'settings.html' },
+    };
+    const sessionUser = typeof getSession === 'function' ? getSession() : null;
+    const navRole = sessionUser ? sessionUser.role : 'buyer';
+    const routes = NAV_ROUTES[navRole] || {};
+    el.querySelectorAll('.hs-nav-item').forEach(btn => {
+      const page = btn.dataset.page;
+      if (routes[page]) btn.addEventListener('click', () => { window.location.href = routes[page]; });
+    });
+
     // Logout
     const logoutBtn = el.querySelector('#hsLogoutBtn');
     if (logoutBtn) {

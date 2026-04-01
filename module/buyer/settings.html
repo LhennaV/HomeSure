@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HomeSure – Account Settings</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #1E293B; --card: #253347; --card2: #2c3d55; --border: rgba(255,255,255,0.07);
+      --teal: #00c9a7; --teal-faint: rgba(0,201,167,0.12); --teal-mid: rgba(0,201,167,0.25);
+      --text: #f1f5f9; --muted: rgba(255,255,255,0.4); --muted2: rgba(255,255,255,0.65);
+      --danger: #f87171; --danger-faint: rgba(248,113,113,0.1); --danger-mid: rgba(248,113,113,0.3);
+      --radius: 14px;
+    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
+    .layout { display: flex; height: 100vh; }
+    .main   { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .content { flex: 1; overflow-y: auto; padding: 26px 30px 60px; }
+    .content::-webkit-scrollbar { width: 5px; }
+    .content::-webkit-scrollbar-track { background: transparent; }
+    .content::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #1fc8b4, #0a5e53); border-radius: 99px; }
+    .content::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #24e0ca, #1a9e8f); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes expandIn {
+      from { opacity: 0; max-height: 0; transform: translateY(-6px); }
+      to   { opacity: 1; max-height: 600px; transform: translateY(0); }
+    }
+
+    /* ── Page header ── */
+    .page-header { margin-bottom: 26px; animation: fadeUp 0.35s ease both; }
+    .page-title  { font-size: 22px; font-weight: 800; }
+    .page-sub    { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+
+    /* ── Max-width column ── */
+    .settings-col { max-width: 680px; display: flex; flex-direction: column; gap: 18px; }
+
+    /* ── Section card ── */
+    .section-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+      animation: fadeUp 0.4s ease both;
+    }
+    .section-card.danger-card { border-color: var(--danger-mid); background: var(--danger-faint); }
+
+    .section-header {
+      padding: 16px 22px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 11px;
+    }
+    .danger-card .section-header { border-bottom-color: var(--danger-mid); }
+    .section-icon {
+      width: 34px; height: 34px; border-radius: 9px;
+      background: var(--teal-faint); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .section-icon.danger { background: var(--danger-faint); }
+    .section-icon svg { width: 15px; height: 15px; color: var(--teal); }
+    .section-icon.danger svg { color: var(--danger); }
+    .section-title { font-size: 14px; font-weight: 800; }
+    .section-sub   { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+
+    /* ── Setting row ── */
+    .setting-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 15px 22px; border-bottom: 1px solid var(--border); gap: 16px;
+    }
+    .setting-row:last-child { border-bottom: none; }
+    .setting-info { flex: 1; min-width: 0; }
+    .setting-label { font-size: 13.5px; font-weight: 600; color: var(--text); }
+    .setting-desc  { font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.45; }
+
+    /* ── Toggle switch ── */
+    .toggle { position: relative; width: 44px; height: 25px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .toggle-track {
+      position: absolute; inset: 0; border-radius: 25px;
+      background: rgba(255,255,255,0.1); border: 1px solid var(--border);
+      cursor: pointer; transition: background 0.25s, border-color 0.25s;
+    }
+    .toggle-track::before {
+      content: ''; position: absolute;
+      width: 19px; height: 19px; border-radius: 50%;
+      background: #fff; top: 2px; left: 2px;
+      transition: transform 0.25s; box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+    .toggle input:checked + .toggle-track { background: var(--teal); border-color: var(--teal); }
+    .toggle input:checked + .toggle-track::before { transform: translateX(19px); }
+
+    /* ── Password change ── */
+    .change-pw-btn {
+      display: flex; align-items: center; gap: 7px;
+      background: var(--card2); border: 1px solid var(--border);
+      border-radius: 9px; padding: 9px 16px;
+      color: var(--muted2); font-size: 12.5px; font-weight: 600;
+      font-family: inherit; cursor: pointer; white-space: nowrap;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .change-pw-btn svg { width: 13px; height: 13px; }
+    .change-pw-btn:hover { border-color: var(--teal-mid); color: var(--teal); }
+
+    .pw-form {
+      display: none; padding: 18px 22px; border-top: 1px solid var(--border);
+      flex-direction: column; gap: 13px;
+      animation: expandIn 0.3s ease both;
+    }
+    .pw-form.open { display: flex; }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .field-input-wrap { position: relative; }
+    .field-input-wrap .field-icon {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      width: 14px; height: 14px; color: var(--muted); pointer-events: none; transition: color 0.2s;
+    }
+    .field-input-wrap:focus-within .field-icon { color: var(--teal); }
+    .field input {
+      width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border);
+      border-radius: 9px; padding: 10px 40px 10px 36px;
+      color: var(--text); font-family: inherit; font-size: 13px; outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .field input:focus { border-color: rgba(0,201,167,0.5); background: rgba(0,0,0,0.28); }
+    .field input::placeholder { color: var(--muted); }
+    .field input.input-error { border-color: rgba(248,113,113,0.6); }
+
+    .pw-toggle-visibility {
+      position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
+      cursor: pointer; color: var(--muted); transition: color 0.2s;
+    }
+    .pw-toggle-visibility:hover { color: var(--muted2); }
+    .pw-toggle-visibility svg { width: 15px; height: 15px; display: block; }
+
+    .pw-actions { display: flex; align-items: center; gap: 10px; }
+    .btn-primary {
+      background: linear-gradient(135deg, #00c9a7, #007a65);
+      border: none; border-radius: 9px; padding: 10px 22px;
+      color: #fff; font-size: 13px; font-weight: 700; font-family: inherit;
+      cursor: pointer; transition: opacity 0.2s, transform 0.18s;
+    }
+    .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-ghost {
+      background: transparent; border: 1px solid var(--border);
+      border-radius: 9px; padding: 10px 18px;
+      color: var(--muted2); font-size: 13px; font-weight: 600; font-family: inherit;
+      cursor: pointer; transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-ghost:hover { border-color: var(--muted2); color: var(--text); }
+    .btn-danger {
+      background: var(--danger-faint); border: 1px solid var(--danger-mid);
+      border-radius: 9px; padding: 10px 22px;
+      color: var(--danger); font-size: 13px; font-weight: 700; font-family: inherit;
+      cursor: pointer; display: flex; align-items: center; gap: 8px;
+      transition: background 0.2s, transform 0.18s;
+    }
+    .btn-danger svg { width: 14px; height: 14px; }
+    .btn-danger:hover { background: rgba(248,113,113,0.18); transform: translateY(-1px); }
+
+    /* ── Notification save row ── */
+    .notif-save-row { padding: 16px 22px; border-top: 1px solid var(--border); }
+    .notif-section-label {
+      padding: 12px 22px 6px; font-size: 10.5px; font-weight: 700;
+      color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em;
+    }
+
+    /* ── Danger zone ── */
+    .danger-body { padding: 18px 22px; display: flex; flex-direction: column; gap: 14px; }
+    .danger-warning {
+      display: flex; align-items: flex-start; gap: 11px;
+      background: rgba(248,113,113,0.08); border: 1px solid var(--danger-mid);
+      border-radius: 10px; padding: 13px 15px;
+    }
+    .danger-warning svg { width: 16px; height: 16px; color: var(--danger); flex-shrink: 0; margin-top: 1px; }
+    .danger-warning-text { font-size: 12.5px; color: var(--muted2); line-height: 1.5; }
+    .danger-warning-text strong { color: var(--danger); }
+
+    /* ── Delete confirm input ── */
+    .delete-confirm { display: none; flex-direction: column; gap: 10px; }
+    .delete-confirm.open { display: flex; }
+    .delete-confirm-label { font-size: 12px; color: var(--muted2); }
+    .delete-confirm-label span { color: var(--danger); font-weight: 700; }
+    .delete-confirm input {
+      background: rgba(0,0,0,0.2); border: 1px solid var(--danger-mid);
+      border-radius: 9px; padding: 10px 14px;
+      color: var(--text); font-family: inherit; font-size: 13px; outline: none;
+      transition: border-color 0.2s;
+    }
+    .delete-confirm input:focus { border-color: var(--danger); }
+    .delete-confirm input::placeholder { color: var(--muted); }
+    .delete-confirm-actions { display: flex; gap: 10px; }
+
+    /* ── 2FA Modal ── */
+    .modal-backdrop {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 18px; padding: 28px; width: 90%; max-width: 400px;
+      animation: fadeUp 0.3s ease both;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .modal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; }
+    .modal-title { font-size: 16px; font-weight: 800; color: var(--text); line-height: 1.25; }
+    .modal-sub   { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .modal-close {
+      width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border);
+      background: transparent; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--muted); transition: color 0.2s, background 0.2s; flex-shrink: 0;
+    }
+    .modal-close:hover { background: var(--card2); color: var(--text); }
+    .modal-close svg { width: 14px; height: 14px; }
+
+    .qr-wrap {
+      background: #fff; border-radius: 12px; padding: 16px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 12px;
+    }
+    .qr-wrap img { width: 160px; height: 160px; display: block; }
+    .qr-hint { font-size: 11.5px; color: var(--muted); text-align: center; margin-bottom: 18px; line-height: 1.5; }
+
+    .otp-boxes { display: flex; gap: 8px; margin-bottom: 16px; }
+    .otp-box {
+      flex: 1; height: 52px; border-radius: 9px;
+      background: rgba(0,0,0,0.25); border: 1px solid var(--border);
+      text-align: center; font-size: 20px; font-weight: 700;
+      color: var(--text); font-family: inherit; outline: none;
+      transition: border-color 0.2s; caret-color: var(--teal);
+    }
+    .otp-box:focus { border-color: rgba(0,201,167,0.6); }
+    .otp-box.filled { border-color: rgba(0,201,167,0.4); }
+    .otp-error {
+      font-size: 12px; color: var(--danger); margin-bottom: 14px;
+      display: none; align-items: center; gap: 5px;
+    }
+    .otp-error.show { display: flex; }
+    .otp-error svg { width: 13px; height: 13px; }
+    .modal-actions { display: flex; gap: 10px; }
+    .modal-actions .btn-ghost { flex: 1; text-align: center; }
+    .modal-actions .btn-primary { flex: 2; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 28px; right: 28px; z-index: 999;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 11px; padding: 13px 18px;
+      display: flex; align-items: center; gap: 10px;
+      font-size: 13px; font-weight: 600; color: var(--text);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+      opacity: 0; transform: translateY(10px);
+      transition: opacity 0.25s, transform 0.25s; pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .toast-icon svg { width: 14px; height: 14px; color: #fff; }
+    .toast.success .toast-icon { background: var(--teal); }
+    .toast.error   .toast-icon { background: var(--danger); }
+
+    /* ── Light mode ── */
+    [data-theme="light"] {
+      --bg: #f1f5f9; --card: #ffffff; --card2: #f8fafc; --border: rgba(0,0,0,0.09);
+      --text: #1e293b; --muted: rgba(0,0,0,0.45); --muted2: rgba(0,0,0,0.6);
+    }
+    [data-theme="light"] body { background: var(--bg); }
+    [data-theme="light"] .toggle-track { background: rgba(0,0,0,0.1); }
+    [data-theme="light"] .toggle-track::before { box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
+    [data-theme="light"] .field input { background: rgba(0,0,0,0.04); }
+    [data-theme="light"] .field input:focus { background: #fff; }
+    [data-theme="light"] .otp-box { background: rgba(0,0,0,0.05); }
+    [data-theme="light"] .modal { box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+    [data-theme="light"] .qr-wrap { border: 1px solid rgba(0,0,0,0.08); }
+    [data-theme="light"] .change-pw-btn { background: #f1f5f9; }
+    [data-theme="light"] .toast { box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+    [data-theme="light"] .delete-confirm input { background: rgba(0,0,0,0.04); }
+    [data-theme="light"] .btn-primary {
+      background: linear-gradient(135deg, #00c9a7 0%, rgba(0,130,106,0.75) 100%);
+      box-shadow: 0 3px 14px rgba(0,201,167,0.3);
+    }
+    [data-theme="light"] .content::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #1fc8b4, #0a5e53); }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <div id="hs-sidebar"></div>
+  <div class="main">
+    <div id="hs-topbar"></div>
+    <div class="content">
+
+      <div class="page-header">
+        <div class="page-title">Account Settings</div>
+        <div class="page-sub">Manage your account settings and preferences</div>
+      </div>
+
+      <div class="settings-col">
+
+        <!-- ── Security ── -->
+        <div class="section-card" style="animation-delay:0.05s">
+          <div class="section-header">
+            <div class="section-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div>
+              <div class="section-title">Security</div>
+              <div class="section-sub">Manage your password and account access</div>
+            </div>
+          </div>
+
+          <!-- Password row -->
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Password</div>
+              <div class="setting-desc">Last changed: Never — update your password to keep your account secure</div>
+            </div>
+            <button class="change-pw-btn" id="changePwBtn" onclick="togglePwForm()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              Change Password
+            </button>
+          </div>
+
+          <!-- Password form (expandable) -->
+          <div class="pw-form" id="pwForm">
+            <div class="field">
+              <label>Current Password</label>
+              <div class="field-input-wrap">
+                <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <input type="password" id="currentPw" placeholder="Enter current password" />
+                <span class="pw-toggle-visibility" onclick="toggleVis('currentPw',this)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </span>
+              </div>
+            </div>
+            <div class="field">
+              <label>New Password</label>
+              <div class="field-input-wrap">
+                <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <input type="password" id="newPw" placeholder="Minimum 8 characters" />
+                <span class="pw-toggle-visibility" onclick="toggleVis('newPw',this)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </span>
+              </div>
+            </div>
+            <div class="field">
+              <label>Confirm New Password</label>
+              <div class="field-input-wrap">
+                <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <input type="password" id="confirmPw" placeholder="Re-enter new password" />
+                <span class="pw-toggle-visibility" onclick="toggleVis('confirmPw',this)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </span>
+              </div>
+            </div>
+            <div class="pw-actions">
+              <button class="btn-primary" onclick="savePassword()">Update Password</button>
+              <button class="btn-ghost" onclick="togglePwForm()">Cancel</button>
+            </div>
+          </div>
+
+          <!-- 2FA row -->
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Two-Factor Authentication</div>
+              <div class="setting-desc">Add an extra layer of security — require a code when signing in</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="twoFaToggle" onchange="handle2FA(this)" />
+              <div class="toggle-track"></div>
+            </label>
+          </div>
+
+          <div class="setting-row" id="twoFaStatus" style="padding-top:10px;padding-bottom:10px;">
+            <div class="setting-desc" style="display:flex;align-items:center;gap:7px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span id="twoFaStatusText">Two-Factor Authentication is disabled</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Notifications ── -->
+        <div class="section-card" style="animation-delay:0.1s">
+          <div class="section-header">
+            <div class="section-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </div>
+            <div>
+              <div class="section-title">Notification Preferences</div>
+              <div class="section-sub">Choose how and when you want to be notified</div>
+            </div>
+          </div>
+
+          <div class="notif-section-label">Notification Channels</div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Email Notifications</div>
+              <div class="setting-desc">Receive notifications via email</div>
+            </div>
+            <label class="toggle"><input type="checkbox" id="notifEmail" checked /><div class="toggle-track"></div></label>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">SMS Notifications</div>
+              <div class="setting-desc">Receive notifications via text message</div>
+            </div>
+            <label class="toggle"><input type="checkbox" id="notifSms" /><div class="toggle-track"></div></label>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Push Notifications</div>
+              <div class="setting-desc">Receive in-browser push notifications</div>
+            </div>
+            <label class="toggle"><input type="checkbox" id="notifPush" checked /><div class="toggle-track"></div></label>
+          </div>
+
+          <div class="notif-section-label">Notification Types</div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">New Listing Alerts</div>
+              <div class="setting-desc">Get notified when new properties match your saved preferences</div>
+            </div>
+            <label class="toggle"><input type="checkbox" id="notifNewListing" checked /><div class="toggle-track"></div></label>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Price Drop Alerts</div>
+              <div class="setting-desc">Know when a saved property reduces its price</div>
+            </div>
+            <label class="toggle"><input type="checkbox" id="notifPriceDrop" checked /><div class="toggle-track"></div></label>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Message Notifications</div>
+              <div class="setting-desc">Get notified when you receive new messages from sellers</div>
+            </div>
+            <label class="toggle"><input type="checkbox" id="notifMessages" checked /><div class="toggle-track"></div></label>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Promotions &amp; Updates</div>
+              <div class="setting-desc">Receive news, tips, and HomeSure platform updates</div>
+            </div>
+            <label class="toggle"><input type="checkbox" id="notifPromo" /><div class="toggle-track"></div></label>
+          </div>
+
+          <div class="notif-save-row">
+            <button class="btn-primary" onclick="saveNotifications()">Save Preferences</button>
+          </div>
+        </div>
+
+        <!-- ── Danger Zone ── -->
+        <div class="section-card danger-card" style="animation-delay:0.15s">
+          <div class="section-header">
+            <div class="section-icon danger">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            </div>
+            <div>
+              <div class="section-title" style="color:var(--danger)">Account Removal</div>
+              <div class="section-sub">Permanently delete your account and all associated data</div>
+            </div>
+          </div>
+
+          <div class="danger-body">
+            <div class="danger-warning">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <div class="danger-warning-text">
+                <strong>This action cannot be undone.</strong> Deleting your account will permanently remove your profile, saved listings, messages, and all account data from HomeSure.
+              </div>
+            </div>
+
+            <div id="deleteConfirmWrap" class="delete-confirm">
+              <div class="delete-confirm-label">Type your email <span id="deleteEmailHint"></span> to confirm deletion:</div>
+              <input type="text" id="deleteConfirmInput" placeholder="Enter your email address" />
+              <div class="delete-confirm-actions">
+                <button class="btn-danger" onclick="confirmDelete()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                  Delete My Account
+                </button>
+                <button class="btn-ghost" onclick="cancelDelete()">Cancel</button>
+              </div>
+            </div>
+
+            <div id="deleteBtn">
+              <button class="btn-danger" onclick="startDelete()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                Delete My Account
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /settings-col -->
+    </div><!-- /content -->
+  </div>
+</div>
+
+<!-- ── 2FA Modal ── -->
+<div class="modal-backdrop" id="twoFaModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Enable Two-Factor Authentication</div>
+        <div class="modal-sub">Scan the QR code with your authenticator app</div>
+      </div>
+      <button class="modal-close" onclick="close2FA()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="qr-wrap">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=otpauth://totp/HomeSure:buyer@homesure.com?secret=JBSWY3DPEHPK3PXP&issuer=HomeSure" alt="QR Code" />
+    </div>
+    <div class="qr-hint">Scan this QR code with Google Authenticator, Authy, or any similar app</div>
+    <div class="otp-boxes" id="twoFaBoxes">
+      <input class="otp-box" maxlength="1" type="text" inputmode="numeric" />
+      <input class="otp-box" maxlength="1" type="text" inputmode="numeric" />
+      <input class="otp-box" maxlength="1" type="text" inputmode="numeric" />
+      <input class="otp-box" maxlength="1" type="text" inputmode="numeric" />
+      <input class="otp-box" maxlength="1" type="text" inputmode="numeric" />
+      <input class="otp-box" maxlength="1" type="text" inputmode="numeric" />
+    </div>
+    <div class="otp-error" id="twoFaError">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Invalid code. Please try again.
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="close2FA()">Cancel</button>
+      <button class="btn-primary" onclick="verify2FA()">Verify &amp; Enable</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div class="toast-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="toastIcon"></svg></div>
+  <span id="toastMsg"></span>
+</div>
+
+<script src="../../assets/js/fake-data.js"></script>
+<script src="../../components/sidebar.js"></script>
+<script src="../../components/topbar.js"></script>
+<script>
+  const user = getSession();
+  if (!user || user.role !== 'buyer') window.location.href = '../../auth/signin.html';
+
+  HomeSureSidebar.init({ activePage: 'settings' });
+  HomeSureTopbar.init({ placeholder: 'Search settings...' });
+
+  // ── Toast ────────────────────────────────────────────────────────────────
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.className = 'toast ' + type;
+    document.getElementById('toastMsg').textContent = msg;
+    document.getElementById('toastIcon').innerHTML = type === 'success'
+      ? '<polyline points="20 6 9 17 4 12"/>'
+      : '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // ── Password ─────────────────────────────────────────────────────────────
+  function togglePwForm() {
+    const form = document.getElementById('pwForm');
+    const isOpen = form.classList.contains('open');
+    form.classList.toggle('open');
+    if (isOpen) { ['currentPw','newPw','confirmPw'].forEach(id => document.getElementById(id).value = ''); }
+  }
+
+  function toggleVis(inputId, btn) {
+    const inp = document.getElementById(inputId);
+    const isHidden = inp.type === 'password';
+    inp.type = isHidden ? 'text' : 'password';
+    btn.innerHTML = isHidden
+      ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`
+      : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+  }
+
+  function savePassword() {
+    const cur = document.getElementById('currentPw').value;
+    const nw  = document.getElementById('newPw').value;
+    const cf  = document.getElementById('confirmPw').value;
+    const fullUser = FAKE_USERS.find(u => u.id === user.id);
+
+    if (!cur || !nw || !cf) { showToast('Please fill in all password fields.', 'error'); return; }
+    if (fullUser && cur !== fullUser.password) { showToast('Current password is incorrect.', 'error'); return; }
+    if (nw.length < 8) { showToast('New password must be at least 8 characters.', 'error'); return; }
+    if (nw !== cf) { showToast('New passwords do not match.', 'error'); return; }
+
+    togglePwForm();
+    showToast('Password updated successfully.');
+  }
+
+  // ── 2FA ──────────────────────────────────────────────────────────────────
+  function handle2FA(checkbox) {
+    if (checkbox.checked) {
+      document.getElementById('twoFaModal').classList.add('open');
+      document.querySelectorAll('#twoFaBoxes .otp-box')[0].focus();
+    } else {
+      document.getElementById('twoFaStatusText').textContent = 'Two-Factor Authentication is disabled';
+      document.getElementById('twoFaStatusText').parentElement.style.color = '';
+      showToast('Two-factor authentication disabled.');
+    }
+  }
+
+  function close2FA() {
+    document.getElementById('twoFaModal').classList.remove('open');
+    document.getElementById('twoFaError').classList.remove('show');
+    document.getElementById('twoFaToggle').checked = false;
+    document.querySelectorAll('#twoFaBoxes .otp-box').forEach(b => { b.value = ''; b.classList.remove('filled'); });
+  }
+
+  function verify2FA() {
+    const code = [...document.querySelectorAll('#twoFaBoxes .otp-box')].map(b => b.value).join('');
+    if (code.length < 6) { showToast('Please enter the full 6-digit code.', 'error'); return; }
+    if (code === '123456') {
+      document.getElementById('twoFaModal').classList.remove('open');
+      document.getElementById('twoFaStatusText').textContent = 'Two-Factor Authentication is enabled';
+      document.getElementById('twoFaStatusText').parentElement.style.color = 'var(--teal)';
+      showToast('Two-factor authentication enabled!');
+    } else {
+      document.getElementById('twoFaError').classList.add('show');
+      document.querySelectorAll('#twoFaBoxes .otp-box').forEach(b => { b.value = ''; b.classList.remove('filled'); });
+      document.querySelectorAll('#twoFaBoxes .otp-box')[0].focus();
+    }
+  }
+
+  // OTP auto-advance for 2FA modal
+  document.querySelectorAll('#twoFaBoxes .otp-box').forEach((box, i, boxes) => {
+    box.addEventListener('input', () => {
+      box.value = box.value.replace(/\D/g, '').slice(-1);
+      box.classList.toggle('filled', box.value !== '');
+      if (box.value && i < boxes.length - 1) boxes[i + 1].focus();
+    });
+    box.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !box.value && i > 0) boxes[i - 1].focus();
+    });
+  });
+
+  // ── Notifications ─────────────────────────────────────────────────────────
+  function saveNotifications() {
+    showToast('Notification preferences saved.');
+  }
+
+  // ── Account Deletion ──────────────────────────────────────────────────────
+  function startDelete() {
+    document.getElementById('deleteBtn').style.display = 'none';
+    document.getElementById('deleteEmailHint').textContent = '(' + user.email + ')';
+    document.getElementById('deleteConfirmWrap').classList.add('open');
+  }
+
+  function cancelDelete() {
+    document.getElementById('deleteConfirmWrap').classList.remove('open');
+    document.getElementById('deleteConfirmInput').value = '';
+    document.getElementById('deleteBtn').style.display = '';
+  }
+
+  function confirmDelete() {
+    const val = document.getElementById('deleteConfirmInput').value.trim();
+    if (val !== user.email) {
+      showToast('Email does not match. Please try again.', 'error'); return;
+    }
+    sessionStorage.removeItem('homesure_user');
+    window.location.href = '../../auth/signin.html';
+  }
+</script>
+</body>
+</html>

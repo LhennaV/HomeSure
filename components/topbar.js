@@ -120,6 +120,37 @@
       0%, 100% { transform: scale(1);   opacity: 1; }
       50%       { transform: scale(1.3); opacity: 0.7; }
     }
+
+    /* ── Light mode ── */
+    [data-theme="light"] .hs-topbar {
+      background: #ffffff;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+    [data-theme="light"] .hs-topbar-input {
+      background: #f1f5f9;
+      border-color: rgba(0,0,0,0.1);
+      color: #1e293b;
+    }
+    [data-theme="light"] .hs-topbar-input::placeholder { color: rgba(0,0,0,0.35); }
+    [data-theme="light"] .hs-topbar-input:focus {
+      background: #ffffff;
+      border-color: rgba(0,201,167,0.55);
+    }
+    [data-theme="light"] .hs-topbar-search svg { color: rgba(0,0,0,0.35); }
+    [data-theme="light"] .hs-topbar-search:focus-within svg { color: #00c9a7; }
+    [data-theme="light"] .hs-notif-btn {
+      background: #f1f5f9;
+      border-color: rgba(0,0,0,0.1);
+    }
+    [data-theme="light"] .hs-notif-btn:hover { background: #e2e8f0; }
+    [data-theme="light"] .hs-notif-btn svg { color: rgba(0,0,0,0.5); }
+    [data-theme="light"] .hs-notif-btn:hover svg { color: #1e293b; }
+    [data-theme="light"] .hs-notif-dot { border-color: #ffffff; }
+    [data-theme="light"] .hs-topbar-avatar {
+      background: rgba(0,201,167,0.12);
+      color: #00a88c;
+      border-color: rgba(0,201,167,0.4);
+    }
   `;
 
   function injectCSS() {
