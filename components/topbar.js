@@ -54,6 +54,21 @@
       transition: border-color 0.2s, background 0.2s;
     }
     .hs-topbar-input::placeholder { color: rgba(255,255,255,0.35); }
+    .hs-topbar-input::-webkit-search-cancel-button { -webkit-appearance: none; display: none; }
+    .hs-topbar-input:-webkit-autofill,
+    .hs-topbar-input:-webkit-autofill:hover,
+    .hs-topbar-input:-webkit-autofill:focus {
+      -webkit-box-shadow: 0 0 0 1000px #2d3f55 inset !important;
+      -webkit-text-fill-color: #f1f5f9 !important;
+      caret-color: #f1f5f9;
+    }
+    [data-theme="light"] .hs-topbar-input:-webkit-autofill,
+    [data-theme="light"] .hs-topbar-input:-webkit-autofill:hover,
+    [data-theme="light"] .hs-topbar-input:-webkit-autofill:focus {
+      -webkit-box-shadow: 0 0 0 1000px #f1f5f9 inset !important;
+      -webkit-text-fill-color: #1e293b !important;
+      caret-color: #1e293b;
+    }
     .hs-topbar-input:focus {
       border-color: rgba(0,201,167,0.55);
       background: rgba(0,0,0,0.3);
@@ -184,6 +199,11 @@
           type="text"
           placeholder="${placeholder}"
           autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+          readonly
+          onfocus="this.removeAttribute('readonly')"
+          onblur="if(!this.value)this.setAttribute('readonly','')"
         />
       </div>
       <div class="hs-topbar-right">

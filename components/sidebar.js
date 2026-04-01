@@ -163,9 +163,11 @@
     .hs-nav-item:hover svg { transform: scale(1.1); }
 
     .hs-nav-item.active {
-      background: rgba(0,0,0,0.28);
+      background: rgba(0,201,167,0.13);
       color: #ffffff;
-      font-weight: 600;
+      font-weight: 700;
+      border-left: 3px solid #00c9a7;
+      padding-left: 10px;
     }
     .hs-nav-item.active::before { opacity: 0 !important; }
     .hs-nav-item.active svg { color: #00c9a7; }
@@ -183,12 +185,12 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 6px 13px 10px;
+      padding: 8px 13px 12px;
     }
     .hs-theme-label {
       font-size: 13px;
-      color: rgba(255,255,255,0.55);
-      font-weight: 500;
+      color: rgba(255,255,255,0.65);
+      font-weight: 600;
       font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
@@ -197,50 +199,50 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(0,0,0,0.35);
+      background: rgba(0,0,0,0.4);
       border-radius: 30px;
       padding: 3px;
       cursor: pointer;
       position: relative;
-      width: 58px;
-      height: 28px;
-      border: 1px solid rgba(255,255,255,0.08);
+      width: 68px;
+      height: 32px;
+      border: 1px solid rgba(255,255,255,0.12);
       transition: background 0.25s;
     }
-    .hs-theme-pill:hover { background: rgba(0,0,0,0.5); }
+    .hs-theme-pill:hover { background: rgba(0,0,0,0.55); border-color: rgba(255,255,255,0.2); }
 
     .hs-pill-opt {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 24px; height: 22px;
+      width: 28px; height: 26px;
       flex-shrink: 0;
       z-index: 1;
       pointer-events: none;
       line-height: 1;
     }
     .hs-pill-opt svg {
-      width: 11px; height: 11px;
-      color: rgba(255,255,255,0.45);
+      width: 13px; height: 13px;
+      color: rgba(255,255,255,0.5);
       display: block;
       margin: auto;
     }
 
     .hs-pill-thumb {
       position: absolute;
-      width: 24px; height: 22px;
+      width: 28px; height: 26px;
       background: #ffffff;
       border-radius: 20px;
       transition: left 0.28s cubic-bezier(0.4,0,0.2,1);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.35);
       top: 50%;
       transform: translateY(-50%);
     }
-    .hs-pill-thumb.dark-mode  { left: 30px; }
+    .hs-pill-thumb.dark-mode  { left: 37px; }
     .hs-pill-thumb.light-mode { left: 3px;  }
 
     /* when pill is in dark mode, moon icon gets white colour */
-    .hs-theme-pill[data-mode="dark"] .hs-pill-opt.moon svg  { color: #0F766E; }
+    .hs-theme-pill[data-mode="dark"]  .hs-pill-opt.moon svg { color: #0F766E; }
     .hs-theme-pill[data-mode="light"] .hs-pill-opt.sun svg  { color: #0F766E; }
 
     /* logout */

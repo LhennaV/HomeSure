@@ -137,6 +137,21 @@
     .field input::placeholder { color: var(--muted); }
     .field input:disabled { opacity: 0.5; cursor: not-allowed; }
     .field input.input-error { border-color: rgba(248,113,113,0.6); }
+    .field input:-webkit-autofill,
+    .field input:-webkit-autofill:hover,
+    .field input:-webkit-autofill:focus {
+      -webkit-box-shadow: 0 0 0 1000px #1e2d40 inset !important;
+      -webkit-text-fill-color: #f1f5f9 !important;
+      caret-color: #f1f5f9;
+      border-color: rgba(0,201,167,0.3) !important;
+    }
+    [data-theme="light"] .field input:-webkit-autofill,
+    [data-theme="light"] .field input:-webkit-autofill:hover,
+    [data-theme="light"] .field input:-webkit-autofill:focus {
+      -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+      -webkit-text-fill-color: #1e293b !important;
+      caret-color: #1e293b;
+    }
 
     /* ── Phone row ── */
     .phone-row { display: flex; align-items: flex-end; gap: 10px; }

@@ -38,7 +38,7 @@
     .page-sub    { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
 
     /* ── Max-width column ── */
-    .settings-col { max-width: 680px; display: flex; flex-direction: column; gap: 18px; }
+    .settings-col { display: flex; flex-direction: column; gap: 18px; }
 
     /* ── Section card ── */
     .section-card {
@@ -66,12 +66,17 @@
     /* ── Setting row ── */
     .setting-row {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 15px 22px; border-bottom: 1px solid var(--border); gap: 16px;
+      padding: 20px 22px; border-bottom: 1px solid var(--border); gap: 16px;
     }
     .setting-row:last-child { border-bottom: none; }
     .setting-info { flex: 1; min-width: 0; }
-    .setting-label { font-size: 13.5px; font-weight: 600; color: var(--text); }
-    .setting-desc  { font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.45; }
+    .setting-label { font-size: 14px; font-weight: 600; color: var(--text); }
+    .setting-desc  { font-size: 12.5px; color: var(--muted2); margin-top: 4px; line-height: 1.5; }
+
+    /* ── Toggle with On/Off label ── */
+    .toggle-group { display: flex; align-items: center; gap: 9px; flex-shrink: 0; }
+    .toggle-state { font-size: 11.5px; font-weight: 700; color: var(--muted); min-width: 18px; text-align: right; }
+    .toggle-state.on { color: var(--teal); }
 
     /* ── Toggle switch ── */
     .toggle { position: relative; width: 44px; height: 25px; flex-shrink: 0; }
@@ -110,11 +115,11 @@
     .pw-form.open { display: flex; }
 
     .field { display: flex; flex-direction: column; gap: 6px; }
-    .field label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .field label { font-size: 11px; font-weight: 700; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.05em; }
     .field-input-wrap { position: relative; }
     .field-input-wrap .field-icon {
       position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-      width: 14px; height: 14px; color: var(--muted); pointer-events: none; transition: color 0.2s;
+      width: 14px; height: 14px; color: var(--muted2); pointer-events: none; transition: color 0.2s;
     }
     .field-input-wrap:focus-within .field-icon { color: var(--teal); }
     .field input {
@@ -126,6 +131,21 @@
     .field input:focus { border-color: rgba(0,201,167,0.5); background: rgba(0,0,0,0.28); }
     .field input::placeholder { color: var(--muted); }
     .field input.input-error { border-color: rgba(248,113,113,0.6); }
+    .field input:-webkit-autofill,
+    .field input:-webkit-autofill:hover,
+    .field input:-webkit-autofill:focus {
+      -webkit-box-shadow: 0 0 0 1000px #1e2d40 inset !important;
+      -webkit-text-fill-color: #f1f5f9 !important;
+      caret-color: #f1f5f9;
+      border-color: rgba(0,201,167,0.3) !important;
+    }
+    [data-theme="light"] .field input:-webkit-autofill,
+    [data-theme="light"] .field input:-webkit-autofill:hover,
+    [data-theme="light"] .field input:-webkit-autofill:focus {
+      -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+      -webkit-text-fill-color: #1e293b !important;
+      caret-color: #1e293b;
+    }
 
     .pw-toggle-visibility {
       position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
@@ -133,6 +153,35 @@
     }
     .pw-toggle-visibility:hover { color: var(--muted2); }
     .pw-toggle-visibility svg { width: 15px; height: 15px; display: block; }
+
+    /* ── Password strength ── */
+    .pw-strength { display: none; align-items: center; gap: 10px; margin-top: 8px; }
+    .pw-strength.show { display: flex; }
+    .pw-strength-bars { display: flex; gap: 4px; flex: 1; }
+    .pw-bar {
+      flex: 1; height: 4px; border-radius: 99px;
+      background: var(--border); transition: background 0.25s;
+    }
+    .pw-bar.weak     { background: #f87171; }
+    .pw-bar.fair     { background: #fbbf24; }
+    .pw-bar.good     { background: #34d399; }
+    .pw-bar.strong   { background: var(--teal); }
+    .pw-strength-label { font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+    .pw-strength-label.weak   { color: #f87171; }
+    .pw-strength-label.fair   { color: #fbbf24; }
+    .pw-strength-label.good   { color: #34d399; }
+    .pw-strength-label.strong { color: var(--teal); }
+
+    .pw-requirements { display: none; flex-direction: column; gap: 5px; margin-top: 10px; }
+    .pw-requirements.show { display: flex; }
+    .pw-req {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 12px; color: var(--muted); transition: color 0.2s;
+    }
+    .pw-req svg { width: 13px; height: 13px; flex-shrink: 0; transition: color 0.2s; }
+    .pw-req.met { color: var(--teal); }
+    .pw-req.met svg { color: var(--teal); }
+    .pw-req.met svg circle { display: none; }
 
     .pw-actions { display: flex; align-items: center; gap: 10px; }
     .btn-primary {
@@ -150,20 +199,55 @@
     }
     .btn-ghost:hover { border-color: var(--muted2); color: var(--text); }
     .btn-danger {
-      background: var(--danger-faint); border: 1px solid var(--danger-mid);
+      background: transparent; border: 1.5px solid var(--danger);
       border-radius: 9px; padding: 10px 22px;
       color: var(--danger); font-size: 13px; font-weight: 700; font-family: inherit;
       cursor: pointer; display: flex; align-items: center; gap: 8px;
-      transition: background 0.2s, transform 0.18s;
+      transition: background 0.2s, color 0.2s, transform 0.18s;
     }
-    .btn-danger svg { width: 14px; height: 14px; }
-    .btn-danger:hover { background: rgba(248,113,113,0.18); transform: translateY(-1px); }
+    .btn-danger svg { width: 14px; height: 14px; transition: color 0.2s; }
+    .btn-danger:hover { background: var(--danger); color: #fff; transform: translateY(-1px); }
+    .btn-danger:hover svg { color: #fff; }
+
+    /* ── Password never dot ── */
+    .pw-nudge-dot {
+      display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+      background: #fbbf24; margin-right: 5px; vertical-align: middle;
+      animation: pw-nudge-pulse 2s ease-in-out infinite;
+    }
+    @keyframes pw-nudge-pulse {
+      0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
+    }
 
     /* ── Notification save row ── */
-    .notif-save-row { padding: 16px 22px; border-top: 1px solid var(--border); }
+    .notif-save-row { padding: 18px 22px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+    .notif-saved-msg { font-size: 12px; color: var(--teal); font-weight: 600; display: none; align-items: center; gap: 6px; }
+    .notif-saved-msg.show { display: flex; }
+    .notif-saved-msg svg { width: 13px; height: 13px; }
+
     .notif-section-label {
-      padding: 12px 22px 6px; font-size: 10.5px; font-weight: 700;
-      color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em;
+      padding: 14px 22px 8px;
+      font-size: 11px; font-weight: 800;
+      color: var(--muted2); text-transform: uppercase; letter-spacing: 0.07em;
+      border-left: 3px solid var(--teal);
+      margin-left: 22px; padding-left: 10px;
+    }
+
+    /* ── Dimmed types (when all channels off) ── */
+    .setting-row.dimmed { opacity: 0.4; pointer-events: none; }
+
+    /* ── Danger zone label ── */
+    .danger-zone-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 800; color: var(--danger);
+      text-transform: uppercase; letter-spacing: 0.1em;
+      padding: 4px 0 10px;
+    }
+    .danger-zone-label::before {
+      content: ''; flex: 1; height: 1px; background: var(--danger-mid);
+    }
+    .danger-zone-label::after {
+      content: ''; flex: 1; height: 1px; background: var(--danger-mid);
     }
 
     /* ── Danger zone ── */
@@ -177,33 +261,51 @@
     .danger-warning-text { font-size: 12.5px; color: var(--muted2); line-height: 1.5; }
     .danger-warning-text strong { color: var(--danger); }
 
-    /* ── Delete confirm input ── */
-    .delete-confirm { display: none; flex-direction: column; gap: 10px; }
-    .delete-confirm.open { display: flex; }
-    .delete-confirm-label { font-size: 12px; color: var(--muted2); }
-    .delete-confirm-label span { color: var(--danger); font-weight: 700; }
-    .delete-confirm input {
-      background: rgba(0,0,0,0.2); border: 1px solid var(--danger-mid);
-      border-radius: 9px; padding: 10px 14px;
-      color: var(--text); font-family: inherit; font-size: 13px; outline: none;
-      transition: border-color 0.2s;
+    /* ── Pending deletion banner ── */
+    .pending-banner {
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.35);
+      border-radius: 11px; padding: 14px 16px; gap: 14px;
     }
-    .delete-confirm input:focus { border-color: var(--danger); }
-    .delete-confirm input::placeholder { color: var(--muted); }
-    .delete-confirm-actions { display: flex; gap: 10px; }
+    .pending-banner-left { display: flex; align-items: flex-start; gap: 12px; }
+    .pending-banner-left svg { width: 18px; height: 18px; color: #fbbf24; flex-shrink: 0; margin-top: 1px; }
+    .pending-banner-title { font-size: 13px; font-weight: 700; color: #fbbf24; margin-bottom: 3px; }
+    .pending-banner-sub   { font-size: 12px; color: var(--muted2); line-height: 1.45; }
+    .pending-cancel-btn {
+      background: transparent; border: 1.5px solid #fbbf24;
+      border-radius: 8px; padding: 8px 16px; color: #fbbf24;
+      font-size: 12.5px; font-weight: 700; font-family: inherit; cursor: pointer;
+      white-space: nowrap; transition: background 0.2s, color 0.2s;
+    }
+    .pending-cancel-btn:hover { background: rgba(251,191,36,0.15); }
+
+    /* ── Delete modal steps ── */
+    .delete-modal-info { display: flex; flex-direction: column; gap: 11px; margin-bottom: 20px; }
+    .delete-modal-step {
+      display: flex; align-items: flex-start; gap: 12px;
+      font-size: 13px; color: var(--muted2); line-height: 1.5;
+    }
+    .delete-modal-step strong { color: var(--text); }
+    .delete-step-num {
+      width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+      background: var(--danger-faint); border: 1px solid var(--danger-mid);
+      color: var(--danger); font-size: 11px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center; margin-top: 1px;
+    }
 
     /* ── 2FA Modal ── */
     .modal-backdrop {
-      display: none; position: fixed; inset: 0; z-index: 200;
-      background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
       align-items: center; justify-content: center;
     }
     .modal-backdrop.open { display: flex; }
     .modal {
       background: var(--card); border: 1px solid var(--border);
-      border-radius: 18px; padding: 28px; width: 90%; max-width: 400px;
+      border-radius: 18px; padding: 28px; width: calc(100% - 40px); max-width: 420px;
       animation: fadeUp 0.3s ease both;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      overflow: hidden;
     }
     .modal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; }
     .modal-title { font-size: 16px; font-weight: 800; color: var(--text); line-height: 1.25; }
@@ -224,11 +326,11 @@
     .qr-wrap img { width: 160px; height: 160px; display: block; }
     .qr-hint { font-size: 11.5px; color: var(--muted); text-align: center; margin-bottom: 18px; line-height: 1.5; }
 
-    .otp-boxes { display: flex; gap: 8px; margin-bottom: 16px; }
+    .otp-boxes { display: flex; gap: 7px; margin-bottom: 16px; }
     .otp-box {
-      flex: 1; height: 52px; border-radius: 9px;
+      flex: 1; min-width: 0; width: 0; height: 48px; border-radius: 9px;
       background: rgba(0,0,0,0.25); border: 1px solid var(--border);
-      text-align: center; font-size: 20px; font-weight: 700;
+      text-align: center; font-size: 18px; font-weight: 700;
       color: var(--text); font-family: inherit; outline: none;
       transition: border-color 0.2s; caret-color: var(--teal);
     }
@@ -314,7 +416,7 @@
           <div class="setting-row">
             <div class="setting-info">
               <div class="setting-label">Password</div>
-              <div class="setting-desc">Last changed: Never — update your password to keep your account secure</div>
+              <div class="setting-desc"><span class="pw-nudge-dot"></span>Last changed: Never — we recommend updating your password</div>
             </div>
             <button class="change-pw-btn" id="changePwBtn" onclick="togglePwForm()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -328,27 +430,52 @@
               <label>Current Password</label>
               <div class="field-input-wrap">
                 <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                <input type="password" id="currentPw" placeholder="Enter current password" />
-                <span class="pw-toggle-visibility" onclick="toggleVis('currentPw',this)">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                </span>
+                <input type="password" id="currentPw" placeholder="Enter current password" autocomplete="current-password" />
               </div>
             </div>
             <div class="field">
               <label>New Password</label>
               <div class="field-input-wrap">
                 <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                <input type="password" id="newPw" placeholder="Minimum 8 characters" />
+                <input type="password" id="newPw" placeholder="Create a strong password" autocomplete="new-password" oninput="checkStrength(this.value)" />
                 <span class="pw-toggle-visibility" onclick="toggleVis('newPw',this)">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 </span>
+              </div>
+              <!-- Strength meter -->
+              <div class="pw-strength" id="pwStrengthWrap">
+                <div class="pw-strength-bars">
+                  <div class="pw-bar" id="pwBar1"></div>
+                  <div class="pw-bar" id="pwBar2"></div>
+                  <div class="pw-bar" id="pwBar3"></div>
+                  <div class="pw-bar" id="pwBar4"></div>
+                </div>
+                <span class="pw-strength-label" id="pwStrengthLabel"></span>
+              </div>
+              <div class="pw-requirements" id="pwRequirements">
+                <div class="pw-req" id="req-len">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+                  At least 8 characters
+                </div>
+                <div class="pw-req" id="req-upper">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+                  One uppercase letter (A–Z)
+                </div>
+                <div class="pw-req" id="req-num">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+                  One number (0–9)
+                </div>
+                <div class="pw-req" id="req-special">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+                  One special character (!@#$…)
+                </div>
               </div>
             </div>
             <div class="field">
               <label>Confirm New Password</label>
               <div class="field-input-wrap">
                 <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                <input type="password" id="confirmPw" placeholder="Re-enter new password" />
+                <input type="password" id="confirmPw" placeholder="Re-enter new password" autocomplete="new-password" />
                 <span class="pw-toggle-visibility" onclick="toggleVis('confirmPw',this)">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 </span>
@@ -372,9 +499,9 @@
             </label>
           </div>
 
-          <div class="setting-row" id="twoFaStatus" style="padding-top:10px;padding-bottom:10px;">
-            <div class="setting-desc" style="display:flex;align-items:center;gap:7px;">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div class="setting-row" id="twoFaStatus">
+            <div class="setting-desc" id="twoFaStatusInner" style="display:flex;align-items:center;gap:7px;">
+              <svg id="twoFaStatusIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
               <span id="twoFaStatusText">Two-Factor Authentication is disabled</span>
             </div>
           </div>
@@ -397,62 +524,87 @@
           <div class="setting-row">
             <div class="setting-info">
               <div class="setting-label">Email Notifications</div>
-              <div class="setting-desc">Receive notifications via email</div>
+              <div class="setting-desc">Receive notifications via your email address</div>
             </div>
-            <label class="toggle"><input type="checkbox" id="notifEmail" checked /><div class="toggle-track"></div></label>
+            <div class="toggle-group">
+              <span class="toggle-state on" id="notifEmail-lbl">On</span>
+              <label class="toggle"><input type="checkbox" id="notifEmail" checked onchange="updateToggleLabel(this,'notifEmail-lbl');updateChannelDependency()" /><div class="toggle-track"></div></label>
+            </div>
           </div>
           <div class="setting-row">
             <div class="setting-info">
               <div class="setting-label">SMS Notifications</div>
               <div class="setting-desc">Receive notifications via text message</div>
             </div>
-            <label class="toggle"><input type="checkbox" id="notifSms" /><div class="toggle-track"></div></label>
+            <div class="toggle-group">
+              <span class="toggle-state" id="notifSms-lbl">Off</span>
+              <label class="toggle"><input type="checkbox" id="notifSms" onchange="updateToggleLabel(this,'notifSms-lbl');updateChannelDependency()" /><div class="toggle-track"></div></label>
+            </div>
           </div>
           <div class="setting-row">
             <div class="setting-info">
               <div class="setting-label">Push Notifications</div>
               <div class="setting-desc">Receive in-browser push notifications</div>
             </div>
-            <label class="toggle"><input type="checkbox" id="notifPush" checked /><div class="toggle-track"></div></label>
+            <div class="toggle-group">
+              <span class="toggle-state on" id="notifPush-lbl">On</span>
+              <label class="toggle"><input type="checkbox" id="notifPush" checked onchange="updateToggleLabel(this,'notifPush-lbl');updateChannelDependency()" /><div class="toggle-track"></div></label>
+            </div>
           </div>
 
           <div class="notif-section-label">Notification Types</div>
 
-          <div class="setting-row">
+          <div class="setting-row" id="rowNewListing">
             <div class="setting-info">
               <div class="setting-label">New Listing Alerts</div>
               <div class="setting-desc">Get notified when new properties match your saved preferences</div>
             </div>
-            <label class="toggle"><input type="checkbox" id="notifNewListing" checked /><div class="toggle-track"></div></label>
+            <div class="toggle-group">
+              <span class="toggle-state on" id="notifNewListing-lbl">On</span>
+              <label class="toggle"><input type="checkbox" id="notifNewListing" checked onchange="updateToggleLabel(this,'notifNewListing-lbl')" /><div class="toggle-track"></div></label>
+            </div>
           </div>
-          <div class="setting-row">
+          <div class="setting-row" id="rowPriceDrop">
             <div class="setting-info">
               <div class="setting-label">Price Drop Alerts</div>
               <div class="setting-desc">Know when a saved property reduces its price</div>
             </div>
-            <label class="toggle"><input type="checkbox" id="notifPriceDrop" checked /><div class="toggle-track"></div></label>
+            <div class="toggle-group">
+              <span class="toggle-state on" id="notifPriceDrop-lbl">On</span>
+              <label class="toggle"><input type="checkbox" id="notifPriceDrop" checked onchange="updateToggleLabel(this,'notifPriceDrop-lbl')" /><div class="toggle-track"></div></label>
+            </div>
           </div>
-          <div class="setting-row">
+          <div class="setting-row" id="rowMessages">
             <div class="setting-info">
               <div class="setting-label">Message Notifications</div>
               <div class="setting-desc">Get notified when you receive new messages from sellers</div>
             </div>
-            <label class="toggle"><input type="checkbox" id="notifMessages" checked /><div class="toggle-track"></div></label>
+            <div class="toggle-group">
+              <span class="toggle-state on" id="notifMessages-lbl">On</span>
+              <label class="toggle"><input type="checkbox" id="notifMessages" checked onchange="updateToggleLabel(this,'notifMessages-lbl')" /><div class="toggle-track"></div></label>
+            </div>
           </div>
-          <div class="setting-row">
+          <div class="setting-row" id="rowPromo">
             <div class="setting-info">
               <div class="setting-label">Promotions &amp; Updates</div>
               <div class="setting-desc">Receive news, tips, and HomeSure platform updates</div>
             </div>
-            <label class="toggle"><input type="checkbox" id="notifPromo" /><div class="toggle-track"></div></label>
+            <div class="toggle-group">
+              <span class="toggle-state" id="notifPromo-lbl">Off</span>
+              <label class="toggle"><input type="checkbox" id="notifPromo" onchange="updateToggleLabel(this,'notifPromo-lbl')" /><div class="toggle-track"></div></label>
+            </div>
           </div>
 
           <div class="notif-save-row">
+            <div class="notif-saved-msg" id="notifSavedMsg">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Preferences saved
+            </div>
             <button class="btn-primary" onclick="saveNotifications()">Save Preferences</button>
           </div>
         </div>
 
-        <!-- ── Danger Zone ── -->
+        <!-- ── Account Removal ── -->
         <div class="section-card danger-card" style="animation-delay:0.15s">
           <div class="section-header">
             <div class="section-icon danger">
@@ -465,27 +617,27 @@
           </div>
 
           <div class="danger-body">
-            <div class="danger-warning">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              <div class="danger-warning-text">
-                <strong>This action cannot be undone.</strong> Deleting your account will permanently remove your profile, saved listings, messages, and all account data from HomeSure.
+            <!-- Pending deletion banner (shown after scheduling) -->
+            <div class="pending-banner" id="pendingBanner" style="display:none">
+              <div class="pending-banner-left">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <div>
+                  <div class="pending-banner-title">Account scheduled for deletion</div>
+                  <div class="pending-banner-sub" id="pendingBannerSub"></div>
+                </div>
               </div>
+              <button class="pending-cancel-btn" onclick="cancelScheduledDeletion()">Cancel Deletion</button>
             </div>
 
-            <div id="deleteConfirmWrap" class="delete-confirm">
-              <div class="delete-confirm-label">Type your email <span id="deleteEmailHint"></span> to confirm deletion:</div>
-              <input type="text" id="deleteConfirmInput" placeholder="Enter your email address" />
-              <div class="delete-confirm-actions">
-                <button class="btn-danger" onclick="confirmDelete()">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-                  Delete My Account
-                </button>
-                <button class="btn-ghost" onclick="cancelDelete()">Cancel</button>
+            <div class="danger-warning" id="deletionWarning">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <div class="danger-warning-text">
+                Your account, saved listings, messages, and all associated data will be <strong>permanently removed</strong>. You will have <strong>30 days</strong> to change your mind before deletion is finalized.
               </div>
             </div>
 
             <div id="deleteBtn">
-              <button class="btn-danger" onclick="startDelete()">
+              <button class="btn-danger" onclick="openDeleteModal()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
                 Delete My Account
               </button>
@@ -533,6 +685,56 @@
   </div>
 </div>
 
+<!-- ── Delete Account Modal ── -->
+<div class="modal-backdrop" id="deleteModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" style="color:var(--danger)">Delete Your Account?</div>
+        <div class="modal-sub">This will schedule your account for permanent deletion</div>
+      </div>
+      <button class="modal-close" onclick="closeDeleteModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="delete-modal-info">
+      <div class="delete-modal-step">
+        <div class="delete-step-num">1</div>
+        <div>Your account will be <strong>deactivated immediately</strong> and hidden from the platform.</div>
+      </div>
+      <div class="delete-modal-step">
+        <div class="delete-step-num">2</div>
+        <div>You have <strong>30 days</strong> to log back in and cancel the deletion.</div>
+      </div>
+      <div class="delete-modal-step">
+        <div class="delete-step-num">3</div>
+        <div>After 30 days, your account and all data will be <strong>permanently removed</strong>.</div>
+      </div>
+    </div>
+
+    <div class="field" style="margin-bottom:16px;">
+      <label>Confirm by typing your email</label>
+      <div class="field-input-wrap">
+        <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <input type="text" id="deleteEmailInput" placeholder="Enter your email address" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" />
+      </div>
+      <div class="otp-error" id="deleteEmailError" style="margin-top:8px;margin-bottom:0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Email does not match your account.
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeDeleteModal()">Keep My Account</button>
+      <button class="btn-danger" style="flex:2;justify-content:center" onclick="confirmScheduleDeletion()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        Schedule Deletion
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast">
   <div class="toast-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="toastIcon"></svg></div>
@@ -564,9 +766,16 @@
   // ── Password ─────────────────────────────────────────────────────────────
   function togglePwForm() {
     const form = document.getElementById('pwForm');
+    const btn  = document.getElementById('changePwBtn');
     const isOpen = form.classList.contains('open');
     form.classList.toggle('open');
-    if (isOpen) { ['currentPw','newPw','confirmPw'].forEach(id => document.getElementById(id).value = ''); }
+    btn.innerHTML = isOpen
+      ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Change Password`
+      : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Hide Form`;
+    if (isOpen) {
+      ['currentPw','newPw','confirmPw'].forEach(id => document.getElementById(id).value = '');
+      checkStrength('');
+    }
   }
 
   function toggleVis(inputId, btn) {
@@ -578,6 +787,48 @@
       : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
   }
 
+  function checkStrength(val) {
+    const wrap  = document.getElementById('pwStrengthWrap');
+    const label = document.getElementById('pwStrengthLabel');
+    const reqs  = document.getElementById('pwRequirements');
+    const bars  = [1,2,3,4].map(n => document.getElementById('pwBar' + n));
+
+    if (!val) {
+      wrap.classList.remove('show');
+      reqs.classList.remove('show');
+      bars.forEach(b => b.className = 'pw-bar');
+      return;
+    }
+
+    wrap.classList.add('show');
+    reqs.classList.add('show');
+
+    const checks = {
+      len:     val.length >= 8,
+      upper:   /[A-Z]/.test(val),
+      num:     /[0-9]/.test(val),
+      special: /[^A-Za-z0-9]/.test(val),
+    };
+
+    ['len','upper','num','special'].forEach(key => {
+      const el = document.getElementById('req-' + key);
+      el.classList.toggle('met', checks[key]);
+      el.querySelector('svg').innerHTML = checks[key]
+        ? '<polyline points="20 6 9 17 4 12"/>'
+        : '<circle cx="12" cy="12" r="10"/>';
+    });
+
+    const score = Object.values(checks).filter(Boolean).length;
+    const levels = ['','weak','fair','good','strong'];
+    const texts  = ['','Weak','Fair','Good','Strong'];
+
+    bars.forEach((b, i) => {
+      b.className = 'pw-bar' + (i < score ? ' ' + levels[score] : '');
+    });
+    label.className     = 'pw-strength-label ' + (levels[score] || '');
+    label.textContent   = texts[score] || '';
+  }
+
   function savePassword() {
     const cur = document.getElementById('currentPw').value;
     const nw  = document.getElementById('newPw').value;
@@ -586,45 +837,68 @@
 
     if (!cur || !nw || !cf) { showToast('Please fill in all password fields.', 'error'); return; }
     if (fullUser && cur !== fullUser.password) { showToast('Current password is incorrect.', 'error'); return; }
-    if (nw.length < 8) { showToast('New password must be at least 8 characters.', 'error'); return; }
+    if (nw.length < 8)          { showToast('Password must be at least 8 characters.', 'error'); return; }
+    if (!/[A-Z]/.test(nw))      { showToast('Password must include an uppercase letter.', 'error'); return; }
+    if (!/[0-9]/.test(nw))      { showToast('Password must include a number.', 'error'); return; }
+    if (!/[^A-Za-z0-9]/.test(nw)) { showToast('Password must include a special character.', 'error'); return; }
     if (nw !== cf) { showToast('New passwords do not match.', 'error'); return; }
 
-    togglePwForm();
+    document.getElementById('pwForm').classList.remove('open');
+    document.getElementById('changePwBtn').innerHTML =
+      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Change Password`;
+    ['currentPw','newPw','confirmPw'].forEach(id => document.getElementById(id).value = '');
     showToast('Password updated successfully.');
   }
 
   // ── 2FA ──────────────────────────────────────────────────────────────────
+  let twoFaEnabled = false;
+
   function handle2FA(checkbox) {
-    if (checkbox.checked) {
+    if (checkbox.checked && !twoFaEnabled) {
       document.getElementById('twoFaModal').classList.add('open');
-      document.querySelectorAll('#twoFaBoxes .otp-box')[0].focus();
-    } else {
-      document.getElementById('twoFaStatusText').textContent = 'Two-Factor Authentication is disabled';
-      document.getElementById('twoFaStatusText').parentElement.style.color = '';
+      document.getElementById('twoFaError').classList.remove('show');
+      document.querySelectorAll('#twoFaBoxes .otp-box').forEach(b => { b.value = ''; b.classList.remove('filled'); });
+      setTimeout(() => document.querySelectorAll('#twoFaBoxes .otp-box')[0].focus(), 100);
+    } else if (!checkbox.checked && twoFaEnabled) {
+      twoFaEnabled = false;
+      setTwoFaStatus(false);
       showToast('Two-factor authentication disabled.');
     }
   }
 
-  function close2FA() {
+  function close2FA(e) {
+    if (e) e.stopPropagation();
     document.getElementById('twoFaModal').classList.remove('open');
     document.getElementById('twoFaError').classList.remove('show');
-    document.getElementById('twoFaToggle').checked = false;
-    document.querySelectorAll('#twoFaBoxes .otp-box').forEach(b => { b.value = ''; b.classList.remove('filled'); });
+    if (!twoFaEnabled) document.getElementById('twoFaToggle').checked = false;
   }
 
   function verify2FA() {
     const code = [...document.querySelectorAll('#twoFaBoxes .otp-box')].map(b => b.value).join('');
     if (code.length < 6) { showToast('Please enter the full 6-digit code.', 'error'); return; }
     if (code === '123456') {
+      twoFaEnabled = true;
+      setTwoFaStatus(true);
+      document.getElementById('twoFaToggle').checked = true;
       document.getElementById('twoFaModal').classList.remove('open');
-      document.getElementById('twoFaStatusText').textContent = 'Two-Factor Authentication is enabled';
-      document.getElementById('twoFaStatusText').parentElement.style.color = 'var(--teal)';
+      document.getElementById('twoFaError').classList.remove('show');
       showToast('Two-factor authentication enabled!');
     } else {
       document.getElementById('twoFaError').classList.add('show');
       document.querySelectorAll('#twoFaBoxes .otp-box').forEach(b => { b.value = ''; b.classList.remove('filled'); });
       document.querySelectorAll('#twoFaBoxes .otp-box')[0].focus();
     }
+  }
+
+  function setTwoFaStatus(enabled) {
+    const textEl = document.getElementById('twoFaStatusText');
+    const iconEl = document.getElementById('twoFaStatusIcon');
+    const inner  = document.getElementById('twoFaStatusInner');
+    textEl.textContent = enabled ? 'Two-Factor Authentication is enabled' : 'Two-Factor Authentication is disabled';
+    inner.style.color  = enabled ? 'var(--teal)' : '';
+    iconEl.innerHTML   = enabled
+      ? '<polyline points="20 6 9 17 4 12"/>'
+      : '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>';
   }
 
   // OTP auto-advance for 2FA modal
@@ -640,30 +914,70 @@
   });
 
   // ── Notifications ─────────────────────────────────────────────────────────
+  function updateToggleLabel(input, labelId) {
+    const lbl = document.getElementById(labelId);
+    if (!lbl) return;
+    lbl.textContent = input.checked ? 'On' : 'Off';
+    lbl.className = 'toggle-state' + (input.checked ? ' on' : '');
+  }
+
+  function updateChannelDependency() {
+    const anyOn = ['notifEmail','notifSms','notifPush'].some(id => document.getElementById(id)?.checked);
+    ['rowNewListing','rowPriceDrop','rowMessages','rowPromo'].forEach(id => {
+      const row = document.getElementById(id);
+      if (row) row.classList.toggle('dimmed', !anyOn);
+    });
+  }
+
   function saveNotifications() {
-    showToast('Notification preferences saved.');
+    const msg = document.getElementById('notifSavedMsg');
+    msg.classList.add('show');
+    setTimeout(() => msg.classList.remove('show'), 3000);
   }
 
   // ── Account Deletion ──────────────────────────────────────────────────────
-  function startDelete() {
-    document.getElementById('deleteBtn').style.display = 'none';
-    document.getElementById('deleteEmailHint').textContent = '(' + user.email + ')';
-    document.getElementById('deleteConfirmWrap').classList.add('open');
+  function openDeleteModal() {
+    document.getElementById('deleteModal').classList.add('open');
+    document.getElementById('deleteEmailInput').value = '';
+    document.getElementById('deleteEmailError').classList.remove('show');
   }
 
-  function cancelDelete() {
-    document.getElementById('deleteConfirmWrap').classList.remove('open');
-    document.getElementById('deleteConfirmInput').value = '';
-    document.getElementById('deleteBtn').style.display = '';
+  function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.remove('open');
+    document.getElementById('deleteEmailInput').value = '';
+    document.getElementById('deleteEmailError').classList.remove('show');
   }
 
-  function confirmDelete() {
-    const val = document.getElementById('deleteConfirmInput').value.trim();
+  function confirmScheduleDeletion() {
+    const val = document.getElementById('deleteEmailInput').value.trim();
     if (val !== user.email) {
-      showToast('Email does not match. Please try again.', 'error'); return;
+      document.getElementById('deleteEmailError').classList.add('show'); return;
     }
-    sessionStorage.removeItem('homesure_user');
-    window.location.href = '../../auth/signin.html';
+
+    // Schedule deletion — 30 days from now
+    const deletionDate = new Date();
+    deletionDate.setDate(deletionDate.getDate() + 30);
+    const formatted = deletionDate.toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
+    const daysLeft = 30;
+
+    closeDeleteModal();
+
+    // Show pending banner, hide warning + button
+    document.getElementById('deletionWarning').style.display = 'none';
+    document.getElementById('deleteBtn').style.display = 'none';
+    const banner = document.getElementById('pendingBanner');
+    banner.style.display = 'flex';
+    document.getElementById('pendingBannerSub').textContent =
+      `Scheduled for ${formatted} — you have ${daysLeft} days to cancel.`;
+
+    showToast('Account scheduled for deletion in 30 days.');
+  }
+
+  function cancelScheduledDeletion() {
+    document.getElementById('pendingBanner').style.display = 'none';
+    document.getElementById('deletionWarning').style.display = 'flex';
+    document.getElementById('deleteBtn').style.display = '';
+    showToast('Account deletion cancelled. Your account is safe.');
   }
 </script>
 </body>
