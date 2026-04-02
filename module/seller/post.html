@@ -23,10 +23,6 @@
     .content::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #1fc8b4, #0a5e53); border-radius: 99px; }
     .content::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #24e0ca, #1a9e8f); }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
     @keyframes expandIn {
       from { opacity: 0; max-height: 0; transform: translateY(-6px); }
       to   { opacity: 1; max-height: 600px; transform: translateY(0); }
@@ -37,7 +33,7 @@
     }
 
     /* ── Page header ── */
-    .page-header { margin-bottom: 26px; animation: fadeUp 0.35s ease both; }
+    .page-header { margin-bottom: 26px; }
     .page-title  { font-size: 22px; font-weight: 800; }
     .page-sub    { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
 
@@ -48,7 +44,6 @@
     .section-card {
       background: var(--card); border: 1px solid var(--border);
       border-radius: var(--radius); overflow: hidden;
-      animation: fadeUp 0.4s ease both;
     }
     .section-card.teal-card { border-color: var(--teal-mid); }
     .section-header {
@@ -126,7 +121,7 @@
     .pill-toggle:hover { border-color: var(--teal-mid); color: var(--teal); }
     .pill-toggle.active {
       background: var(--teal); border-color: var(--teal);
-      color: #fff; box-shadow: 0 3px 12px rgba(0,201,167,0.3);
+      color: #06201a;
     }
 
     /* ── Toggle switch (Negotiable) ── */
@@ -258,13 +253,13 @@
     /* ── Submit actions ── */
     .submit-actions { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
     .btn-primary {
-      background: linear-gradient(135deg, #00c9a7 0%, #00a084 100%);
+      background: #00c9a7;
       border: none; border-radius: 10px; padding: 13px 28px;
-      color: #fff; font-family: inherit; font-size: 14px; font-weight: 700;
-      cursor: pointer; transition: opacity 0.2s, box-shadow 0.2s, transform 0.18s;
-      box-shadow: 0 4px 16px rgba(0,201,167,0.25); flex: 1; min-width: 160px;
+      color: #06201a; font-family: inherit; font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s, transform 0.18s;
+      flex: 1; min-width: 160px;
     }
-    .btn-primary:hover { opacity: 0.88; box-shadow: 0 4px 20px rgba(0,201,167,0.35); transform: translateY(-1px); }
+    .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
     .btn-ghost {
       background: transparent; border: 1px solid var(--border);
       border-radius: 10px; padding: 13px 24px;
@@ -279,7 +274,6 @@
       background: var(--card); border: 1px solid var(--border);
       border-radius: var(--radius); padding: 48px 32px;
       display: flex; flex-direction: column; align-items: center; text-align: center; gap: 18px;
-      animation: fadeUp 0.4s ease 0.05s both;
     }
     .gate-icon {
       width: 72px; height: 72px; border-radius: 50%;
@@ -291,11 +285,10 @@
     .gate-desc  { font-size: 13.5px; color: var(--muted2); line-height: 1.6; max-width: 400px; }
     .gate-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 6px; }
     .gate-btn-primary {
-      background: linear-gradient(135deg, #00c9a7 0%, #00a084 100%);
+      background: #00c9a7;
       border: none; border-radius: 10px; padding: 12px 26px;
-      color: #fff; font-family: inherit; font-size: 14px; font-weight: 700;
+      color: #06201a; font-family: inherit; font-size: 14px; font-weight: 700;
       cursor: pointer; transition: opacity 0.2s, transform 0.18s;
-      box-shadow: 0 4px 16px rgba(0,201,167,0.25);
       text-decoration: none; display: inline-block;
     }
     .gate-btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
@@ -349,11 +342,10 @@
     .success-modal-sub   { font-size: 13.5px; color: var(--muted2); line-height: 1.6; max-width: 360px; }
     .success-modal-btn {
       margin-top: 8px; width: 100%;
-      background: linear-gradient(135deg, #00c9a7 0%, #00a084 100%);
+      background: #00c9a7;
       border: none; border-radius: 11px; padding: 14px 24px;
-      color: #fff; font-family: inherit; font-size: 14px; font-weight: 700;
+      color: #06201a; font-family: inherit; font-size: 14px; font-weight: 700;
       cursor: pointer; transition: opacity 0.2s, transform 0.18s;
-      box-shadow: 0 4px 18px rgba(0,201,167,0.28);
       text-decoration: none; display: block;
     }
     .success-modal-btn:hover { opacity: 0.88; transform: translateY(-1px); }
@@ -390,8 +382,7 @@
     [data-theme="light"] .toast { box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
     [data-theme="light"] .success-modal { box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
     [data-theme="light"] .btn-primary {
-      background: linear-gradient(135deg, #00c9a7 0%, rgba(0,130,106,0.85) 100%);
-      box-shadow: 0 3px 14px rgba(0,201,167,0.3);
+      background: #00c9a7;
     }
     [data-theme="light"] .content::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #1fc8b4, #0a5e53); }
     [data-theme="light"] .label-optional { background: rgba(0,0,0,0.07); }
@@ -433,7 +424,7 @@
         <div class="settings-col">
 
           <!-- ── SECTION 1: Listing Details ── -->
-          <div class="section-card" style="animation-delay:0.05s">
+          <div class="section-card">
             <div class="section-header">
               <div class="section-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -548,7 +539,7 @@
           </div>
 
           <!-- ── SECTION 2: Property Description ── -->
-          <div class="section-card" style="animation-delay:0.1s">
+          <div class="section-card">
             <div class="section-header">
               <div class="section-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
@@ -577,7 +568,7 @@
           </div>
 
           <!-- ── SECTION 3: Property Photos ── -->
-          <div class="section-card" style="animation-delay:0.15s">
+          <div class="section-card">
             <div class="section-header">
               <div class="section-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
@@ -607,7 +598,7 @@
           </div>
 
           <!-- ── SECTION 4: Listing Verification Documents ── -->
-          <div class="section-card teal-card" style="animation-delay:0.2s">
+          <div class="section-card teal-card">
             <div class="section-header">
               <div class="section-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>

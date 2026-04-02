@@ -21,15 +21,10 @@
     .content::-webkit-scrollbar-track { background: transparent; }
     .content::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #1fc8b4, #0a5e53); border-radius: 99px; }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
     /* ── Page header ── */
     .page-header {
       display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 20px; animation: fadeUp 0.3s ease both;
+      margin-bottom: 20px;
     }
     .page-title { font-size: 22px; font-weight: 800; }
     .mark-all-btn {
@@ -44,7 +39,6 @@
     /* ── Tabs ── */
     .notif-tabs {
       display: flex; gap: 4px; margin-bottom: 16px;
-      animation: fadeUp 0.3s ease 0.05s both;
     }
     .notif-tab {
       padding: 7px 18px; border-radius: 20px;
@@ -52,7 +46,7 @@
       cursor: pointer; border: none; background: transparent; color: var(--muted2);
       transition: background 0.15s, color 0.15s;
     }
-    .notif-tab.active { background: var(--teal); color: #fff; }
+    .notif-tab.active { background: var(--teal); color: #06201a; }
     .notif-tab:not(.active):hover { background: rgba(255,255,255,0.07); color: var(--text); }
 
     /* ── Notifications list ── */
@@ -60,7 +54,6 @@
       display: flex; flex-direction: column;
       background: var(--card); border: 1px solid var(--border);
       border-radius: var(--radius); overflow: hidden;
-      animation: fadeUp 0.3s ease 0.08s both;
     }
 
     .notif-section-label {

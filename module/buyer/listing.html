@@ -142,7 +142,7 @@
       }
       .badge-rent {
         background: #00c9a7;
-        color: #06201a;
+        color: #ffffff;
       }
       .badge-sale {
         background: #3b82f6;
@@ -359,7 +359,7 @@
         align-items: center;
         gap: 7px;
         background: var(--teal);
-        color: #06201a;
+        color: #ffffff;
         border: none;
         border-radius: 9px;
         padding: 9px 17px;
@@ -777,8 +777,7 @@
     <script src="../../components/topbar.js"></script>
     <script>
       const user = getSession();
-      if (!user || user.role !== "buyer")
-        window.location.href = "../../auth/signin.html";
+      if (!user) window.location.href = "../../auth/signin.html";
 
       HomeSureSidebar.init({ activePage: "dashboard" });
       HomeSureTopbar.init({ placeholder: "Search properties..." });

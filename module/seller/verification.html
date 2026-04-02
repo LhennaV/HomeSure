@@ -22,13 +22,8 @@
     .content::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #1fc8b4, #0a5e53); border-radius: 99px; }
     .content::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #24e0ca, #1a9e8f); }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
     /* ── Page header ── */
-    .page-header { margin-bottom: 22px; animation: fadeUp 0.35s ease both; }
+    .page-header { margin-bottom: 22px; }
     .page-title  { font-size: 22px; font-weight: 800; }
     .page-sub    { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
 
@@ -42,7 +37,6 @@
       background: linear-gradient(135deg, var(--teal-faint) 0%, rgba(0,201,167,0.06) 100%);
       border: 1px solid var(--teal-mid);
       border-radius: var(--radius);
-      animation: fadeUp 0.4s ease 0.05s both;
     }
     .banner-icon {
       width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
@@ -60,7 +54,6 @@
       background: linear-gradient(135deg, var(--teal-faint) 0%, rgba(0,201,167,0.06) 100%);
       border: 1px solid var(--teal-mid);
       border-radius: var(--radius);
-      animation: fadeUp 0.4s ease 0.05s both;
     }
     .verified-icon-wrap {
       width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0;
@@ -75,7 +68,6 @@
     .section-card {
       background: var(--card); border: 1px solid var(--border);
       border-radius: var(--radius); overflow: hidden;
-      animation: fadeUp 0.4s ease 0.1s both;
     }
     .section-header {
       padding: 16px 22px; border-bottom: 1px solid var(--border);
@@ -143,13 +135,12 @@
     .submit-wrap { padding: 0 22px 22px; }
     .btn-primary {
       width: 100%; padding: 13px 24px;
-      background: linear-gradient(135deg, #00c9a7 0%, #00a084 100%);
+      background: #00c9a7;
       border: none; border-radius: 10px;
-      color: #fff; font-family: inherit; font-size: 14px; font-weight: 700;
-      cursor: pointer; transition: opacity 0.2s, box-shadow 0.2s;
-      box-shadow: 0 4px 16px rgba(0,201,167,0.25);
+      color: #06201a; font-family: inherit; font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s;
     }
-    .btn-primary:hover:not(:disabled) { opacity: 0.88; box-shadow: 0 4px 20px rgba(0,201,167,0.35); }
+    .btn-primary:hover:not(:disabled) { opacity: 0.88; }
     .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
 
     /* ── Toast ── */
@@ -181,8 +172,7 @@
     [data-theme="light"] .upload-box-icon { background: #f1f5f9; }
     [data-theme="light"] .toast { box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
     [data-theme="light"] .btn-primary {
-      background: linear-gradient(135deg, #00c9a7 0%, rgba(0,130,106,0.75) 100%);
-      box-shadow: 0 3px 14px rgba(0,201,167,0.3);
+      background: #00c9a7;
     }
     [data-theme="light"] .content::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #1fc8b4, #0a5e53); }
   </style>

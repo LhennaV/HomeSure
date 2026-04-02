@@ -26,6 +26,7 @@ const FAKE_USERS = [
     phone: '09191234567', avatar: null, verified: true,
     accountStatus: 'verified', listings: ['prop-001', 'prop-002', 'prop-003', 'prop-006', 'prop-007', 'prop-008'],
     joinedAt: '2025-10-01',
+    verifiedAt: '2025-10-15', verificationExpiry: '2026-04-20',
   },
   {
     id: 'usr-004', role: 'seller',

@@ -9,11 +9,6 @@
   'use strict';
 
   const CSS = `
-    @keyframes hs-topbar-in {
-      from { opacity: 0; transform: translateY(-6px); }
-      to   { opacity: 1; transform: translateY(0);    }
-    }
-
     .hs-topbar {
       display: flex;
       align-items: center;
@@ -22,7 +17,6 @@
       background: #364153;
       border-bottom: 1px solid rgba(0,0,0,0.2);
       gap: 14px;
-      animation: hs-topbar-in 0.35s ease both;
       position: relative;
       z-index: 100;
     }
@@ -178,7 +172,7 @@
       background: transparent; color: rgba(255,255,255,0.45);
       transition: background 0.15s, color 0.15s;
     }
-    .hs-notif-tab.active { background: #00c9a7; color: #fff; }
+    .hs-notif-tab.active { background: #00c9a7; color: #ffffff; }
     .hs-notif-tab:not(.active):hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.8); }
 
     .hs-notif-body { max-height: 320px; overflow-y: auto; }

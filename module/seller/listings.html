@@ -45,7 +45,6 @@
     .page-header {
       display: flex; align-items: flex-start; justify-content: space-between;
       margin-bottom: 18px; gap: 14px;
-      animation: fadeUp 0.35s ease both;
     }
     .page-title { font-size: 20px; font-weight: 800; color: var(--text); line-height: 1.2; }
     .page-sub   { font-size: 12px; color: var(--muted); margin-top: 4px; }
@@ -54,12 +53,12 @@
     .btn-add {
       display: inline-flex; align-items: center; gap: 8px;
       padding: 9px 18px; border-radius: 10px; border: none;
-      background: linear-gradient(135deg, #00c9a7 0%, #00a084 100%);
-      color: #fff; font-family: inherit; font-size: 13px; font-weight: 700;
-      cursor: pointer; transition: opacity 0.2s, box-shadow 0.2s;
-      box-shadow: 0 3px 14px rgba(0,201,167,0.28); white-space: nowrap; flex-shrink: 0;
+      background: #00c9a7;
+      color: #06201a; font-family: inherit; font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s;
+      white-space: nowrap; flex-shrink: 0;
     }
-    .btn-add:hover { opacity: 0.88; box-shadow: 0 4px 18px rgba(0,201,167,0.38); }
+    .btn-add:hover { opacity: 0.88; }
     .btn-add.disabled {
       opacity: 0.4; cursor: not-allowed; pointer-events: none;
     }
@@ -75,7 +74,6 @@
       display: flex; align-items: center; justify-content: space-between; gap: 14px;
       background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.35);
       border-radius: 10px; padding: 14px 16px; margin-bottom: 18px;
-      animation: fadeUp 0.35s ease 0.05s both;
     }
     .warn-left { display: flex; align-items: center; gap: 10px; }
     .warn-left svg { width: 16px; height: 16px; color: #fbbf24; flex-shrink: 0; }
@@ -94,7 +92,6 @@
       display: flex; align-items: center;
       border-bottom: 1px solid var(--border);
       margin-bottom: 18px;
-      animation: fadeUp 0.35s ease 0.1s both;
     }
     .tab {
       padding: 10px 18px; font-size: 13px; font-weight: 600;
@@ -108,7 +105,6 @@
     /* ── Listing List ── */
     .listing-list {
       display: flex; flex-direction: column; gap: 10px;
-      animation: fadeUp 0.35s ease 0.15s both;
     }
 
     /* ── Listing Row Card ── */
@@ -174,44 +170,115 @@
     .btn-edit:hover { border-color: rgba(255,255,255,0.2); color: var(--text); background: rgba(255,255,255,0.04); }
     .btn-edit svg { width: 12px; height: 12px; }
 
-    .btn-delete {
+    .btn-close {
       display: inline-flex; align-items: center; gap: 5px;
       padding: 5px 11px; border-radius: 8px;
-      border: 1px solid var(--danger-mid); background: var(--danger-faint);
-      color: var(--danger); font-family: inherit; font-size: 12px; font-weight: 600;
+      border: 1px solid rgba(251,191,36,0.3); background: rgba(251,191,36,0.08);
+      color: #fbbf24; font-family: inherit; font-size: 12px; font-weight: 600;
       cursor: pointer; transition: background 0.18s, border-color 0.18s;
     }
-    .btn-delete:hover { background: rgba(248,113,113,0.16); border-color: rgba(248,113,113,0.45); }
-    .btn-delete svg { width: 12px; height: 12px; }
+    .btn-close:hover { background: rgba(251,191,36,0.16); border-color: rgba(251,191,36,0.5); }
+    .btn-close svg { width: 12px; height: 12px; }
 
-    /* ── Inline Delete Confirm ── */
-    .delete-confirm {
+    /* ── Inline Close Confirm ── */
+    .close-confirm {
       display: flex; align-items: center; gap: 10px;
       padding: 10px 16px; border-top: 1px solid var(--border);
-      background: rgba(248,113,113,0.05);
+      background: rgba(251,191,36,0.04);
       animation: fadeUp 0.2s ease both;
     }
-    .delete-confirm-text { font-size: 12.5px; color: var(--danger); font-weight: 600; flex: 1; }
-    .btn-confirm-delete {
+    .close-confirm-text { font-size: 12.5px; color: #fbbf24; font-weight: 600; flex: 1; }
+    .btn-confirm-close {
       padding: 5px 13px; border-radius: 8px;
-      border: 1px solid var(--danger-mid); background: var(--danger-faint);
-      color: var(--danger); font-family: inherit; font-size: 12px; font-weight: 700;
+      border: 1px solid rgba(251,191,36,0.35); background: rgba(251,191,36,0.1);
+      color: #fbbf24; font-family: inherit; font-size: 12px; font-weight: 700;
       cursor: pointer; transition: background 0.18s;
     }
-    .btn-confirm-delete:hover { background: rgba(248,113,113,0.2); }
-    .btn-cancel-delete {
+    .btn-confirm-close:hover { background: rgba(251,191,36,0.2); }
+    .btn-cancel-close {
       padding: 5px 13px; border-radius: 8px;
       border: 1px solid var(--border); background: transparent;
       color: var(--muted2); font-family: inherit; font-size: 12px; font-weight: 600;
       cursor: pointer; transition: background 0.18s, border-color 0.18s;
     }
-    .btn-cancel-delete:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.18); }
+    .btn-cancel-close:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.18); }
+
+    /* ── Edit Modal ── */
+    .modal-backdrop {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+      align-items: center; justify-content: center;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 18px; padding: 28px; width: calc(100% - 40px); max-width: 460px;
+      animation: fadeUp 0.3s ease both;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    }
+    .modal-header {
+      display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px;
+    }
+    .modal-title { font-size: 16px; font-weight: 800; color: var(--text); }
+    .modal-sub   { font-size: 12px; color: var(--muted); margin-top: 3px; }
+    .modal-close {
+      width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border);
+      background: transparent; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--muted); transition: color 0.2s, background 0.2s; flex-shrink: 0;
+    }
+    .modal-close:hover { background: var(--card2); color: var(--text); }
+    .modal-close svg { width: 14px; height: 14px; }
+    .modal-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .modal-field label { font-size: 11px; font-weight: 700; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.05em; }
+    .modal-field input, .modal-field select {
+      width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border);
+      border-radius: 9px; padding: 10px 13px; color: var(--text);
+      font-family: inherit; font-size: 13px; outline: none;
+      transition: border-color 0.2s;
+    }
+    .modal-field input:focus, .modal-field select:focus { border-color: rgba(0,201,167,0.5); }
+    .modal-field select option { background: #1e293b; }
+    .modal-field input::placeholder { color: var(--muted); }
+    .modal-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .modal-btn-primary {
+      flex: 1; padding: 10px; border-radius: 9px; border: none;
+      background: var(--teal); color: #06201a;
+      font-family: inherit; font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: opacity 0.18s;
+    }
+    .modal-btn-primary:hover { opacity: 0.88; }
+    .modal-btn-ghost {
+      flex: 1; padding: 10px; border-radius: 9px;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--muted2); font-family: inherit; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: border-color 0.2s, color 0.2s;
+    }
+    .modal-btn-ghost:hover { border-color: var(--muted2); color: var(--text); }
+    .modal-divider {
+      border: none; border-top: 1px solid var(--border); margin: 20px 0 16px;
+    }
+    .modal-delete-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 13px 15px; border-radius: 10px;
+      background: var(--danger-faint); border: 1px solid var(--danger-mid);
+    }
+    .modal-delete-info { font-size: 12.5px; color: var(--muted2); line-height: 1.4; }
+    .modal-delete-info strong { color: var(--danger); display: block; margin-bottom: 2px; font-size: 13px; }
+    .modal-btn-danger {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border-radius: 8px; flex-shrink: 0;
+      border: 1.5px solid var(--danger); background: transparent;
+      color: var(--danger); font-family: inherit; font-size: 12px; font-weight: 700;
+      cursor: pointer; transition: background 0.2s, color 0.2s;
+    }
+    .modal-btn-danger svg { width: 13px; height: 13px; }
+    .modal-btn-danger:hover { background: var(--danger); color: #fff; }
 
     /* ── Empty State ── */
     .empty-state {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       padding: 60px 24px; gap: 14px; text-align: center;
-      animation: fadeUp 0.35s ease 0.15s both;
     }
     .empty-icon {
       width: 56px; height: 56px; border-radius: 50%;
@@ -224,10 +291,9 @@
     .btn-empty-add {
       display: inline-flex; align-items: center; gap: 7px;
       padding: 9px 18px; border-radius: 10px; border: none;
-      background: linear-gradient(135deg, #00c9a7 0%, #00a084 100%);
-      color: #fff; font-family: inherit; font-size: 13px; font-weight: 700;
+      background: #00c9a7;
+      color: #06201a; font-family: inherit; font-size: 13px; font-weight: 700;
       cursor: pointer; transition: opacity 0.2s; margin-top: 4px;
-      box-shadow: 0 3px 14px rgba(0,201,167,0.28);
     }
     .btn-empty-add:hover { opacity: 0.88; }
 
@@ -247,15 +313,19 @@
     [data-theme="light"] .listing-card:hover { border-color: rgba(0,0,0,0.15); }
     [data-theme="light"] .btn-edit:hover { background: rgba(0,0,0,0.04); }
     [data-theme="light"] .btn-add {
-      background: linear-gradient(135deg, #00c9a7 0%, rgba(0,130,106,0.85) 100%);
+      background: #00c9a7;
     }
     [data-theme="light"] .btn-empty-add {
-      background: linear-gradient(135deg, #00c9a7 0%, rgba(0,130,106,0.85) 100%);
+      background: #00c9a7;
     }
     [data-theme="light"] .content::-webkit-scrollbar-thumb {
       background: linear-gradient(180deg, #1fc8b4, #0a5e53);
     }
-    [data-theme="light"] .delete-confirm { background: rgba(248,113,113,0.04); }
+    [data-theme="light"] .close-confirm { background: rgba(251,191,36,0.04); }
+    [data-theme="light"] .modal { box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+    [data-theme="light"] .modal-field input,
+    [data-theme="light"] .modal-field select { background: rgba(0,0,0,0.04); }
+    [data-theme="light"] .modal-field select option { background: #fff; color: #1e293b; }
     [data-theme="light"] .empty-icon { background: #f1f5f9; }
     [data-theme="light"] .pill-sale { background: rgba(99,102,241,0.08); color: #6366f1; border-color: rgba(99,102,241,0.2); }
   </style>
@@ -313,6 +383,61 @@
   </div>
 </div>
 
+<!-- Edit Listing Modal -->
+<div class="modal-backdrop" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Edit Listing</div>
+        <div class="modal-sub">Update your listing details</div>
+      </div>
+      <button class="modal-close" onclick="closeEditModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-field">
+      <label>Listing Title</label>
+      <input type="text" id="editTitle" placeholder="Listing title" />
+    </div>
+    <div class="modal-2col">
+      <div class="modal-field">
+        <label>Price (₱)</label>
+        <input type="number" id="editPrice" placeholder="0" />
+      </div>
+      <div class="modal-field">
+        <label>Listing Type</label>
+        <select id="editType">
+          <option value="sale">For Sale</option>
+          <option value="rent">For Rent</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-field">
+      <label>Address</label>
+      <input type="text" id="editAddress" placeholder="Full address" />
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-btn-ghost" onclick="closeEditModal()">Cancel</button>
+      <button class="modal-btn-primary" onclick="saveEdit()">Save Changes</button>
+    </div>
+
+    <hr class="modal-divider" />
+
+    <div class="modal-delete-row">
+      <div class="modal-delete-info">
+        <strong>Delete Listing</strong>
+        <span id="editDeleteName" style="font-size:12px;color:var(--muted2)"></span> — this cannot be undone.
+      </div>
+      <button class="modal-btn-danger" onclick="deleteFromEdit()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        Delete
+      </button>
+    </div>
+  </div>
+</div>
+
 <script src="../../assets/js/fake-data.js"></script>
 <script src="../../components/sidebar.js"></script>
 <script src="../../components/topbar.js"></script>
@@ -340,8 +465,8 @@
 
   // ── Buckets ─────────────────────────────────────────────────────────────────
   const getActive = () => myListings.filter(l => l.status === 'approved');
-  const getDraft  = () => myListings.filter(l => l.status === 'pending');
-  const getClosed = () => myListings.filter(l => l.status === 'rejected');
+  const getDraft  = () => myListings.filter(l => l.status === 'pending' || l.status === 'rejected');
+  const getClosed = () => myListings.filter(l => l.status === 'closed');
 
   // ── Formatting helpers ──────────────────────────────────────────────────────
   function formatPrice(listing) {
@@ -395,22 +520,19 @@
                 </svg>
                 Edit
               </button>
-              <button class="btn-delete" onclick="promptDelete('${listing.id}')">
+              <button class="btn-close" onclick="promptClose('${listing.id}')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="3 6 5 6 21 6"/>
-                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                  <path d="M10 11v6"/><path d="M14 11v6"/>
-                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                  <path d="M18 6 6 18"/><path d="M6 6l12 12"/>
                 </svg>
-                Delete
+                Close Listing
               </button>
             </div>
           </div>
         </div>
-        <div class="delete-confirm" id="confirm-${listing.id}" style="display:none">
-          <span class="delete-confirm-text">Are you sure? This cannot be undone.</span>
-          <button class="btn-confirm-delete" onclick="confirmDelete('${listing.id}')">Confirm</button>
-          <button class="btn-cancel-delete"  onclick="cancelDelete('${listing.id}')">Cancel</button>
+        <div class="close-confirm" id="confirm-${listing.id}" style="display:none">
+          <span class="close-confirm-text">Move this listing to Closed?</span>
+          <button class="btn-confirm-close" onclick="confirmClose('${listing.id}')">Confirm</button>
+          <button class="btn-cancel-close"  onclick="cancelClose('${listing.id}')">Cancel</button>
         </div>
       </div>`;
   }
@@ -446,8 +568,8 @@
             <polyline points="12 6 12 12 16 14"/>
           </svg>
         </div>
-        <div class="empty-title">No listings pending review</div>
-        <div class="empty-sub">Listings submitted for review will show up here while awaiting approval.</div>
+        <div class="empty-title">No draft listings</div>
+        <div class="empty-sub">Listings pending review or needing revisions will appear here.</div>
       </div>`;
     }
     return `<div class="empty-state">
@@ -457,8 +579,8 @@
           <line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
         </svg>
       </div>
-      <div class="empty-title">No rejected listings</div>
-      <div class="empty-sub">Listings that were rejected by admins will appear here.</div>
+      <div class="empty-title">No closed listings</div>
+      <div class="empty-sub">Listings you've manually closed will appear here.</div>
     </div>`;
   }
 
@@ -502,42 +624,81 @@
   // ── Add listing ─────────────────────────────────────────────────────────────
   function handleAddListing() {
     if (!isVerified) return;
-    // Wire to add-listing page when ready
-    alert('Add listing — coming soon!');
+    window.location.href = 'post.html';
   }
 
-  // ── Edit ────────────────────────────────────────────────────────────────────
+  // ── Edit modal ───────────────────────────────────────────────────────────────
+  let editingId = null;
+
   function handleEdit(id) {
-    alert('Edit listing ' + id + ' — coming soon!');
+    editingId = id;
+    const listing = myListings.find(l => l.id === id);
+    if (!listing) return;
+    document.getElementById('editTitle').value   = listing.title;
+    document.getElementById('editPrice').value   = listing.price;
+    document.getElementById('editAddress').value = listing.address;
+    document.getElementById('editType').value    = listing.listingFor;
+    document.getElementById('editDeleteName').textContent = listing.title;
+    document.getElementById('editModal').classList.add('open');
   }
 
-  // ── Delete: prompt ──────────────────────────────────────────────────────────
-  function promptDelete(id) {
-    // Collapse any other open confirm rows first
-    document.querySelectorAll('.delete-confirm').forEach(el => {
+  function closeEditModal() {
+    document.getElementById('editModal').classList.remove('open');
+    editingId = null;
+  }
+
+  function saveEdit() {
+    if (!editingId) return;
+    const listing = myListings.find(l => l.id === editingId);
+    if (!listing) return;
+    listing.title      = document.getElementById('editTitle').value.trim() || listing.title;
+    listing.price      = parseFloat(document.getElementById('editPrice').value) || listing.price;
+    listing.address    = document.getElementById('editAddress').value.trim() || listing.address;
+    listing.listingFor = document.getElementById('editType').value;
+    closeEditModal();
+    renderAll();
+  }
+
+  function deleteFromEdit() {
+    if (!editingId) return;
+    closeEditModal();
+    const card = document.getElementById('card-' + editingId);
+    if (!card) return;
+    card.classList.add('removing');
+    card.addEventListener('animationend', () => {
+      myListings = myListings.filter(l => l.id !== editingId);
+      editingId = null;
+      renderAll();
+    }, { once: true });
+  }
+
+  // ── Close Listing: prompt ────────────────────────────────────────────────────
+  function promptClose(id) {
+    document.querySelectorAll('.close-confirm').forEach(el => {
       if (el.id !== 'confirm-' + id) el.style.display = 'none';
     });
     const row = document.getElementById('confirm-' + id);
     if (row) row.style.display = 'flex';
   }
 
-  function cancelDelete(id) {
+  function cancelClose(id) {
     const row = document.getElementById('confirm-' + id);
     if (row) row.style.display = 'none';
   }
 
-  // ── Delete: confirm with fade-out ───────────────────────────────────────────
-  function confirmDelete(id) {
+  // ── Close Listing: move to Closed tab ────────────────────────────────────────
+  function confirmClose(id) {
+    const listing = myListings.find(l => l.id === id);
+    if (!listing) return;
+    listing.status = 'closed';
     const card = document.getElementById('card-' + id);
-    if (!card) return;
-    card.classList.add('removing');
-    card.addEventListener('animationend', () => {
-      myListings = myListings.filter(l => l.id !== id);
-      updateCounts();
-      const bucketMap = { active: getActive, draft: getDraft, closed: getClosed };
-      const panelMap  = { active: 'listActive', draft: 'listDraft', closed: 'listClosed' };
-      renderPanel(currentTab, bucketMap[currentTab](), panelMap[currentTab]);
-    }, { once: true });
+    if (card) {
+      card.classList.add('removing');
+      card.addEventListener('animationend', () => {
+        renderAll();
+        switchTab('closed');
+      }, { once: true });
+    }
   }
 </script>
 </body>

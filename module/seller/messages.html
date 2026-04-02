@@ -61,18 +61,12 @@
       background: linear-gradient(180deg, #24e0ca, #1a9e8f);
     }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(12px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
     /* ── Page header ── */
     .page-header-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-bottom: 18px;
-      animation: fadeUp 0.35s ease both;
     }
     .page-title { font-size: 22px; font-weight: 800; color: var(--text); }
     .page-sub   { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
@@ -87,8 +81,6 @@
       border-radius: var(--radius);
       padding: 14px 18px;
       margin-bottom: 22px;
-      animation: fadeUp 0.38s ease both;
-      animation-delay: 0.05s;
     }
     .amber-banner svg { flex-shrink: 0; margin-top: 1px; }
     .amber-banner p { font-size: 13.5px; color: #fbbf24; line-height: 1.55; }
@@ -101,8 +93,6 @@
       justify-content: center;
       flex: 1;
       gap: 12px;
-      animation: fadeUp 0.42s ease both;
-      animation-delay: 0.1s;
       padding: 40px 20px;
       text-align: center;
     }
@@ -145,8 +135,6 @@
       border-radius: var(--radius);
       overflow: hidden;
       min-height: 0;
-      animation: fadeUp 0.38s ease both;
-      animation-delay: 0.05s;
     }
 
     /* LEFT: conversation list */

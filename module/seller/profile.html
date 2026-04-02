@@ -46,11 +46,6 @@
       background: linear-gradient(180deg, #24e0ca, #1a9e8f);
     }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
     /* ── Profile card ─────────────────────────────────────────── */
     .profile-card {
       background: var(--card);
@@ -61,14 +56,13 @@
       align-items: center;
       gap: 22px;
       margin-bottom: 26px;
-      animation: fadeUp 0.35s ease both;
     }
 
     .avatar {
       width: 56px;
       height: 56px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #00c9a7, #0a7c6a);
+      background: #00c9a7;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -147,7 +141,6 @@
       align-items: baseline;
       gap: 10px;
       margin-bottom: 16px;
-      animation: fadeUp 0.4s ease 0.1s both;
     }
 
     .section-title {
@@ -166,7 +159,6 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 16px;
-      animation: fadeUp 0.4s ease 0.18s both;
     }
 
     /* ── Property card ────────────────────────────────────────── */
@@ -176,7 +168,6 @@
       border-radius: var(--radius);
       overflow: hidden;
       cursor: pointer;
-      animation: fadeUp 0.4s ease both;
       transition: transform 0.18s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
@@ -261,7 +252,6 @@
       border-radius: var(--radius);
       padding: 64px 32px;
       text-align: center;
-      animation: fadeUp 0.4s ease 0.18s both;
     }
 
     .empty-icon {
@@ -430,7 +420,7 @@
       const priceSub  = isRent ? '<span class="prop-price-per"> / month</span>' : '';
 
       return `
-        <div class="prop-card" style="animation-delay:${0.04 + i * 0.05}s"
+        <div class="prop-card"
              onclick="window.location.href='listing.html?id=${l.id}'">
           <div class="prop-img-wrap">
             <img src="${l.images[0]}" alt="${l.title}" loading="lazy" />
