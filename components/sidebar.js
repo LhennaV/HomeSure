@@ -31,33 +31,26 @@
   // ── Nav configs per role ─────────────────────────────────────────────────────
   const NAV = {
     buyer: [
-      { id: 'dashboard',     label: 'Dashboard',       icon: 'grid'    },
-      { id: 'saved',         label: 'Saved Listings',  icon: 'heart'   },
-      { id: 'messages',      label: 'Messages',        icon: 'message' },
-      { id: 'notifications', label: 'Notifications',   icon: 'bell'    },
-      { id: 'profile',       label: 'Profile',         icon: 'user'    },
-      { id: 'settings',      label: 'Settings',        icon: 'settings'},
+      { id: 'dashboard', label: 'Dashboard',      icon: 'grid'    },
+      { id: 'saved',     label: 'Saved Listings', icon: 'heart'   },
+      { id: 'messages',  label: 'Messages',       icon: 'message' },
     ],
     seller: [
       { id: 'dashboard', label: 'Dashboard',      icon: 'grid'    },
       { id: 'listings',  label: 'My Listings',    icon: 'home'    },
       { id: 'messages',  label: 'Messages',       icon: 'message' },
-      { id: 'profile',   label: 'Profile',        icon: 'user'    },
-      { id: 'settings',  label: 'Settings',       icon: 'settings'},
     ],
     admin: [
       { id: 'dashboard', label: 'Dashboard',      icon: 'grid'    },
       { id: 'approvals', label: 'Approvals',      icon: 'check'   },
       { id: 'users',     label: 'Users',          icon: 'users'   },
       { id: 'reports',   label: 'Reports',        icon: 'flag'    },
-      { id: 'settings',  label: 'Settings',       icon: 'settings'},
     ],
     superadmin: [
       { id: 'dashboard', label: 'Dashboard',      icon: 'grid'    },
       { id: 'admins',    label: 'Admin Accounts', icon: 'shield'  },
       { id: 'users',     label: 'All Users',      icon: 'users'   },
       { id: 'reports',   label: 'System Reports', icon: 'chart'   },
-      { id: 'settings',  label: 'Settings',       icon: 'settings'},
     ],
   };
 
@@ -324,11 +317,6 @@
             <span class="hs-pill-thumb ${isDark ? 'dark-mode' : 'light-mode'}"></span>
           </div>
         </div>
-
-        <button class="hs-logout-btn" id="hsLogoutBtn">
-          ${IC.logout}
-          <span>Logout</span>
-        </button>
       </div>
     `;
   }
@@ -360,10 +348,10 @@
 
     // Nav routing
     const NAV_ROUTES = {
-      buyer:      { dashboard: 'buyer.html', saved: 'saved.html', messages: 'messages.html', notifications: 'notifications.html', profile: 'profile.html', settings: 'settings.html' },
-      seller:     { dashboard: 'seller.html', listings: 'listings.html', messages: 'messages.html', profile: 'profile.html', settings: 'settings.html' },
-      admin:      { dashboard: 'admin.html', approvals: 'approvals.html', users: 'users.html', reports: 'reports.html', settings: 'settings.html' },
-      superadmin: { dashboard: 'super-admin.html', admins: 'admins.html', users: 'users.html', reports: 'reports.html', settings: 'settings.html' },
+      buyer:      { dashboard: 'buyer.html', saved: 'saved.html', messages: 'messages.html' },
+      seller:     { dashboard: 'seller.html', listings: 'listings.html', messages: 'messages.html' },
+      admin:      { dashboard: 'admin.html', approvals: 'approvals.html', users: 'users.html', reports: 'reports.html' },
+      superadmin: { dashboard: 'super-admin.html', admins: 'admins.html', users: 'users.html', reports: 'reports.html' },
     };
     const sessionUser = typeof getSession === 'function' ? getSession() : null;
     const navRole = sessionUser ? sessionUser.role : 'buyer';
@@ -376,19 +364,6 @@
       });
     });
 
-    // Logout
-    const logoutBtn = el.querySelector('#hsLogoutBtn');
-    if (logoutBtn) {
-      logoutBtn.addEventListener('click', () => {
-        if (typeof clearSession === 'function') clearSession();
-        const p = window.location.pathname;
-        let path;
-        if (p.includes('/module/'))    path = '../../auth/signin.html';
-        else if (p.includes('/auth/')) path = '../auth/signin.html';
-        else                           path = 'auth/signin.html';
-        window.location.href = path;
-      });
-    }
   }
 
   // ── Public API ───────────────────────────────────────────────────────────────

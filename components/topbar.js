@@ -18,7 +18,7 @@
       border-bottom: 1px solid rgba(0,0,0,0.2);
       gap: 14px;
       position: relative;
-      z-index: 100;
+      z-index: 200;
     }
 
     /* ── Search ── */
@@ -77,24 +77,6 @@
       gap: 10px;
     }
 
-    .hs-topbar-avatar {
-      width: 36px; height: 36px;
-      border-radius: 50%;
-      background: rgba(0,201,167,0.15);
-      color: #00c9a7;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: 700;
-      cursor: pointer;
-      border: 2px solid rgba(0,201,167,0.4);
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      transition: border-color 0.2s, transform 0.18s;
-      user-select: none;
-    }
-    .hs-topbar-avatar:hover {
-      border-color: #00c9a7;
-      transform: scale(1.07);
-    }
-
     /* ── Notification bell ── */
     .hs-notif-btn {
       position: relative;
@@ -138,14 +120,14 @@
     }
     .hs-notif-panel {
       display: none; position: absolute; top: calc(100% + 10px); right: 0; z-index: 9999;
-      width: 320px; background: #253347; border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+      width: 330px; background: #253347; border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px; box-shadow: 0 16px 48px rgba(0,0,0,0.5);
       overflow: hidden;
-      animation: hs-notif-panel-in 0.18s ease both;
+      animation: hs-panel-in 0.18s ease both;
     }
-    @keyframes hs-notif-panel-in {
-      from { opacity: 0; transform: translateY(-6px); }
-      to   { opacity: 1; transform: translateY(0); }
+    @keyframes hs-panel-in {
+      from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
     }
     .hs-notif-panel.open { display: block; }
 
@@ -154,14 +136,13 @@
       padding: 14px 16px 10px;
     }
     .hs-notif-title { font-size: 15px; font-weight: 800; color: #f1f5f9; font-family: 'Plus Jakarta Sans', sans-serif; }
-    .hs-notif-more {
-      width: 28px; height: 28px; border-radius: 8px; border: none;
-      background: transparent; cursor: pointer; color: rgba(255,255,255,0.45);
-      display: flex; align-items: center; justify-content: center;
-      transition: background 0.15s, color 0.15s;
+    .hs-notif-mark-read {
+      font-size: 11.5px; font-weight: 600; color: #00c9a7;
+      background: none; border: none; cursor: pointer;
+      font-family: 'Plus Jakarta Sans', sans-serif; padding: 0;
+      transition: opacity 0.15s;
     }
-    .hs-notif-more:hover { background: rgba(255,255,255,0.08); color: #f1f5f9; }
-    .hs-notif-more svg { width: 16px; height: 16px; }
+    .hs-notif-mark-read:hover { opacity: 0.7; }
 
     .hs-notif-tabs {
       display: flex; gap: 4px; padding: 0 16px 10px;
@@ -175,22 +156,16 @@
     .hs-notif-tab.active { background: #00c9a7; color: #ffffff; }
     .hs-notif-tab:not(.active):hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.8); }
 
-    .hs-notif-body { max-height: 320px; overflow-y: auto; }
+    .hs-notif-body { max-height: 300px; overflow-y: auto; }
     .hs-notif-body::-webkit-scrollbar { width: 3px; }
     .hs-notif-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
 
     .hs-notif-section-label {
-      display: flex; align-items: center; justify-content: space-between;
       padding: 8px 16px 4px;
       font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.35);
       text-transform: uppercase; letter-spacing: 0.06em;
       font-family: 'Plus Jakarta Sans', sans-serif;
     }
-    .hs-notif-see-all {
-      font-size: 11.5px; font-weight: 600; color: #00c9a7;
-      cursor: pointer; text-transform: none; letter-spacing: 0;
-    }
-    .hs-notif-see-all:hover { text-decoration: underline; }
 
     .hs-notif-item {
       display: flex; align-items: flex-start; gap: 11px;
@@ -210,9 +185,7 @@
       font-size: 13px; font-weight: 700; color: #00c9a7;
       font-family: 'Plus Jakarta Sans', sans-serif;
     }
-    .hs-notif-avatar.system {
-      background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.5);
-    }
+    .hs-notif-avatar.system { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.5); }
     .hs-notif-avatar svg { width: 16px; height: 16px; }
     .hs-notif-content { flex: 1; min-width: 0; }
     .hs-notif-msg {
@@ -224,20 +197,188 @@
       font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 3px;
       font-family: 'Plus Jakarta Sans', sans-serif;
     }
-
     .hs-notif-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 2px 0; }
 
     .hs-notif-footer {
       padding: 10px 16px 14px;
+      border-top: 1px solid rgba(255,255,255,0.06);
     }
-    .hs-notif-prev-btn {
+    .hs-notif-see-all-btn {
       width: 100%; padding: 10px; border-radius: 9px;
-      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
-      color: rgba(255,255,255,0.55); font-size: 12.5px; font-weight: 600;
+      background: rgba(0,201,167,0.1); border: 1px solid rgba(0,201,167,0.2);
+      color: #00c9a7; font-size: 13px; font-weight: 700;
+      font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .hs-notif-see-all-btn:hover { background: rgba(0,201,167,0.18); border-color: rgba(0,201,167,0.4); }
+    .hs-notif-see-all-btn svg { width: 14px; height: 14px; }
+
+    /* ── Profile dropdown ── */
+    .hs-profile-wrap {
+      position: relative; flex-shrink: 0;
+    }
+    .hs-topbar-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(0,201,167,0.15);
+      color: #00c9a7;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+      cursor: pointer;
+      border: 2px solid rgba(0,201,167,0.4);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: border-color 0.2s, transform 0.18s;
+      user-select: none;
+    }
+    .hs-topbar-avatar:hover {
+      border-color: #00c9a7;
+      transform: scale(1.07);
+    }
+
+    .hs-profile-dropdown {
+      display: none; position: absolute; top: calc(100% + 10px); right: 0; z-index: 9999;
+      width: 220px; background: #253347; border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px; box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+      overflow: hidden;
+      animation: hs-panel-in 0.18s ease both;
+    }
+    .hs-profile-dropdown.open { display: block; }
+
+    .hs-profile-head {
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .hs-profile-head-name {
+      font-size: 13.5px; font-weight: 700; color: #f1f5f9;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .hs-profile-head-role {
+      font-size: 11px; color: #00c9a7; font-weight: 600; margin-top: 2px;
+      font-family: 'Plus Jakarta Sans', sans-serif; text-transform: capitalize;
+    }
+
+    .hs-profile-menu { padding: 6px 0; }
+    .hs-profile-menu-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 16px; cursor: pointer;
+      font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.7);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      border: none; background: none; width: 100%; text-align: left;
+      transition: background 0.15s, color 0.15s;
+    }
+    .hs-profile-menu-item svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .hs-profile-menu-item:hover { background: rgba(255,255,255,0.06); color: #f1f5f9; }
+    .hs-profile-menu-item.danger { color: rgba(248,113,113,0.8); }
+    .hs-profile-menu-item.danger:hover { background: rgba(239,68,68,0.1); color: #f87171; }
+    .hs-profile-menu-item.reverify { color: #00c9a7; }
+    .hs-profile-menu-item.reverify:hover { background: rgba(0,201,167,0.08); }
+    .hs-profile-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 4px 0; }
+
+    /* ── Reverification Modal ── */
+    .hs-reverify-backdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.65); z-index: 10000;
+      align-items: flex-start; justify-content: center;
+      backdrop-filter: blur(4px);
+      overflow-y: auto; padding: 40px 20px;
+    }
+    .hs-reverify-backdrop.open { display: flex; }
+
+    .hs-reverify-modal {
+      background: #1e2f42; border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px; width: 100%; max-width: 460px;
+      margin: auto;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+      animation: hs-panel-in 0.22s ease both;
+      position: relative;
+    }
+
+    .hs-rv-header {
+      padding: 22px 24px 0;
+      display: flex; align-items: flex-start; justify-content: space-between;
+    }
+    .hs-rv-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      background: rgba(0,201,167,0.12); border: 1px solid rgba(0,201,167,0.25);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .hs-rv-icon svg { width: 26px; height: 26px; color: #00c9a7; }
+    .hs-rv-close {
+      width: 30px; height: 30px; border-radius: 8px; border: none;
+      background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5);
+      cursor: pointer; font-size: 18px; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, color 0.15s;
+    }
+    .hs-rv-close:hover { background: rgba(255,255,255,0.12); color: #f1f5f9; }
+
+    .hs-rv-body { padding: 16px 24px 24px; }
+    .hs-rv-title { font-size: 18px; font-weight: 800; color: #f1f5f9; margin-bottom: 6px; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .hs-rv-sub { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.6; margin-bottom: 22px; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    .hs-rv-steps {
+      display: flex; gap: 8px; margin-bottom: 20px;
+    }
+    .hs-rv-step-dot {
+      flex: 1; height: 3px; border-radius: 99px; background: rgba(255,255,255,0.1);
+      transition: background 0.3s;
+    }
+    .hs-rv-step-dot.done { background: #00c9a7; }
+
+    .hs-rv-step-label {
+      font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.35);
+      text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 14px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .hs-rv-upload {
+      border: 1.5px dashed rgba(255,255,255,0.14); border-radius: 12px;
+      padding: 22px 16px; text-align: center; margin-bottom: 14px;
+      cursor: pointer; transition: border-color 0.2s, background 0.2s;
+      background: rgba(255,255,255,0.02);
+    }
+    .hs-rv-upload:hover { border-color: rgba(0,201,167,0.45); background: rgba(0,201,167,0.04); }
+    .hs-rv-upload.has-file { border-color: #00c9a7; background: rgba(0,201,167,0.06); }
+    .hs-rv-upload input { display: none; }
+    .hs-rv-upload-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: rgba(255,255,255,0.06); margin: 0 auto 10px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hs-rv-upload-icon svg { width: 20px; height: 20px; color: rgba(255,255,255,0.4); }
+    .hs-rv-upload-label { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.7); font-family: 'Plus Jakarta Sans', sans-serif; }
+    .hs-rv-upload-hint { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 3px; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .hs-rv-upload-filename { font-size: 12px; color: #00c9a7; font-weight: 600; margin-top: 6px; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    .hs-rv-btn {
+      width: 100%; padding: 12px; border-radius: 10px;
+      background: #00c9a7; border: none; color: #06201a;
+      font-size: 14px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif;
+      cursor: pointer; margin-top: 4px; transition: background 0.2s;
+    }
+    .hs-rv-btn:hover { background: #00b396; }
+    .hs-rv-btn:disabled { background: rgba(0,201,167,0.3); color: rgba(6,32,26,0.5); cursor: not-allowed; }
+
+    /* Success state */
+    .hs-rv-success { display: none; padding: 36px 24px; text-align: center; }
+    .hs-rv-success.show { display: block; }
+    .hs-rv-success-icon {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: rgba(0,201,167,0.12); border: 2px solid rgba(0,201,167,0.3);
+      display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;
+    }
+    .hs-rv-success-icon svg { width: 36px; height: 36px; color: #00c9a7; }
+    .hs-rv-success-title { font-size: 20px; font-weight: 800; color: #f1f5f9; margin-bottom: 8px; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .hs-rv-success-msg { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.6; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .hs-rv-success-close {
+      margin-top: 24px; padding: 11px 32px; border-radius: 10px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.7); font-size: 13.5px; font-weight: 600;
       font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer;
       transition: background 0.15s, color 0.15s;
     }
-    .hs-notif-prev-btn:hover { background: rgba(255,255,255,0.1); color: #f1f5f9; }
+    .hs-rv-success-close:hover { background: rgba(255,255,255,0.1); color: #f1f5f9; }
 
     /* ── Light mode ── */
     [data-theme="light"] .hs-topbar {
@@ -269,13 +410,13 @@
       color: #00a88c;
       border-color: rgba(0,201,167,0.4);
     }
-    [data-theme="light"] .hs-notif-panel {
+    [data-theme="light"] .hs-notif-panel,
+    [data-theme="light"] .hs-profile-dropdown {
       background: #ffffff; border-color: rgba(0,0,0,0.09);
       box-shadow: 0 12px 40px rgba(0,0,0,0.12);
     }
-    [data-theme="light"] .hs-notif-title { color: #1e293b; }
-    [data-theme="light"] .hs-notif-more { color: rgba(0,0,0,0.35); }
-    [data-theme="light"] .hs-notif-more:hover { background: rgba(0,0,0,0.06); color: #1e293b; }
+    [data-theme="light"] .hs-notif-title,
+    [data-theme="light"] .hs-profile-head-name { color: #1e293b; }
     [data-theme="light"] .hs-notif-tab:not(.active) { color: rgba(0,0,0,0.45); }
     [data-theme="light"] .hs-notif-tab:not(.active):hover { background: rgba(0,0,0,0.05); }
     [data-theme="light"] .hs-notif-section-label { color: rgba(0,0,0,0.35); }
@@ -284,9 +425,23 @@
     [data-theme="light"] .hs-notif-msg { color: #475569; }
     [data-theme="light"] .hs-notif-msg strong { color: #1e293b; }
     [data-theme="light"] .hs-notif-time { color: rgba(0,0,0,0.3); }
-    [data-theme="light"] .hs-notif-divider { background: rgba(0,0,0,0.06); }
-    [data-theme="light"] .hs-notif-prev-btn { background: #f1f5f9; border-color: rgba(0,0,0,0.08); color: rgba(0,0,0,0.5); }
-    [data-theme="light"] .hs-notif-prev-btn:hover { background: #e2e8f0; color: #1e293b; }
+    [data-theme="light"] .hs-notif-divider,
+    [data-theme="light"] .hs-profile-divider { background: rgba(0,0,0,0.06); }
+    [data-theme="light"] .hs-notif-footer { border-color: rgba(0,0,0,0.06); }
+    [data-theme="light"] .hs-notif-see-all-btn { color: #00a88c; }
+    [data-theme="light"] .hs-profile-menu-item { color: rgba(0,0,0,0.6); }
+    [data-theme="light"] .hs-profile-menu-item:hover { background: rgba(0,0,0,0.04); color: #1e293b; }
+    [data-theme="light"] .hs-profile-head { border-color: rgba(0,0,0,0.06); }
+    [data-theme="light"] .hs-profile-menu { border-color: rgba(0,0,0,0.06); }
+    [data-theme="light"] .hs-reverify-modal { background: #ffffff; border-color: rgba(0,0,0,0.09); }
+    [data-theme="light"] .hs-rv-title { color: #1e293b; }
+    [data-theme="light"] .hs-rv-sub { color: rgba(0,0,0,0.45); }
+    [data-theme="light"] .hs-rv-upload { border-color: rgba(0,0,0,0.12); background: rgba(0,0,0,0.02); }
+    [data-theme="light"] .hs-rv-upload:hover { border-color: rgba(0,201,167,0.5); background: rgba(0,201,167,0.04); }
+    [data-theme="light"] .hs-rv-step-dot { background: rgba(0,0,0,0.1); }
+    [data-theme="light"] .hs-rv-step-label { color: rgba(0,0,0,0.35); }
+    [data-theme="light"] .hs-rv-success-title { color: #1e293b; }
+    [data-theme="light"] .hs-rv-success-msg { color: rgba(0,0,0,0.45); }
   `;
 
   function injectCSS() {
@@ -304,7 +459,9 @@
     if (!el) { console.warn('HomeSureTopbar: #hs-topbar not found.'); return; }
 
     const user = typeof getSession === 'function' ? getSession() : null;
-    const initials = user ? user.firstName[0] + user.lastName[0] : 'U';
+    const initials = user ? (user.firstName[0] + user.lastName[0]).toUpperCase() : 'U';
+    const fullName = user ? user.firstName + ' ' + user.lastName : 'User';
+    const role     = user ? user.role : 'buyer';
 
     el.className = 'hs-topbar';
     el.innerHTML = `
@@ -328,6 +485,8 @@
         />
       </div>
       <div class="hs-topbar-right">
+
+        <!-- Notification Bell -->
         <div class="hs-notif-wrap">
           <div class="hs-notif-btn" id="hsNotifBtn" title="Notifications">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -341,9 +500,7 @@
           <div class="hs-notif-panel" id="hsNotifPanel">
             <div class="hs-notif-header">
               <span class="hs-notif-title">Notifications</span>
-              <button class="hs-notif-more" title="More options">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-              </button>
+              <button class="hs-notif-mark-read" id="hsMarkRead">Mark all as read</button>
             </div>
             <div class="hs-notif-tabs">
               <button class="hs-notif-tab active" data-tab="all">All</button>
@@ -351,22 +508,185 @@
             </div>
             <div class="hs-notif-body" id="hsNotifBody"></div>
             <div class="hs-notif-footer">
-              <button class="hs-notif-prev-btn">See previous notifications</button>
+              <button class="hs-notif-see-all-btn" id="hsNotifSeeAll">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><polyline points="15 6 21 12 15 18"/></svg>
+                See All Notifications
+              </button>
             </div>
           </div>
         </div>
-        <div class="hs-topbar-avatar" title="${user ? user.firstName + ' ' + user.lastName : ''}">${initials}</div>
+
+        <!-- Profile Avatar -->
+        <div class="hs-profile-wrap">
+          <div class="hs-topbar-avatar" id="hsAvatarBtn" title="${fullName}">${initials}</div>
+
+          <div class="hs-profile-dropdown" id="hsProfileDropdown">
+            <div class="hs-profile-head">
+              <div class="hs-profile-head-name">${fullName}</div>
+              <div class="hs-profile-head-role">${role}</div>
+            </div>
+            <div class="hs-profile-menu" id="hsProfileMenu">
+              <button class="hs-profile-menu-item" data-action="profile">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                View Profile
+              </button>
+              <button class="hs-profile-menu-item" data-action="settings">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Settings
+              </button>
+              ${role === 'buyer' ? `
+              <div class="hs-profile-divider"></div>
+              <button class="hs-profile-menu-item reverify" data-action="reverify">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Re-verify Account
+              </button>
+              ` : ''}
+              <div class="hs-profile-divider"></div>
+              <button class="hs-profile-menu-item danger" data-action="logout">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+
       </div>
     `;
 
-    // Wire up search callback if provided
+    // ── Reverification Modal (buyers only) ─────────────────────────────────────
+    if (role === 'buyer') {
+      const modal = document.createElement('div');
+      modal.className = 'hs-reverify-backdrop';
+      modal.id = 'hsReverifyBackdrop';
+      modal.innerHTML = `
+        <div class="hs-reverify-modal">
+
+          <!-- Form view -->
+          <div id="hsRvForm">
+            <div class="hs-rv-header">
+              <div class="hs-rv-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <button class="hs-rv-close" id="hsRvClose">&times;</button>
+            </div>
+            <div class="hs-rv-body">
+              <div class="hs-rv-title">Re-verify Your Account</div>
+              <div class="hs-rv-sub">Upload a valid government ID and a selfie to re-verify your identity. Your account will be reviewed within 24 hours.</div>
+
+              <div class="hs-rv-steps">
+                <div class="hs-rv-step-dot done" id="rvDot0"></div>
+                <div class="hs-rv-step-dot" id="rvDot1"></div>
+              </div>
+              <div class="hs-rv-step-label" id="rvStepLabel">Step 1 of 2 — Government ID</div>
+
+              <!-- Step 1: Gov ID -->
+              <div id="rvStep1">
+                <label class="hs-rv-upload" id="rvIdUpload">
+                  <input type="file" id="rvIdFile" accept="image/*,.pdf" />
+                  <div class="hs-rv-upload-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  </div>
+                  <div class="hs-rv-upload-label">Upload Government ID</div>
+                  <div class="hs-rv-upload-hint">UMID, SSS, PhilHealth, Passport, Driver's License</div>
+                  <div class="hs-rv-upload-filename" id="rvIdName" style="display:none"></div>
+                </label>
+                <button class="hs-rv-btn" id="rvNextBtn" disabled>Continue</button>
+              </div>
+
+              <!-- Step 2: Selfie -->
+              <div id="rvStep2" style="display:none">
+                <label class="hs-rv-upload" id="rvSelfieUpload">
+                  <input type="file" id="rvSelfieFile" accept="image/*" />
+                  <div class="hs-rv-upload-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  </div>
+                  <div class="hs-rv-upload-label">Take or Upload a Selfie</div>
+                  <div class="hs-rv-upload-hint">Hold your ID next to your face</div>
+                  <div class="hs-rv-upload-filename" id="rvSelfieName" style="display:none"></div>
+                </label>
+                <button class="hs-rv-btn" id="rvSubmitBtn" disabled>Submit for Review</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Success view -->
+          <div class="hs-rv-success" id="hsRvSuccess">
+            <div class="hs-rv-success-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="hs-rv-success-title">Request Submitted!</div>
+            <div class="hs-rv-success-msg">Your documents are under review. We'll notify you within 24 hours once your account has been re-verified.</div>
+            <button class="hs-rv-success-close" id="hsRvSuccessClose">Close</button>
+          </div>
+
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      // File upload handlers
+      const idFile      = modal.querySelector('#rvIdFile');
+      const idUpload    = modal.querySelector('#rvIdUpload');
+      const idName      = modal.querySelector('#rvIdName');
+      const nextBtn     = modal.querySelector('#rvNextBtn');
+      const selfieFile  = modal.querySelector('#rvSelfieFile');
+      const selfieUpload= modal.querySelector('#rvSelfieUpload');
+      const selfieName  = modal.querySelector('#rvSelfieName');
+      const submitBtn   = modal.querySelector('#rvSubmitBtn');
+      const step1       = modal.querySelector('#rvStep1');
+      const step2       = modal.querySelector('#rvStep2');
+      const dot1        = modal.querySelector('#rvDot1');
+      const stepLabel   = modal.querySelector('#rvStepLabel');
+
+      idFile.addEventListener('change', () => {
+        if (idFile.files.length) {
+          idName.textContent = idFile.files[0].name;
+          idName.style.display = 'block';
+          idUpload.classList.add('has-file');
+          nextBtn.disabled = false;
+        }
+      });
+
+      nextBtn.addEventListener('click', () => {
+        step1.style.display = 'none';
+        step2.style.display = 'block';
+        dot1.classList.add('done');
+        stepLabel.textContent = 'Step 2 of 2 — Selfie with ID';
+      });
+
+      selfieFile.addEventListener('change', () => {
+        if (selfieFile.files.length) {
+          selfieName.textContent = selfieFile.files[0].name;
+          selfieName.style.display = 'block';
+          selfieUpload.classList.add('has-file');
+          submitBtn.disabled = false;
+        }
+      });
+
+      submitBtn.addEventListener('click', () => {
+        modal.querySelector('#hsRvForm').style.display = 'none';
+        modal.querySelector('#hsRvSuccess').classList.add('show');
+      });
+
+      modal.querySelector('#hsRvClose').addEventListener('click', () => closeReverify());
+      modal.querySelector('#hsRvSuccessClose').addEventListener('click', () => closeReverify());
+      modal.addEventListener('click', e => { if (e.target === modal) closeReverify(); });
+
+      function closeReverify() {
+        modal.classList.remove('open');
+      }
+      function openReverify() {
+        modal.classList.add('open');
+      }
+      global._hsOpenReverify = openReverify;
+    }
+
+    // ── Search callback ─────────────────────────────────────────────────────
     if (typeof onSearch === 'function') {
       const input = el.querySelector('#hsSearch');
       if (input) input.addEventListener('input', onSearch);
     }
 
     // ── Notification panel ──────────────────────────────────────────────────
-    const sessionRole = user ? user.role : 'buyer';
     const NOTIFS_BY_ROLE = {
       buyer: [
         { id: 1, type: 'message', unread: true,  time: '2m ago',    msg: '<strong>Ramon Cruz</strong> sent you a message about a property.' },
@@ -393,7 +713,7 @@
         { id: 4, type: 'system',  unread: false, time: '2 days ago', msg: 'Platform usage hit 500 active users this week.' },
       ],
     };
-    const NOTIFS = NOTIFS_BY_ROLE[sessionRole] || NOTIFS_BY_ROLE.buyer;
+    let NOTIFS = (NOTIFS_BY_ROLE[role] || NOTIFS_BY_ROLE.buyer).map(n => Object.assign({}, n));
 
     const ICONS = {
       listing: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
@@ -408,17 +728,17 @@
       const body = document.getElementById('hsNotifBody');
       if (!body) return;
       const list = tab === 'unread' ? NOTIFS.filter(n => n.unread) : NOTIFS;
-      const newItems    = list.filter(n => n.unread);
+      const newItems     = list.filter(n => n.unread);
       const earlierItems = list.filter(n => !n.unread);
 
       let html = '';
       if (newItems.length) {
-        html += `<div class="hs-notif-section-label"><span>New</span><span class="hs-notif-see-all" data-goto-notifs>See all</span></div>`;
+        html += `<div class="hs-notif-section-label">New</div>`;
         html += newItems.map(n => notifItem(n)).join('');
         if (earlierItems.length) html += `<div class="hs-notif-divider"></div>`;
       }
       if (earlierItems.length) {
-        html += `<div class="hs-notif-section-label"><span>Earlier</span></div>`;
+        html += `<div class="hs-notif-section-label">Earlier</div>`;
         html += earlierItems.map(n => notifItem(n)).join('');
       }
       if (!list.length) {
@@ -450,45 +770,86 @@
       });
     });
 
-    // Navigate to full notifications page (shared helper)
+    // Mark all as read
+    const markRead = el.querySelector('#hsMarkRead');
+    if (markRead) {
+      markRead.addEventListener('click', () => {
+        NOTIFS.forEach(n => n.unread = false);
+        renderNotifs(activeTab);
+        const dot = el.querySelector('#hsNotifDot');
+        if (dot) dot.style.display = 'none';
+      });
+    }
+
+    // Navigate to full notifications page
     function goToNotifPage() {
       const p = window.location.pathname;
       let path;
       if (p.includes('/module/'))    path = 'notifications.html';
-      else if (p.includes('/auth/')) path = '../module/' + sessionRole + '/notifications.html';
-      else                           path = 'module/' + sessionRole + '/notifications.html';
+      else if (p.includes('/auth/')) path = '../module/' + role + '/notifications.html';
+      else                           path = 'module/' + role + '/notifications.html';
       window.location.href = path;
     }
 
-    // "See all" inside panel body (event delegation — re-rendered on tab switch)
-    const notifBody = el.querySelector('#hsNotifBody');
-    if (notifBody) {
-      notifBody.addEventListener('click', e => {
-        if (e.target.closest('[data-goto-notifs]')) goToNotifPage();
-      });
-    }
+    const seeAllBtn = el.querySelector('#hsNotifSeeAll');
+    if (seeAllBtn) seeAllBtn.addEventListener('click', goToNotifPage);
 
-    // Wire "See previous notifications" to full notifications page
-    const prevBtn = el.querySelector('.hs-notif-prev-btn');
-    if (prevBtn) prevBtn.addEventListener('click', goToNotifPage);
-
-    // Toggle panel
+    // Toggle notification panel
     const notifBtn   = el.querySelector('#hsNotifBtn');
     const notifPanel = el.querySelector('#hsNotifPanel');
     if (notifBtn && notifPanel) {
       notifBtn.addEventListener('click', e => {
         e.stopPropagation();
         notifPanel.classList.toggle('open');
-      });
-      document.addEventListener('click', e => {
-        if (!e.target.closest('.hs-notif-wrap')) notifPanel.classList.remove('open');
+        const profileDropdown = el.querySelector('#hsProfileDropdown');
+        if (profileDropdown) profileDropdown.classList.remove('open');
+        const dot = el.querySelector('#hsNotifDot');
+        if (dot) dot.style.display = 'none';
       });
     }
 
-    // Hide dot when panel opened
-    notifBtn && notifBtn.addEventListener('click', () => {
-      const dot = el.querySelector('#hsNotifDot');
-      if (dot) dot.style.display = 'none';
+    // ── Profile dropdown ────────────────────────────────────────────────────
+    const avatarBtn       = el.querySelector('#hsAvatarBtn');
+    const profileDropdown = el.querySelector('#hsProfileDropdown');
+
+    if (avatarBtn && profileDropdown) {
+      avatarBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        profileDropdown.classList.toggle('open');
+        if (notifPanel) notifPanel.classList.remove('open');
+      });
+    }
+
+    // Profile menu actions
+    const profileMenu = el.querySelector('#hsProfileMenu');
+    if (profileMenu) {
+      profileMenu.addEventListener('click', e => {
+        const btn = e.target.closest('[data-action]');
+        if (!btn) return;
+        profileDropdown.classList.remove('open');
+        const action = btn.dataset.action;
+        const p = window.location.pathname;
+
+        if (action === 'profile') {
+          window.location.href = p.includes('/module/') ? 'profile.html' : 'module/' + role + '/profile.html';
+        } else if (action === 'settings') {
+          window.location.href = p.includes('/module/') ? 'settings.html' : 'module/' + role + '/settings.html';
+        } else if (action === 'reverify') {
+          if (typeof global._hsOpenReverify === 'function') global._hsOpenReverify();
+        } else if (action === 'logout') {
+          if (typeof clearSession === 'function') clearSession();
+          const logoutPath = p.includes('/module/') ? '../../auth/signin.html'
+            : p.includes('/auth/') ? '../auth/signin.html'
+            : 'auth/signin.html';
+          window.location.href = logoutPath;
+        }
+      });
+    }
+
+    // Close both dropdowns on outside click
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.hs-notif-wrap'))   notifPanel   && notifPanel.classList.remove('open');
+      if (!e.target.closest('.hs-profile-wrap')) profileDropdown && profileDropdown.classList.remove('open');
     });
   }
 
