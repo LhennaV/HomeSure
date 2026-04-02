@@ -36,6 +36,14 @@ const FAKE_USERS = [
     joinedAt: '2026-02-14',
   },
   {
+    id: 'usr-007', role: 'seller',
+    firstName: 'Ana', lastName: 'Reyes',
+    email: 'seller2@homesure.com', password: 'seller1234',
+    phone: '09561234567', avatar: null, verified: false,
+    accountStatus: 'unverified', listings: [],
+    joinedAt: '2026-03-20',
+  },
+  {
     id: 'usr-005', role: 'admin',
     firstName: 'Andrea', lastName: 'Villanueva',
     email: 'admin@homesure.com', password: 'admin1234',

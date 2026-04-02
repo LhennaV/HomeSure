@@ -25,16 +25,18 @@
     sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`,
     moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
     logout: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`,
+    bell: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`,
   };
 
   // ── Nav configs per role ─────────────────────────────────────────────────────
   const NAV = {
     buyer: [
-      { id: 'dashboard', label: 'Dashboard',     icon: 'grid'    },
-      { id: 'saved',     label: 'Saved Listings', icon: 'heart'  },
-      { id: 'messages',  label: 'Messages',       icon: 'message' },
-      { id: 'profile',   label: 'Profile',        icon: 'user'   },
-      { id: 'settings',  label: 'Settings',       icon: 'settings'},
+      { id: 'dashboard',     label: 'Dashboard',       icon: 'grid'    },
+      { id: 'saved',         label: 'Saved Listings',  icon: 'heart'   },
+      { id: 'messages',      label: 'Messages',        icon: 'message' },
+      { id: 'notifications', label: 'Notifications',   icon: 'bell'    },
+      { id: 'profile',       label: 'Profile',         icon: 'user'    },
+      { id: 'settings',      label: 'Settings',        icon: 'settings'},
     ],
     seller: [
       { id: 'dashboard', label: 'Dashboard',      icon: 'grid'    },
@@ -136,7 +138,6 @@
       overflow: hidden;
       /* base transition for hover (slide-in anim sets its own on load) */
       transition: background 0.22s ease, color 0.22s ease, transform 0.18s ease;
-      opacity: 0; /* start hidden; JS animates in */
     }
 
     .hs-nav-item svg {
@@ -333,19 +334,11 @@
     `;
   }
 
-  // ── Stagger entrance animation ───────────────────────────────────────────────
+  // ── Entrance animation (instant) ────────────────────────────────────────────
   function animateIn(el) {
-    const items = el.querySelectorAll('.hs-nav-item');
-    items.forEach((item, i) => {
-      item.style.opacity = '0';
-      item.style.transform = 'translateX(-14px)';
-
-      setTimeout(() => {
-        item.style.transition =
-          'opacity 0.32s ease, transform 0.32s ease, background 0.22s ease, color 0.22s ease';
-        item.style.opacity = '1';
-        item.style.transform = 'translateX(0)';
-      }, 60 + i * 65);
+    el.querySelectorAll('.hs-nav-item').forEach(item => {
+      item.style.opacity = '1';
+      item.style.transform = 'none';
     });
   }
 
@@ -368,7 +361,7 @@
 
     // Nav routing
     const NAV_ROUTES = {
-      buyer:      { dashboard: 'buyer.html', saved: 'saved.html', messages: 'messages.html', profile: 'profile.html', settings: 'settings.html' },
+      buyer:      { dashboard: 'buyer.html', saved: 'saved.html', messages: 'messages.html', notifications: 'notifications.html', profile: 'profile.html', settings: 'settings.html' },
       seller:     { dashboard: 'seller.html', listings: 'listings.html', post: 'post.html', messages: 'messages.html', profile: 'profile.html', settings: 'settings.html' },
       admin:      { dashboard: 'admin.html', approvals: 'approvals.html', users: 'users.html', reports: 'reports.html', settings: 'settings.html' },
       superadmin: { dashboard: 'super-admin.html', admins: 'admins.html', users: 'users.html', reports: 'reports.html', settings: 'settings.html' },
@@ -378,7 +371,10 @@
     const routes = NAV_ROUTES[navRole] || {};
     el.querySelectorAll('.hs-nav-item').forEach(btn => {
       const page = btn.dataset.page;
-      if (routes[page]) btn.addEventListener('click', () => { window.location.href = routes[page]; });
+      if (routes[page]) btn.addEventListener('click', () => {
+        if (window.location.href.includes(routes[page])) return;
+        window.location.href = routes[page];
+      });
     });
 
     // Logout

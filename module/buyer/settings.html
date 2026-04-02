@@ -318,13 +318,30 @@
     .modal-close:hover { background: var(--card2); color: var(--text); }
     .modal-close svg { width: 14px; height: 14px; }
 
-    .qr-wrap {
-      background: #fff; border-radius: 12px; padding: 16px;
-      display: flex; align-items: center; justify-content: center;
-      margin-bottom: 12px;
+    .twofa-email-sent {
+      display: flex; align-items: center; gap: 14px;
+      background: var(--teal-faint); border: 1px solid var(--teal-mid);
+      border-radius: 11px; padding: 14px 16px; margin-bottom: 18px;
     }
-    .qr-wrap img { width: 160px; height: 160px; display: block; }
-    .qr-hint { font-size: 11.5px; color: var(--muted); text-align: center; margin-bottom: 18px; line-height: 1.5; }
+    .twofa-email-icon {
+      width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+      background: rgba(0,201,167,0.18); display: flex; align-items: center; justify-content: center;
+    }
+    .twofa-email-icon svg { width: 18px; height: 18px; color: var(--teal); }
+    .twofa-email-title { font-size: 13px; font-weight: 700; color: var(--teal); margin-bottom: 3px; }
+    .twofa-email-sub   { font-size: 12px; color: var(--muted2); }
+    .twofa-email-sub strong { color: var(--text); }
+
+    .twofa-resend {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 12px; color: var(--muted); margin-bottom: 16px;
+    }
+    .twofa-resend-link {
+      color: var(--teal); font-weight: 600; cursor: pointer;
+      border-bottom: 1px dashed var(--teal); transition: opacity 0.2s;
+    }
+    .twofa-resend-link:hover { opacity: 0.7; }
+    .twofa-resend-link.disabled { color: var(--muted); border-color: var(--muted); cursor: default; pointer-events: none; }
 
     .otp-boxes { display: flex; gap: 7px; margin-bottom: 16px; }
     .otp-box {
@@ -656,16 +673,23 @@
     <div class="modal-header">
       <div>
         <div class="modal-title">Enable Two-Factor Authentication</div>
-        <div class="modal-sub">Scan the QR code with your authenticator app</div>
+        <div class="modal-sub">Enter the code we sent to your email</div>
       </div>
       <button class="modal-close" onclick="close2FA()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
-    <div class="qr-wrap">
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=otpauth://totp/HomeSure:buyer@homesure.com?secret=JBSWY3DPEHPK3PXP&issuer=HomeSure" alt="QR Code" />
+
+    <div class="twofa-email-sent">
+      <div class="twofa-email-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      </div>
+      <div>
+        <div class="twofa-email-title">Code sent!</div>
+        <div class="twofa-email-sub">We sent a 6-digit code to <strong id="twoFaEmailTarget"></strong></div>
+      </div>
     </div>
-    <div class="qr-hint">Scan this QR code with Google Authenticator, Authy, or any similar app</div>
+
     <div class="otp-boxes" id="twoFaBoxes">
       <input class="otp-box" maxlength="1" type="text" inputmode="numeric" />
       <input class="otp-box" maxlength="1" type="text" inputmode="numeric" />
@@ -678,6 +702,12 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
       Invalid code. Please try again.
     </div>
+
+    <div class="twofa-resend">
+      <span id="twoFaResendText">Resend code in <strong id="twoFaTimer">30s</strong></span>
+      <span class="twofa-resend-link disabled" id="twoFaResendLink" onclick="resend2FA()">Resend</span>
+    </div>
+
     <div class="modal-actions">
       <button class="btn-ghost" onclick="close2FA()">Cancel</button>
       <button class="btn-primary" onclick="verify2FA()">Verify &amp; Enable</button>
@@ -852,12 +882,15 @@
 
   // ── 2FA ──────────────────────────────────────────────────────────────────
   let twoFaEnabled = false;
+  let twoFaResendInterval = null;
 
   function handle2FA(checkbox) {
     if (checkbox.checked && !twoFaEnabled) {
+      document.getElementById('twoFaEmailTarget').textContent = user.email;
       document.getElementById('twoFaModal').classList.add('open');
       document.getElementById('twoFaError').classList.remove('show');
       document.querySelectorAll('#twoFaBoxes .otp-box').forEach(b => { b.value = ''; b.classList.remove('filled'); });
+      start2FAResendTimer();
       setTimeout(() => document.querySelectorAll('#twoFaBoxes .otp-box')[0].focus(), 100);
     } else if (!checkbox.checked && twoFaEnabled) {
       twoFaEnabled = false;
@@ -866,8 +899,36 @@
     }
   }
 
+  function start2FAResendTimer() {
+    clearInterval(twoFaResendInterval);
+    let secs = 30;
+    const timerEl  = document.getElementById('twoFaTimer');
+    const textEl   = document.getElementById('twoFaResendText');
+    const linkEl   = document.getElementById('twoFaResendLink');
+    timerEl.textContent = secs + 's';
+    textEl.style.display = 'inline';
+    linkEl.classList.add('disabled');
+    twoFaResendInterval = setInterval(() => {
+      secs--;
+      if (secs <= 0) {
+        clearInterval(twoFaResendInterval);
+        textEl.style.display = 'none';
+        linkEl.classList.remove('disabled');
+      } else { timerEl.textContent = secs + 's'; }
+    }, 1000);
+  }
+
+  function resend2FA() {
+    document.querySelectorAll('#twoFaBoxes .otp-box').forEach(b => { b.value = ''; b.classList.remove('filled'); });
+    document.getElementById('twoFaError').classList.remove('show');
+    document.getElementById('twoFaResendText').style.display = 'inline';
+    start2FAResendTimer();
+    showToast('Verification code resent to ' + user.email + '.');
+  }
+
   function close2FA(e) {
     if (e) e.stopPropagation();
+    clearInterval(twoFaResendInterval);
     document.getElementById('twoFaModal').classList.remove('open');
     document.getElementById('twoFaError').classList.remove('show');
     if (!twoFaEnabled) document.getElementById('twoFaToggle').checked = false;
@@ -878,6 +939,7 @@
     if (code.length < 6) { showToast('Please enter the full 6-digit code.', 'error'); return; }
     if (code === '123456') {
       twoFaEnabled = true;
+      clearInterval(twoFaResendInterval);
       setTwoFaStatus(true);
       document.getElementById('twoFaToggle').checked = true;
       document.getElementById('twoFaModal').classList.remove('open');
