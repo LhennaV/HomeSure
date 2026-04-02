@@ -1,0 +1,966 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HomeSure – Post a Property</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #1E293B; --card: #253347; --card2: #2c3d55; --border: rgba(255,255,255,0.07);
+      --teal: #00c9a7; --teal-faint: rgba(0,201,167,0.12); --teal-mid: rgba(0,201,167,0.25);
+      --text: #f1f5f9; --muted: rgba(255,255,255,0.4); --muted2: rgba(255,255,255,0.65);
+      --danger: #f87171; --danger-faint: rgba(248,113,113,0.1); --danger-mid: rgba(248,113,113,0.3);
+      --radius: 14px;
+    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
+    .layout { display: flex; height: 100vh; }
+    .main   { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .content { flex: 1; overflow-y: auto; padding: 26px 30px 60px; }
+    .content::-webkit-scrollbar { width: 5px; }
+    .content::-webkit-scrollbar-track { background: transparent; }
+    .content::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #1fc8b4, #0a5e53); border-radius: 99px; }
+    .content::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #24e0ca, #1a9e8f); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes expandIn {
+      from { opacity: 0; max-height: 0; transform: translateY(-6px); }
+      to   { opacity: 1; max-height: 600px; transform: translateY(0); }
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.93) translateY(12px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* ── Page header ── */
+    .page-header { margin-bottom: 26px; animation: fadeUp 0.35s ease both; }
+    .page-title  { font-size: 22px; font-weight: 800; }
+    .page-sub    { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+
+    /* ── Settings column ── */
+    .settings-col { display: flex; flex-direction: column; gap: 18px; }
+
+    /* ── Section card ── */
+    .section-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+      animation: fadeUp 0.4s ease both;
+    }
+    .section-card.teal-card { border-color: var(--teal-mid); }
+    .section-header {
+      padding: 16px 22px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 11px;
+    }
+    .teal-card .section-header { border-bottom-color: var(--teal-mid); }
+    .section-icon {
+      width: 34px; height: 34px; border-radius: 9px;
+      background: var(--teal-faint); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .section-icon svg { width: 15px; height: 15px; color: var(--teal); }
+    .section-title { font-size: 14px; font-weight: 800; }
+    .section-sub   { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+
+    /* ── Form body ── */
+    .section-body { padding: 20px 22px; display: flex; flex-direction: column; gap: 16px; }
+
+    /* ── Fields ── */
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label {
+      font-size: 11px; font-weight: 700; color: var(--muted2);
+      text-transform: uppercase; letter-spacing: 0.05em;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .label-optional {
+      font-size: 10px; font-weight: 600; color: var(--muted);
+      background: rgba(255,255,255,0.06); border-radius: 4px;
+      padding: 1px 6px; text-transform: none; letter-spacing: 0;
+    }
+    .field input, .field select, .field textarea {
+      width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border);
+      border-radius: 9px; padding: 10px 14px;
+      color: var(--text); font-family: inherit; font-size: 13px; outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color: rgba(0,201,167,0.5); background: rgba(0,0,0,0.28);
+    }
+    .field input::placeholder, .field textarea::placeholder { color: var(--muted); }
+    .field select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.4)' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 34px; }
+    .field textarea { resize: vertical; min-height: 110px; line-height: 1.6; }
+    .field input.input-error, .field select.input-error, .field textarea.input-error { border-color: rgba(248,113,113,0.6); }
+
+    /* autofill */
+    .field input:-webkit-autofill,
+    .field input:-webkit-autofill:hover,
+    .field input:-webkit-autofill:focus {
+      -webkit-box-shadow: 0 0 0 1000px #1e2d40 inset !important;
+      -webkit-text-fill-color: #f1f5f9 !important;
+      caret-color: #f1f5f9;
+      border-color: rgba(0,201,167,0.3) !important;
+    }
+
+    /* ── Two-column grid ── */
+    .field-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    /* ── Price row with suffix ── */
+    .price-wrap { position: relative; display: flex; align-items: center; }
+    .price-wrap input { padding-right: 70px; }
+    .price-suffix {
+      position: absolute; right: 12px;
+      font-size: 11.5px; font-weight: 600; color: var(--muted);
+      pointer-events: none; white-space: nowrap;
+    }
+
+    /* ── Pill toggle (For Sale / For Rent) ── */
+    .pill-toggle-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pill-toggle {
+      padding: 8px 18px; border-radius: 30px;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--muted2); font-size: 13px; font-weight: 600; font-family: inherit;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .pill-toggle:hover { border-color: var(--teal-mid); color: var(--teal); }
+    .pill-toggle.active {
+      background: var(--teal); border-color: var(--teal);
+      color: #fff; box-shadow: 0 3px 12px rgba(0,201,167,0.3);
+    }
+
+    /* ── Toggle switch (Negotiable) ── */
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+    .toggle-row-label { font-size: 11px; font-weight: 700; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.05em; }
+    .toggle-group { display: flex; align-items: center; gap: 9px; }
+    .toggle-state { font-size: 11.5px; font-weight: 700; color: var(--muted); }
+    .toggle-state.on { color: var(--teal); }
+    .toggle { position: relative; width: 44px; height: 25px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .toggle-track {
+      position: absolute; inset: 0; border-radius: 25px;
+      background: rgba(255,255,255,0.1); border: 1px solid var(--border);
+      cursor: pointer; transition: background 0.25s, border-color 0.25s;
+    }
+    .toggle-track::before {
+      content: ''; position: absolute;
+      width: 19px; height: 19px; border-radius: 50%;
+      background: #fff; top: 2px; left: 2px;
+      transition: transform 0.25s; box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+    .toggle input:checked + .toggle-track { background: var(--teal); border-color: var(--teal); }
+    .toggle input:checked + .toggle-track::before { transform: translateX(19px); }
+
+    /* ── Char count ── */
+    .char-count { font-size: 11.5px; color: var(--muted); text-align: right; margin-top: 4px; }
+    .char-count.over { color: var(--danger); }
+
+    /* ── Tag checkboxes (Amenities) ── */
+    .tag-label { font-size: 11px; font-weight: 700; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+    .tag-group { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag-checkbox {
+      padding: 6px 14px; border-radius: 30px;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--muted2); font-size: 12.5px; font-weight: 600; font-family: inherit;
+      cursor: pointer; transition: all 0.2s; user-select: none;
+    }
+    .tag-checkbox:hover { border-color: var(--teal-mid); color: var(--text); }
+    .tag-checkbox.selected {
+      background: var(--teal-faint); border-color: var(--teal);
+      color: var(--teal);
+    }
+
+    /* ── Upload zone ── */
+    .upload-zone {
+      border: 1.5px dashed rgba(255,255,255,0.18); border-radius: 11px;
+      padding: 30px 20px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+      cursor: pointer; text-align: center;
+      background: rgba(255,255,255,0.02);
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .upload-zone:hover { border-color: var(--teal-mid); background: var(--teal-faint); }
+    .upload-zone.drag-over { border-color: var(--teal); background: var(--teal-faint); }
+    .upload-zone-icon {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--card2); display: flex; align-items: center; justify-content: center;
+    }
+    .upload-zone-icon svg { width: 20px; height: 20px; color: var(--muted); }
+    .upload-zone-title { font-size: 13px; font-weight: 600; color: var(--muted2); }
+    .upload-zone-sub   { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+    .photo-count { font-size: 11.5px; font-weight: 700; color: var(--teal); margin-top: 2px; }
+    input[type="file"] { display: none; }
+
+    /* ── Photo preview grid ── */
+    .photo-preview-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+    .photo-thumb {
+      width: 80px; height: 80px; border-radius: 9px;
+      position: relative; overflow: hidden; flex-shrink: 0;
+      border: 1px solid var(--border);
+    }
+    .photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .photo-thumb-remove {
+      position: absolute; top: 3px; right: 3px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: rgba(0,0,0,0.7); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 11px; font-weight: 700; transition: background 0.2s;
+    }
+    .photo-thumb-remove:hover { background: var(--danger); }
+
+    /* ── Doc upload ── */
+    .doc-upload-wrap { display: flex; flex-direction: column; gap: 7px; }
+    .doc-upload-label {
+      font-size: 11px; font-weight: 700; color: var(--muted2);
+      text-transform: uppercase; letter-spacing: 0.05em;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .doc-upload-desc { font-size: 12.5px; color: var(--muted2); line-height: 1.5; }
+    .doc-upload-desc strong { color: var(--teal); }
+    .doc-upload-box {
+      border: 1.5px dashed rgba(255,255,255,0.18); border-radius: 11px;
+      padding: 20px 18px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 9px;
+      cursor: pointer; text-align: center;
+      background: rgba(255,255,255,0.02);
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .doc-upload-box:hover { border-color: var(--teal-mid); background: var(--teal-faint); }
+    .doc-upload-box.has-file { border-color: var(--teal-mid); background: var(--teal-faint); }
+    .doc-upload-icon {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--card2); display: flex; align-items: center; justify-content: center;
+    }
+    .doc-upload-box.has-file .doc-upload-icon { background: var(--teal-mid); }
+    .doc-upload-icon svg { width: 17px; height: 17px; color: var(--muted); }
+    .doc-upload-box.has-file .doc-upload-icon svg { color: var(--teal); }
+    .doc-upload-title { font-size: 13px; font-weight: 600; color: var(--muted2); }
+    .doc-upload-box.has-file .doc-upload-title { color: var(--teal); }
+    .doc-upload-sub   { font-size: 11px; color: var(--muted); }
+    .doc-file-info { font-size: 11.5px; color: var(--muted2); }
+    .doc-uploaded-badge {
+      display: none; align-items: center; gap: 5px;
+      font-size: 11.5px; font-weight: 700; color: var(--teal);
+    }
+    .doc-upload-box.has-file .doc-uploaded-badge { display: flex; }
+    .doc-upload-box.has-file .doc-upload-sub-default { display: none; }
+
+    /* ── Notice box (amber) ── */
+    .notice-box {
+      margin: 0 22px 20px;
+      display: flex; align-items: flex-start; gap: 12px;
+      background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.3);
+      border-radius: 10px; padding: 14px 16px;
+    }
+    .notice-box svg { width: 16px; height: 16px; color: #fbbf24; flex-shrink: 0; margin-top: 1px; }
+    .notice-text { font-size: 12.5px; color: var(--muted2); line-height: 1.55; }
+
+    /* ── Submit actions ── */
+    .submit-actions { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+    .btn-primary {
+      background: linear-gradient(135deg, #00c9a7 0%, #00a084 100%);
+      border: none; border-radius: 10px; padding: 13px 28px;
+      color: #fff; font-family: inherit; font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s, box-shadow 0.2s, transform 0.18s;
+      box-shadow: 0 4px 16px rgba(0,201,167,0.25); flex: 1; min-width: 160px;
+    }
+    .btn-primary:hover { opacity: 0.88; box-shadow: 0 4px 20px rgba(0,201,167,0.35); transform: translateY(-1px); }
+    .btn-ghost {
+      background: transparent; border: 1px solid var(--border);
+      border-radius: 10px; padding: 13px 24px;
+      color: var(--muted2); font-size: 14px; font-weight: 600; font-family: inherit;
+      cursor: pointer; transition: border-color 0.2s, color 0.2s, transform 0.18s;
+    }
+    .btn-ghost:hover { border-color: var(--muted2); color: var(--text); transform: translateY(-1px); }
+
+    /* ── Verify gate ── */
+    #verifyGate { display: none; flex-direction: column; gap: 22px; }
+    .gate-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 48px 32px;
+      display: flex; flex-direction: column; align-items: center; text-align: center; gap: 18px;
+      animation: fadeUp 0.4s ease 0.05s both;
+    }
+    .gate-icon {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: var(--teal-mid);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .gate-icon svg { width: 30px; height: 30px; color: var(--teal); }
+    .gate-title { font-size: 20px; font-weight: 800; }
+    .gate-desc  { font-size: 13.5px; color: var(--muted2); line-height: 1.6; max-width: 400px; }
+    .gate-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 6px; }
+    .gate-btn-primary {
+      background: linear-gradient(135deg, #00c9a7 0%, #00a084 100%);
+      border: none; border-radius: 10px; padding: 12px 26px;
+      color: #fff; font-family: inherit; font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s, transform 0.18s;
+      box-shadow: 0 4px 16px rgba(0,201,167,0.25);
+      text-decoration: none; display: inline-block;
+    }
+    .gate-btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+    .gate-btn-ghost {
+      background: transparent; border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 22px;
+      color: var(--muted2); font-size: 14px; font-weight: 600; font-family: inherit;
+      cursor: pointer; transition: border-color 0.2s, color 0.2s;
+      text-decoration: none; display: inline-block;
+    }
+    .gate-btn-ghost:hover { border-color: var(--muted2); color: var(--text); }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 28px; right: 28px; z-index: 9999;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 11px; padding: 13px 18px;
+      display: flex; align-items: center; gap: 10px;
+      font-size: 13px; font-weight: 600; color: var(--text);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+      opacity: 0; transform: translateY(10px);
+      transition: opacity 0.25s, transform 0.25s; pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .toast-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .toast-icon svg { width: 14px; height: 14px; color: #fff; }
+    .toast.success .toast-icon { background: var(--teal); }
+    .toast.error   .toast-icon { background: var(--danger); }
+
+    /* ── Success modal ── */
+    .modal-backdrop {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.65); backdrop-filter: blur(6px);
+      align-items: center; justify-content: center;
+    }
+    .modal-backdrop.open { display: flex; }
+    .success-modal {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 36px 32px 32px;
+      width: calc(100% - 40px); max-width: 440px;
+      display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px;
+      animation: modalIn 0.35s ease both;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.6);
+    }
+    .success-modal-icon {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: var(--teal-mid); display: flex; align-items: center; justify-content: center;
+    }
+    .success-modal-icon svg { width: 32px; height: 32px; color: var(--teal); }
+    .success-modal-title { font-size: 20px; font-weight: 800; color: var(--text); }
+    .success-modal-sub   { font-size: 13.5px; color: var(--muted2); line-height: 1.6; max-width: 360px; }
+    .success-modal-btn {
+      margin-top: 8px; width: 100%;
+      background: linear-gradient(135deg, #00c9a7 0%, #00a084 100%);
+      border: none; border-radius: 11px; padding: 14px 24px;
+      color: #fff; font-family: inherit; font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s, transform 0.18s;
+      box-shadow: 0 4px 18px rgba(0,201,167,0.28);
+      text-decoration: none; display: block;
+    }
+    .success-modal-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    /* ── Light mode ── */
+    [data-theme="light"] {
+      --bg: #f1f5f9; --card: #ffffff; --card2: #f8fafc; --border: rgba(0,0,0,0.09);
+      --text: #1e293b; --muted: rgba(0,0,0,0.45); --muted2: rgba(0,0,0,0.6);
+    }
+    [data-theme="light"] body { background: var(--bg); }
+    [data-theme="light"] .field input,
+    [data-theme="light"] .field select,
+    [data-theme="light"] .field textarea { background: rgba(0,0,0,0.04); }
+    [data-theme="light"] .field input:focus,
+    [data-theme="light"] .field select:focus,
+    [data-theme="light"] .field textarea:focus { background: #fff; }
+    [data-theme="light"] .field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(0,0,0,0.4)' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
+    [data-theme="light"] .field input:-webkit-autofill,
+    [data-theme="light"] .field input:-webkit-autofill:hover,
+    [data-theme="light"] .field input:-webkit-autofill:focus {
+      -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+      -webkit-text-fill-color: #1e293b !important;
+      caret-color: #1e293b;
+    }
+    [data-theme="light"] .upload-zone { background: rgba(0,0,0,0.02); border-color: rgba(0,0,0,0.15); }
+    [data-theme="light"] .upload-zone:hover { background: var(--teal-faint); }
+    [data-theme="light"] .doc-upload-box { background: rgba(0,0,0,0.02); border-color: rgba(0,0,0,0.15); }
+    [data-theme="light"] .doc-upload-box:hover { background: var(--teal-faint); }
+    [data-theme="light"] .doc-upload-box.has-file { background: var(--teal-faint); }
+    [data-theme="light"] .toggle-track { background: rgba(0,0,0,0.1); }
+    [data-theme="light"] .toggle-track::before { box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
+    [data-theme="light"] .pill-toggle { background: rgba(0,0,0,0.03); }
+    [data-theme="light"] .tag-checkbox { background: rgba(0,0,0,0.03); }
+    [data-theme="light"] .toast { box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+    [data-theme="light"] .success-modal { box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+    [data-theme="light"] .btn-primary {
+      background: linear-gradient(135deg, #00c9a7 0%, rgba(0,130,106,0.85) 100%);
+      box-shadow: 0 3px 14px rgba(0,201,167,0.3);
+    }
+    [data-theme="light"] .content::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #1fc8b4, #0a5e53); }
+    [data-theme="light"] .label-optional { background: rgba(0,0,0,0.07); }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <div id="hs-sidebar"></div>
+  <div class="main">
+    <div id="hs-topbar"></div>
+    <div class="content">
+
+      <!-- ── PAGE HEADER ── -->
+      <div class="page-header">
+        <div class="page-title">Post a Property</div>
+        <div class="page-sub" id="pageSubtitle">Fill in the details below to submit your listing for review</div>
+      </div>
+
+      <!-- ── VERIFY GATE (hidden by default, shown when not verified) ── -->
+      <div id="verifyGate">
+        <div class="gate-card">
+          <div class="gate-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </div>
+          <div class="gate-title">Verification Required</div>
+          <div class="gate-desc">You must complete identity verification before you can post listings on HomeSure.</div>
+          <div class="gate-actions">
+            <a href="verification.html" class="gate-btn-primary">Start Verification</a>
+            <a href="listings.html" class="gate-btn-ghost">Go Back</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── POST FORM (shown when verified) ── -->
+      <div id="postForm">
+        <div class="settings-col">
+
+          <!-- ── SECTION 1: Listing Details ── -->
+          <div class="section-card" style="animation-delay:0.05s">
+            <div class="section-header">
+              <div class="section-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              </div>
+              <div>
+                <div class="section-title">Listing Details</div>
+                <div class="section-sub">Basic information about your property</div>
+              </div>
+            </div>
+            <div class="section-body">
+
+              <!-- Listing Title (full width) -->
+              <div class="field">
+                <label>Listing Title</label>
+                <input type="text" id="listingTitle" placeholder="e.g. 3-Bedroom House for Sale in Poblacion" />
+              </div>
+
+              <!-- Listing Type: pill toggles -->
+              <div class="field">
+                <label>Listing Type</label>
+                <div class="pill-toggle-group" id="listingTypeGroup">
+                  <button type="button" class="pill-toggle active" data-value="sale" onclick="setListingType('sale')">For Sale</button>
+                  <button type="button" class="pill-toggle" data-value="rent" onclick="setListingType('rent')">For Rent</button>
+                </div>
+              </div>
+
+              <!-- Property Type + Price -->
+              <div class="field-2col">
+                <div class="field">
+                  <label>Property Type</label>
+                  <select id="propertyType">
+                    <option value="">Select type...</option>
+                    <option value="house">House</option>
+                    <option value="apartment">Apartment</option>
+                    <option value="condo">Condo</option>
+                    <option value="commercial">Commercial</option>
+                    <option value="lot">Lot Only</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Price (₱)</label>
+                  <div class="price-wrap">
+                    <input type="number" id="listingPrice" placeholder="0" min="0" />
+                    <span class="price-suffix" id="priceSuffix"></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Barangay + Full Address -->
+              <div class="field-2col">
+                <div class="field">
+                  <label>Barangay</label>
+                  <select id="listingBarangay">
+                    <option value="">Select barangay...</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Full Address</label>
+                  <input type="text" id="listingAddress" placeholder="Street, Subdivision, Barangay, Sta. Maria, Bulacan" />
+                </div>
+              </div>
+
+              <!-- Floor Area + Lot Area -->
+              <div class="field-2col">
+                <div class="field">
+                  <label>Floor Area (sqm)</label>
+                  <input type="number" id="floorArea" placeholder="e.g. 120" min="1" />
+                </div>
+                <div class="field">
+                  <label>Lot Area (sqm) <span class="label-optional">Optional</span></label>
+                  <input type="number" id="lotArea" placeholder="e.g. 200" min="1" />
+                </div>
+              </div>
+
+              <!-- Bedrooms + Bathrooms -->
+              <div class="field-2col">
+                <div class="field">
+                  <label>Bedrooms</label>
+                  <select id="listingBedrooms">
+                    <option value="0">Studio (0)</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3" selected>3</option>
+                    <option value="4">4</option>
+                    <option value="5">5+</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Bathrooms</label>
+                  <select id="listingBathrooms">
+                    <option value="1" selected>1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4+</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Negotiable toggle -->
+              <div class="toggle-row">
+                <span class="toggle-row-label">Negotiable</span>
+                <div class="toggle-group">
+                  <span class="toggle-state" id="negLabel">Off</span>
+                  <label class="toggle">
+                    <input type="checkbox" id="negotiableToggle" onchange="onNegotiableChange()" />
+                    <span class="toggle-track"></span>
+                  </label>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ── SECTION 2: Property Description ── -->
+          <div class="section-card" style="animation-delay:0.1s">
+            <div class="section-header">
+              <div class="section-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+              </div>
+              <div>
+                <div class="section-title">Property Description</div>
+                <div class="section-sub">Describe the property in detail</div>
+              </div>
+            </div>
+            <div class="section-body">
+
+              <!-- Description textarea -->
+              <div class="field">
+                <label>Description</label>
+                <textarea id="listingDesc" rows="5" maxlength="500" placeholder="Describe the property's key features, nearby landmarks, and anything else buyers should know..." oninput="updateCharCount()"></textarea>
+                <div class="char-count" id="charCount">0 / 500</div>
+              </div>
+
+              <!-- Amenities tags -->
+              <div>
+                <div class="tag-label">Amenities</div>
+                <div class="tag-group" id="amenitiesGroup"></div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ── SECTION 3: Property Photos ── -->
+          <div class="section-card" style="animation-delay:0.15s">
+            <div class="section-header">
+              <div class="section-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              </div>
+              <div>
+                <div class="section-title">Property Photos</div>
+                <div class="section-sub">Upload clear photos of the property (up to 10)</div>
+              </div>
+            </div>
+            <div class="section-body">
+
+              <!-- Upload zone -->
+              <div class="upload-zone" id="photoUploadZone" onclick="document.getElementById('photoFileInput').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+                <div class="upload-zone-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+                </div>
+                <div class="upload-zone-title">Click to upload or drag and drop</div>
+                <div class="upload-zone-sub">PNG, JPG up to 10MB each &bull; Minimum 1 photo required</div>
+                <div class="photo-count" id="photoCount" style="display:none"></div>
+              </div>
+              <input type="file" id="photoFileInput" accept="image/*" multiple onchange="handlePhotoSelect(event)" />
+
+              <!-- Photo preview grid -->
+              <div class="photo-preview-grid" id="photoPreviewGrid"></div>
+
+            </div>
+          </div>
+
+          <!-- ── SECTION 4: Listing Verification Documents ── -->
+          <div class="section-card teal-card" style="animation-delay:0.2s">
+            <div class="section-header">
+              <div class="section-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <div>
+                <div class="section-title">Listing Verification</div>
+                <div class="section-sub">Required documents to verify your listing ownership</div>
+              </div>
+            </div>
+            <div class="section-body">
+
+              <!-- Upload 1: Deed of Sale / TCT -->
+              <div class="doc-upload-wrap">
+                <div class="doc-upload-label">
+                  Deed of Sale or TCT
+                  <span style="color:var(--danger);font-size:13px;">*</span>
+                </div>
+                <div class="doc-upload-desc">Must be under the name of <strong id="sellerNameDisplay"></strong> (your verified account name)</div>
+                <div class="doc-upload-box" id="deedUploadBox" onclick="document.getElementById('deedFileInput').click()">
+                  <div class="doc-upload-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                  </div>
+                  <div class="doc-upload-title" id="deedFileName">Click to upload Deed of Sale or TCT</div>
+                  <div class="doc-upload-sub doc-upload-sub-default">PDF, PNG, JPG up to 20MB</div>
+                  <div class="doc-file-info" id="deedFileInfo" style="display:none"></div>
+                  <div class="doc-uploaded-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Document uploaded
+                  </div>
+                </div>
+                <input type="file" id="deedFileInput" accept=".pdf,image/*" onchange="handleDocSelect('deed', event)" />
+              </div>
+
+              <!-- Upload 2: Supporting Documents -->
+              <div class="doc-upload-wrap">
+                <div class="doc-upload-label">
+                  Supporting Documents
+                  <span class="label-optional">Optional</span>
+                </div>
+                <div class="doc-upload-desc">Mayor's permit, tax declaration, or any other supporting documents</div>
+                <div class="doc-upload-box" id="supportUploadBox" onclick="document.getElementById('supportFileInput').click()">
+                  <div class="doc-upload-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                  </div>
+                  <div class="doc-upload-title" id="supportFileName">Click to upload supporting documents</div>
+                  <div class="doc-upload-sub doc-upload-sub-default">PDF, PNG, JPG up to 20MB each</div>
+                  <div class="doc-file-info" id="supportFileInfo" style="display:none"></div>
+                  <div class="doc-uploaded-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Document uploaded
+                  </div>
+                </div>
+                <input type="file" id="supportFileInput" accept=".pdf,image/*" multiple onchange="handleDocSelect('support', event)" />
+              </div>
+
+            </div>
+
+            <!-- Notice box (amber) -->
+            <div class="notice-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <div class="notice-text">Your listing will be submitted for admin review. Approval typically takes <strong style="color:var(--text)">1–2 business days</strong>. You will be notified once your listing is reviewed.</div>
+            </div>
+          </div>
+
+        </div><!-- /.settings-col -->
+
+        <!-- ── SECTION 5: Submit Actions ── -->
+        <div class="submit-actions">
+          <button type="button" class="btn-primary" onclick="submitListing()">Submit for Review</button>
+          <button type="button" class="btn-ghost" onclick="saveAsDraft()">Save as Draft</button>
+        </div>
+
+      </div><!-- /#postForm -->
+
+    </div><!-- /.content -->
+  </div><!-- /.main -->
+</div><!-- /.layout -->
+
+<!-- ── Toast ── -->
+<div class="toast" id="toast">
+  <div class="toast-icon" id="toastIcon">
+    <svg id="toastIconSvg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  </div>
+  <span id="toastMsg"></span>
+</div>
+
+<!-- ── Success Modal ── -->
+<div class="modal-backdrop" id="successModal">
+  <div class="success-modal">
+    <div class="success-modal-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+    </div>
+    <div class="success-modal-title">Listing Submitted!</div>
+    <div class="success-modal-sub">Your listing has been submitted for review. You'll receive a notification once it's approved, usually within 1–2 business days.</div>
+    <a href="listings.html" class="success-modal-btn">View My Listings</a>
+  </div>
+</div>
+
+<script src="../../assets/js/fake-data.js"></script>
+<script src="../../components/sidebar.js"></script>
+<script src="../../components/topbar.js"></script>
+<script>
+  /* ── Auth guard ── */
+  const user = getSession();
+  if (!user || user.role !== 'seller') window.location.href = '../../auth/signin.html';
+
+  /* ── Verification gate ── */
+  const fullUser   = FAKE_USERS.find(u => u.id === user.id);
+  const isVerified = fullUser && fullUser.accountStatus === 'verified';
+  if (!isVerified) {
+    document.getElementById('postForm').style.display = 'none';
+    document.getElementById('verifyGate').style.display = 'flex';
+    document.getElementById('pageSubtitle').textContent = 'Complete identity verification to post your first listing';
+  }
+
+  /* ── Init sidebar & topbar ── */
+  HomeSureSidebar.init({ activePage: 'listings' });
+  HomeSureTopbar.init({ placeholder: 'Post a property...' });
+
+  /* ── Seller name in document section ── */
+  const sellerFullName = (user.firstName || '') + ' ' + (user.lastName || '');
+  document.getElementById('sellerNameDisplay').textContent = sellerFullName.trim();
+
+  /* ── Populate barangay dropdown from fake listings ── */
+  const barangays = [...new Set(FAKE_LISTINGS.map(l => l.barangay))].sort();
+  const barangaySelect = document.getElementById('listingBarangay');
+  barangays.forEach(b => {
+    const opt = document.createElement('option');
+    opt.value = b;
+    opt.textContent = b;
+    barangaySelect.appendChild(opt);
+  });
+
+  /* ── Amenities ── */
+  const AMENITY_LIST = [
+    'Aircon', 'WiFi-ready', 'Parking/Carport', 'Garden', 'Balcony',
+    'Security', 'Water Meter', 'Meralco', 'Furnished', 'Pet-friendly',
+    'Near School', 'Near Highway'
+  ];
+  const selectedAmenities = new Set();
+  const amenitiesGroup = document.getElementById('amenitiesGroup');
+  AMENITY_LIST.forEach(name => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'tag-checkbox';
+    btn.textContent = name;
+    btn.onclick = () => {
+      if (selectedAmenities.has(name)) {
+        selectedAmenities.delete(name);
+        btn.classList.remove('selected');
+      } else {
+        selectedAmenities.add(name);
+        btn.classList.add('selected');
+      }
+    };
+    amenitiesGroup.appendChild(btn);
+  });
+
+  /* ── Listing type toggle ── */
+  let currentListingType = 'sale';
+  function setListingType(type) {
+    currentListingType = type;
+    document.querySelectorAll('#listingTypeGroup .pill-toggle').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.value === type);
+    });
+    document.getElementById('priceSuffix').textContent = type === 'rent' ? '/month' : '';
+  }
+  // Set initial suffix
+  setListingType('sale');
+
+  /* ── Negotiable toggle ── */
+  function onNegotiableChange() {
+    const checked = document.getElementById('negotiableToggle').checked;
+    const label   = document.getElementById('negLabel');
+    label.textContent = checked ? 'On' : 'Off';
+    label.classList.toggle('on', checked);
+  }
+
+  /* ── Description char count ── */
+  function updateCharCount() {
+    const val   = document.getElementById('listingDesc').value;
+    const count = document.getElementById('charCount');
+    count.textContent = val.length + ' / 500';
+    count.classList.toggle('over', val.length > 500);
+  }
+
+  /* ── Photo uploads ── */
+  let uploadedPhotos = []; // array of { file, url }
+
+  function updatePhotoUI() {
+    const grid      = document.getElementById('photoPreviewGrid');
+    const countEl   = document.getElementById('photoCount');
+    const n         = uploadedPhotos.length;
+
+    grid.innerHTML = '';
+    uploadedPhotos.forEach((p, i) => {
+      const thumb = document.createElement('div');
+      thumb.className = 'photo-thumb';
+      thumb.innerHTML = `
+        <img src="${p.url}" alt="Photo ${i+1}" />
+        <button type="button" class="photo-thumb-remove" onclick="removePhoto(${i})">&times;</button>
+      `;
+      grid.appendChild(thumb);
+    });
+
+    if (n > 0) {
+      countEl.style.display = '';
+      countEl.textContent = n + ' / 10 photos';
+    } else {
+      countEl.style.display = 'none';
+    }
+  }
+
+  function handlePhotoSelect(e) {
+    const files = Array.from(e.target.files);
+    const remaining = 10 - uploadedPhotos.length;
+    const toAdd     = files.slice(0, remaining);
+    if (files.length > remaining) {
+      showToast('error', 'Maximum 10 photos allowed. Some photos were not added.');
+    }
+    toAdd.forEach(file => {
+      const url = URL.createObjectURL(file);
+      uploadedPhotos.push({ file, url });
+    });
+    updatePhotoUI();
+    e.target.value = '';
+  }
+
+  function removePhoto(idx) {
+    URL.revokeObjectURL(uploadedPhotos[idx].url);
+    uploadedPhotos.splice(idx, 1);
+    updatePhotoUI();
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    document.getElementById('photoUploadZone').classList.add('drag-over');
+  }
+  function handleDragLeave(e) {
+    document.getElementById('photoUploadZone').classList.remove('drag-over');
+  }
+  function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('photoUploadZone').classList.remove('drag-over');
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    const remaining = 10 - uploadedPhotos.length;
+    const toAdd     = files.slice(0, remaining);
+    toAdd.forEach(file => {
+      const url = URL.createObjectURL(file);
+      uploadedPhotos.push({ file, url });
+    });
+    updatePhotoUI();
+  }
+
+  /* ── Document uploads ── */
+  let deedFile    = null;
+  let supportFile = null;
+
+  function formatFileSize(bytes) {
+    if (bytes < 1024)       return bytes + ' B';
+    if (bytes < 1048576)    return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
+  }
+
+  function handleDocSelect(type, e) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    if (type === 'deed') {
+      deedFile = files[0];
+      const box      = document.getElementById('deedUploadBox');
+      const nameEl   = document.getElementById('deedFileName');
+      const infoEl   = document.getElementById('deedFileInfo');
+      box.classList.add('has-file');
+      nameEl.textContent = deedFile.name;
+      infoEl.textContent = formatFileSize(deedFile.size);
+      infoEl.style.display = '';
+    } else {
+      supportFile = files[0];
+      const box      = document.getElementById('supportUploadBox');
+      const nameEl   = document.getElementById('supportFileName');
+      const infoEl   = document.getElementById('supportFileInfo');
+      box.classList.add('has-file');
+      nameEl.textContent = supportFile.name;
+      infoEl.textContent = formatFileSize(supportFile.size);
+      infoEl.style.display = '';
+    }
+    e.target.value = '';
+  }
+
+  /* ── Toast ── */
+  let toastTimer = null;
+  function showToast(type, msg) {
+    const toast   = document.getElementById('toast');
+    const icon    = document.getElementById('toastIcon');
+    const iconSvg = document.getElementById('toastIconSvg');
+    const msgEl   = document.getElementById('toastMsg');
+
+    toast.classList.remove('success', 'error', 'show');
+    if (type === 'success') {
+      toast.classList.add('success');
+      iconSvg.innerHTML = '<polyline points="20 6 9 17 4 12"/>';
+    } else {
+      toast.classList.add('error');
+      iconSvg.innerHTML = '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>';
+    }
+    msgEl.textContent = msg;
+
+    // Force reflow
+    void toast.offsetWidth;
+    toast.classList.add('show');
+
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 3800);
+  }
+
+  /* ── Validation + Submit ── */
+  function submitListing() {
+    const title    = document.getElementById('listingTitle').value.trim();
+    const price    = document.getElementById('listingPrice').value.trim();
+    const barangay = document.getElementById('listingBarangay').value;
+    const address  = document.getElementById('listingAddress').value.trim();
+    const floor    = document.getElementById('floorArea').value.trim();
+    const desc     = document.getElementById('listingDesc').value.trim();
+
+    const missing = [];
+    if (!title)    missing.push('Listing Title');
+    if (!price)    missing.push('Price');
+    if (!barangay) missing.push('Barangay');
+    if (!address)  missing.push('Full Address');
+    if (!floor)    missing.push('Floor Area');
+    if (!desc)     missing.push('Description');
+    if (uploadedPhotos.length === 0) missing.push('at least 1 photo');
+    if (!deedFile) missing.push('Deed of Sale or TCT document');
+
+    if (missing.length > 0) {
+      showToast('error', 'Please fill in all required fields and upload required documents.');
+      return;
+    }
+
+    // Show success modal
+    document.getElementById('successModal').classList.add('open');
+  }
+
+  /* ── Save as Draft ── */
+  function saveAsDraft() {
+    showToast('success', 'Listing saved as draft.');
+  }
+</script>
+</body>
+</html>

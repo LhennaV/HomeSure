@@ -1,0 +1,1198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HomeSure – Account Settings</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #1E293B; --card: #253347; --card2: #2c3d55; --border: rgba(255,255,255,0.07);
+      --teal: #00c9a7; --teal-faint: rgba(0,201,167,0.12); --teal-mid: rgba(0,201,167,0.25);
+      --text: #f1f5f9; --muted: rgba(255,255,255,0.4); --muted2: rgba(255,255,255,0.65);
+      --danger: #f87171; --danger-faint: rgba(248,113,113,0.1); --danger-mid: rgba(248,113,113,0.3);
+      --radius: 14px;
+    }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
+    .layout { display: flex; height: 100vh; }
+    .main   { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .content { flex: 1; overflow-y: auto; padding: 26px 30px 60px; }
+    .content::-webkit-scrollbar { width: 5px; }
+    .content::-webkit-scrollbar-track { background: transparent; }
+    .content::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #1fc8b4, #0a5e53); border-radius: 99px; }
+    .content::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #24e0ca, #1a9e8f); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes expandIn {
+      from { opacity: 0; max-height: 0; transform: translateY(-6px); }
+      to   { opacity: 1; max-height: 600px; transform: translateY(0); }
+    }
+
+    /* ── Page header ── */
+    .page-header { margin-bottom: 26px; animation: fadeUp 0.35s ease both; }
+    .page-title  { font-size: 22px; font-weight: 800; }
+    .page-sub    { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+
+    /* ── Max-width column ── */
+    .settings-col { display: flex; flex-direction: column; gap: 18px; }
+
+    /* ── Section card ── */
+    .section-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+      animation: fadeUp 0.4s ease both;
+    }
+    .section-card.danger-card { border-color: var(--danger-mid); background: var(--danger-faint); }
+    .section-card.verify-card { border-color: var(--teal-mid); }
+
+    .section-header {
+      padding: 16px 22px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 11px;
+    }
+    .danger-card .section-header { border-bottom-color: var(--danger-mid); }
+    .verify-card .section-header { border-bottom-color: var(--teal-mid); }
+    .section-icon {
+      width: 34px; height: 34px; border-radius: 9px;
+      background: var(--teal-faint); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .section-icon.danger { background: var(--danger-faint); }
+    .section-icon svg { width: 15px; height: 15px; color: var(--teal); }
+    .section-icon.danger svg { color: var(--danger); }
+    .section-title { font-size: 14px; font-weight: 800; }
+    .section-sub   { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+
+    /* ── Setting row ── */
+    .setting-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 22px; border-bottom: 1px solid var(--border); gap: 16px;
+    }
+    .setting-row:last-child { border-bottom: none; }
+    .setting-info { flex: 1; min-width: 0; }
+    .setting-label { font-size: 14px; font-weight: 600; color: var(--text); }
+    .setting-desc  { font-size: 12.5px; color: var(--muted2); margin-top: 4px; line-height: 1.5; }
+
+    /* ── Toggle with On/Off label ── */
+    .toggle-group { display: flex; align-items: center; gap: 9px; flex-shrink: 0; }
+    .toggle-state { font-size: 11.5px; font-weight: 700; color: var(--muted); min-width: 18px; text-align: right; }
+    .toggle-state.on { color: var(--teal); }
+
+    /* ── Toggle switch ── */
+    .toggle { position: relative; width: 44px; height: 25px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .toggle-track {
+      position: absolute; inset: 0; border-radius: 25px;
+      background: rgba(255,255,255,0.1); border: 1px solid var(--border);
+      cursor: pointer; transition: background 0.25s, border-color 0.25s;
+    }
+    .toggle-track::before {
+      content: ''; position: absolute;
+      width: 19px; height: 19px; border-radius: 50%;
+      background: #fff; top: 2px; left: 2px;
+      transition: transform 0.25s; box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+    .toggle input:checked + .toggle-track { background: var(--teal); border-color: var(--teal); }
+    .toggle input:checked + .toggle-track::before { transform: translateX(19px); }
+
+    /* ── Form grid ── */
+    .form-body { padding: 22px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 680px) { .form-grid { grid-template-columns: 1fr; } }
+    .form-save-row { padding: 0 22px 22px; display: flex; align-items: center; justify-content: flex-start; gap: 12px; }
+
+    /* ── Password change ── */
+    .change-pw-btn {
+      display: flex; align-items: center; gap: 7px;
+      background: var(--card2); border: 1px solid var(--border);
+      border-radius: 9px; padding: 9px 16px;
+      color: var(--muted2); font-size: 12.5px; font-weight: 600;
+      font-family: inherit; cursor: pointer; white-space: nowrap;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .change-pw-btn svg { width: 13px; height: 13px; }
+    .change-pw-btn:hover { border-color: var(--teal-mid); color: var(--teal); }
+
+    .pw-form {
+      display: none; padding: 18px 22px; border-top: 1px solid var(--border);
+      flex-direction: column; gap: 13px;
+      animation: expandIn 0.3s ease both;
+    }
+    .pw-form.open { display: flex; }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 11px; font-weight: 700; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.05em; }
+    .field-input-wrap { position: relative; }
+    .field-input-wrap .field-icon {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      width: 14px; height: 14px; color: var(--muted2); pointer-events: none; transition: color 0.2s;
+    }
+    .field-input-wrap:focus-within .field-icon { color: var(--teal); }
+    .field input {
+      width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border);
+      border-radius: 9px; padding: 10px 40px 10px 36px;
+      color: var(--text); font-family: inherit; font-size: 13px; outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .field input:focus { border-color: rgba(0,201,167,0.5); background: rgba(0,0,0,0.28); }
+    .field input::placeholder { color: var(--muted); }
+    .field input.input-error { border-color: rgba(248,113,113,0.6); }
+    .field input[readonly] { opacity: 0.55; cursor: not-allowed; }
+    .field input:-webkit-autofill,
+    .field input:-webkit-autofill:hover,
+    .field input:-webkit-autofill:focus {
+      -webkit-box-shadow: 0 0 0 1000px #1e2d40 inset !important;
+      -webkit-text-fill-color: #f1f5f9 !important;
+      caret-color: #f1f5f9;
+      border-color: rgba(0,201,167,0.3) !important;
+    }
+    [data-theme="light"] .field input:-webkit-autofill,
+    [data-theme="light"] .field input:-webkit-autofill:hover,
+    [data-theme="light"] .field input:-webkit-autofill:focus {
+      -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+      -webkit-text-fill-color: #1e293b !important;
+      caret-color: #1e293b;
+    }
+
+    .verify-phone-link {
+      display: inline-block; margin-top: 5px; font-size: 12px; font-weight: 600;
+      color: var(--teal); text-decoration: none; cursor: pointer;
+      border-bottom: 1px dashed var(--teal); transition: opacity 0.2s;
+    }
+    .verify-phone-link:hover { opacity: 0.7; }
+
+    .pw-toggle-visibility {
+      position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
+      cursor: pointer; color: var(--muted); transition: color 0.2s;
+    }
+    .pw-toggle-visibility:hover { color: var(--muted2); }
+    .pw-toggle-visibility svg { width: 15px; height: 15px; display: block; }
+
+    /* ── Password strength ── */
+    .pw-strength { display: none; align-items: center; gap: 10px; margin-top: 8px; }
+    .pw-strength.show { display: flex; }
+    .pw-strength-bars { display: flex; gap: 4px; flex: 1; }
+    .pw-bar {
+      flex: 1; height: 4px; border-radius: 99px;
+      background: var(--border); transition: background 0.25s;
+    }
+    .pw-bar.weak     { background: #f87171; }
+    .pw-bar.fair     { background: #fbbf24; }
+    .pw-bar.good     { background: #34d399; }
+    .pw-bar.strong   { background: var(--teal); }
+    .pw-strength-label { font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+    .pw-strength-label.weak   { color: #f87171; }
+    .pw-strength-label.fair   { color: #fbbf24; }
+    .pw-strength-label.good   { color: #34d399; }
+    .pw-strength-label.strong { color: var(--teal); }
+
+    .pw-requirements { display: none; flex-direction: column; gap: 5px; margin-top: 10px; }
+    .pw-requirements.show { display: flex; }
+    .pw-req {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 12px; color: var(--muted); transition: color 0.2s;
+    }
+    .pw-req svg { width: 13px; height: 13px; flex-shrink: 0; transition: color 0.2s; }
+    .pw-req.met { color: var(--teal); }
+    .pw-req.met svg { color: var(--teal); }
+    .pw-req.met svg circle { display: none; }
+
+    .pw-actions { display: flex; align-items: center; gap: 10px; }
+    .btn-primary {
+      background: linear-gradient(135deg, #00c9a7, #007a65);
+      border: none; border-radius: 9px; padding: 10px 22px;
+      color: #fff; font-size: 13px; font-weight: 700; font-family: inherit;
+      cursor: pointer; transition: opacity 0.2s, transform 0.18s;
+    }
+    .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-ghost {
+      background: transparent; border: 1px solid var(--border);
+      border-radius: 9px; padding: 10px 18px;
+      color: var(--muted2); font-size: 13px; font-weight: 600; font-family: inherit;
+      cursor: pointer; transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-ghost:hover { border-color: var(--muted2); color: var(--text); }
+    .btn-ghost.teal { border-color: var(--teal-mid); color: var(--teal); }
+    .btn-ghost.teal:hover { border-color: var(--teal); background: var(--teal-faint); }
+    .btn-danger {
+      background: transparent; border: 1.5px solid var(--danger);
+      border-radius: 9px; padding: 10px 22px;
+      color: var(--danger); font-size: 13px; font-weight: 700; font-family: inherit;
+      cursor: pointer; display: flex; align-items: center; gap: 8px;
+      transition: background 0.2s, color 0.2s, transform 0.18s;
+    }
+    .btn-danger svg { width: 14px; height: 14px; transition: color 0.2s; }
+    .btn-danger:hover { background: var(--danger); color: #fff; transform: translateY(-1px); }
+    .btn-danger:hover svg { color: #fff; }
+
+    /* ── Password never dot ── */
+    .pw-nudge-dot {
+      display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+      background: #fbbf24; margin-right: 5px; vertical-align: middle;
+      animation: pw-nudge-pulse 2s ease-in-out infinite;
+    }
+    @keyframes pw-nudge-pulse {
+      0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
+    }
+
+    /* ── Notification save row ── */
+    .notif-save-row { padding: 18px 22px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+    .notif-saved-msg { font-size: 12px; color: var(--teal); font-weight: 600; display: none; align-items: center; gap: 6px; }
+    .notif-saved-msg.show { display: flex; }
+    .notif-saved-msg svg { width: 13px; height: 13px; }
+
+    .notif-section-label {
+      padding: 14px 22px 8px;
+      font-size: 11px; font-weight: 800;
+      color: var(--muted2); text-transform: uppercase; letter-spacing: 0.07em;
+      border-left: 3px solid var(--teal);
+      margin-left: 22px; padding-left: 10px;
+    }
+
+    /* ── Dimmed types (when all channels off) ── */
+    .setting-row.dimmed { opacity: 0.4; pointer-events: none; }
+
+    /* ── Verification status badges ── */
+    .verify-status-row { padding: 20px 22px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .verify-status-label {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 700; padding: 5px 12px;
+      border-radius: 99px;
+    }
+    .verify-status-label.verified   { color: var(--teal); background: var(--teal-faint); border: 1px solid var(--teal-mid); }
+    .verify-status-label.pending    { color: #fbbf24; background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3); }
+    .verify-status-label.unverified { color: var(--danger); background: var(--danger-faint); border: 1px solid var(--danger-mid); }
+
+    /* ── Danger zone ── */
+    .danger-zone-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 800; color: var(--danger);
+      text-transform: uppercase; letter-spacing: 0.1em;
+      padding: 4px 0 10px;
+    }
+    .danger-zone-label::before { content: ''; flex: 1; height: 1px; background: var(--danger-mid); }
+    .danger-zone-label::after  { content: ''; flex: 1; height: 1px; background: var(--danger-mid); }
+
+    .danger-body { padding: 18px 22px; display: flex; flex-direction: column; gap: 14px; }
+    .danger-warning {
+      display: flex; align-items: flex-start; gap: 11px;
+      background: rgba(248,113,113,0.08); border: 1px solid var(--danger-mid);
+      border-radius: 10px; padding: 13px 15px;
+    }
+    .danger-warning svg { width: 16px; height: 16px; color: var(--danger); flex-shrink: 0; margin-top: 1px; }
+    .danger-warning-text { font-size: 12.5px; color: var(--muted2); line-height: 1.5; }
+    .danger-warning-text strong { color: var(--danger); }
+
+    /* ── Pending deletion banner ── */
+    .pending-banner {
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.35);
+      border-radius: 11px; padding: 14px 16px; gap: 14px;
+    }
+    .pending-banner-left { display: flex; align-items: flex-start; gap: 12px; }
+    .pending-banner-left svg { width: 18px; height: 18px; color: #fbbf24; flex-shrink: 0; margin-top: 1px; }
+    .pending-banner-title { font-size: 13px; font-weight: 700; color: #fbbf24; margin-bottom: 3px; }
+    .pending-banner-sub   { font-size: 12px; color: var(--muted2); line-height: 1.45; }
+    .pending-cancel-btn {
+      background: transparent; border: 1.5px solid #fbbf24;
+      border-radius: 8px; padding: 8px 16px; color: #fbbf24;
+      font-size: 12.5px; font-weight: 700; font-family: inherit; cursor: pointer;
+      white-space: nowrap; transition: background 0.2s, color 0.2s;
+    }
+    .pending-cancel-btn:hover { background: rgba(251,191,36,0.15); }
+
+    /* ── Delete modal steps ── */
+    .delete-modal-info { display: flex; flex-direction: column; gap: 11px; margin-bottom: 20px; }
+    .delete-modal-step {
+      display: flex; align-items: flex-start; gap: 12px;
+      font-size: 13px; color: var(--muted2); line-height: 1.5;
+    }
+    .delete-modal-step strong { color: var(--text); }
+    .delete-step-num {
+      width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+      background: var(--danger-faint); border: 1px solid var(--danger-mid);
+      color: var(--danger); font-size: 11px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center; margin-top: 1px;
+    }
+
+    /* ── 2FA Modal ── */
+    .modal-backdrop {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+      align-items: center; justify-content: center;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 18px; padding: 28px; width: calc(100% - 40px); max-width: 420px;
+      animation: fadeUp 0.3s ease both;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      overflow: hidden;
+    }
+    .modal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; }
+    .modal-title { font-size: 16px; font-weight: 800; color: var(--text); line-height: 1.25; }
+    .modal-sub   { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .modal-close {
+      width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border);
+      background: transparent; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--muted); transition: color 0.2s, background 0.2s; flex-shrink: 0;
+    }
+    .modal-close:hover { background: var(--card2); color: var(--text); }
+    .modal-close svg { width: 14px; height: 14px; }
+
+    .twofa-email-sent {
+      display: flex; align-items: center; gap: 14px;
+      background: var(--teal-faint); border: 1px solid var(--teal-mid);
+      border-radius: 11px; padding: 14px 16px; margin-bottom: 18px;
+    }
+    .twofa-email-icon {
+      width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+      background: rgba(0,201,167,0.18); display: flex; align-items: center; justify-content: center;
+    }
+    .twofa-email-icon svg { width: 18px; height: 18px; color: var(--teal); }
+    .twofa-email-title { font-size: 13px; font-weight: 700; color: var(--teal); margin-bottom: 3px; }
+    .twofa-email-sub   { font-size: 12px; color: var(--muted2); }
+    .twofa-email-sub strong { color: var(--text); }
+
+    .twofa-resend {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 12px; color: var(--muted); margin-bottom: 16px;
+    }
+    .twofa-resend-link {
+      color: var(--teal); font-weight: 600; cursor: pointer;
+      border-bottom: 1px dashed var(--teal); transition: opacity 0.2s;
+    }
+    .twofa-resend-link:hover { opacity: 0.7; }
+    .twofa-resend-link.disabled { color: var(--muted); border-color: var(--muted); cursor: default; pointer-events: none; }
+
+    .otp-boxes { display: flex; gap: 7px; margin-bottom: 16px; }
+    .otp-box {
+      flex: 1; min-width: 0; width: 0; height: 48px; border-radius: 9px;
+      background: rgba(0,0,0,0.25); border: 1px solid var(--border);
+      text-align: center; font-size: 18px; font-weight: 700;
+      color: var(--text); font-family: inherit; outline: none;
+      transition: border-color 0.2s; caret-color: var(--teal);
+    }
+    .otp-box:focus { border-color: rgba(0,201,167,0.6); }
+    .otp-box.filled { border-color: rgba(0,201,167,0.4); }
+    .otp-error {
+      font-size: 12px; color: var(--danger); margin-bottom: 14px;
+      display: none; align-items: center; gap: 5px;
+    }
+    .otp-error.show { display: flex; }
+    .otp-error svg { width: 13px; height: 13px; }
+    .modal-actions { display: flex; gap: 10px; }
+    .modal-actions .btn-ghost { flex: 1; text-align: center; }
+    .modal-actions .btn-primary { flex: 2; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 28px; right: 28px; z-index: 999;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 11px; padding: 13px 18px;
+      display: flex; align-items: center; gap: 10px;
+      font-size: 13px; font-weight: 600; color: var(--text);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+      opacity: 0; transform: translateY(10px);
+      transition: opacity 0.25s, transform 0.25s; pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .toast-icon svg { width: 14px; height: 14px; color: #fff; }
+    .toast.success .toast-icon { background: var(--teal); }
+    .toast.error   .toast-icon { background: var(--danger); }
+
+    /* ── Light mode ── */
+    [data-theme="light"] {
+      --bg: #f1f5f9; --card: #ffffff; --card2: #f8fafc; --border: rgba(0,0,0,0.09);
+      --text: #1e293b; --muted: rgba(0,0,0,0.45); --muted2: rgba(0,0,0,0.6);
+    }
+    [data-theme="light"] body { background: var(--bg); }
+    [data-theme="light"] .toggle-track { background: rgba(0,0,0,0.1); }
+    [data-theme="light"] .toggle-track::before { box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
+    [data-theme="light"] .field input { background: rgba(0,0,0,0.04); }
+    [data-theme="light"] .field input:focus { background: #fff; }
+    [data-theme="light"] .otp-box { background: rgba(0,0,0,0.05); }
+    [data-theme="light"] .modal { box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+    [data-theme="light"] .change-pw-btn { background: #f1f5f9; }
+    [data-theme="light"] .toast { box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+    [data-theme="light"] .delete-confirm input { background: rgba(0,0,0,0.04); }
+    [data-theme="light"] .btn-primary {
+      background: linear-gradient(135deg, #00c9a7 0%, rgba(0,130,106,0.75) 100%);
+      box-shadow: 0 3px 14px rgba(0,201,167,0.3);
+    }
+    [data-theme="light"] .content::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #1fc8b4, #0a5e53); }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <div id="hs-sidebar"></div>
+  <div class="main">
+    <div id="hs-topbar"></div>
+    <div class="content">
+
+      <div class="page-header">
+        <div class="page-title">Account Settings</div>
+        <div class="page-sub">Manage your account settings and preferences</div>
+      </div>
+
+      <div class="settings-col">
+
+        <!-- ── Section 1: Personal Information ── -->
+        <div class="section-card" style="animation-delay:0s">
+          <div class="section-header">
+            <div class="section-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div>
+              <div class="section-title">Personal Information</div>
+              <div class="section-sub">Update your personal details</div>
+            </div>
+          </div>
+
+          <div class="form-body">
+            <div class="form-grid">
+              <div class="field">
+                <label>Full Name</label>
+                <div class="field-input-wrap">
+                  <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  <input type="text" id="profileName" placeholder="Your full name" autocomplete="name" />
+                </div>
+              </div>
+              <div class="field">
+                <label>Email Address</label>
+                <div class="field-input-wrap">
+                  <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  <input type="email" id="profileEmail" placeholder="Your email" readonly />
+                </div>
+              </div>
+              <div class="field">
+                <label>Phone Number</label>
+                <div class="field-input-wrap">
+                  <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.37 2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.27a16 16 0 0 0 5.82 5.82l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.18 14l.74 2.92z"/></svg>
+                  <input type="tel" id="profilePhone" placeholder="+63 9XX XXX XXXX" autocomplete="tel" />
+                </div>
+                <span class="verify-phone-link" onclick="showToast('Phone verification coming soon.','error')">Verify Phone Number</span>
+              </div>
+              <div class="field">
+                <label>Location</label>
+                <div class="field-input-wrap">
+                  <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <input type="text" id="profileLocation" placeholder="City, Province" autocomplete="address-level2" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-save-row">
+            <button class="btn-primary" onclick="savePersonalInfo()">Save Changes</button>
+          </div>
+        </div>
+
+        <!-- ── Section 2: Security ── -->
+        <div class="section-card" style="animation-delay:0.05s">
+          <div class="section-header">
+            <div class="section-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div>
+              <div class="section-title">Security</div>
+              <div class="section-sub">Manage your password and account access</div>
+            </div>
+          </div>
+
+          <!-- Password row -->
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Password</div>
+              <div class="setting-desc"><span class="pw-nudge-dot"></span>Last changed: Never — we recommend updating your password</div>
+            </div>
+            <button class="change-pw-btn" id="changePwBtn" onclick="togglePwForm()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              Change Password
+            </button>
+          </div>
+
+          <!-- Password form (expandable) -->
+          <div class="pw-form" id="pwForm">
+            <div class="field">
+              <label>Current Password</label>
+              <div class="field-input-wrap">
+                <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <input type="password" id="currentPw" placeholder="Enter current password" autocomplete="current-password" />
+              </div>
+            </div>
+            <div class="field">
+              <label>New Password</label>
+              <div class="field-input-wrap">
+                <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <input type="password" id="newPw" placeholder="Create a strong password" autocomplete="new-password" oninput="checkStrength(this.value)" />
+                <span class="pw-toggle-visibility" onclick="toggleVis('newPw',this)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </span>
+              </div>
+              <!-- Strength meter -->
+              <div class="pw-strength" id="pwStrengthWrap">
+                <div class="pw-strength-bars">
+                  <div class="pw-bar" id="pwBar1"></div>
+                  <div class="pw-bar" id="pwBar2"></div>
+                  <div class="pw-bar" id="pwBar3"></div>
+                  <div class="pw-bar" id="pwBar4"></div>
+                </div>
+                <span class="pw-strength-label" id="pwStrengthLabel"></span>
+              </div>
+              <div class="pw-requirements" id="pwRequirements">
+                <div class="pw-req" id="req-len">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+                  At least 8 characters
+                </div>
+                <div class="pw-req" id="req-upper">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+                  One uppercase letter (A–Z)
+                </div>
+                <div class="pw-req" id="req-num">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+                  One number (0–9)
+                </div>
+                <div class="pw-req" id="req-special">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+                  One special character (!@#$…)
+                </div>
+              </div>
+            </div>
+            <div class="field">
+              <label>Confirm New Password</label>
+              <div class="field-input-wrap">
+                <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <input type="password" id="confirmPw" placeholder="Re-enter new password" autocomplete="new-password" />
+                <span class="pw-toggle-visibility" onclick="toggleVis('confirmPw',this)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </span>
+              </div>
+            </div>
+            <div class="pw-actions">
+              <button class="btn-primary" onclick="savePassword()">Update Password</button>
+              <button class="btn-ghost" onclick="togglePwForm()">Cancel</button>
+            </div>
+          </div>
+
+          <!-- 2FA row -->
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Two-Factor Authentication</div>
+              <div class="setting-desc">Add an extra layer of security — require a code when signing in</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="twoFaToggle" onchange="handle2FA(this)" />
+              <div class="toggle-track"></div>
+            </label>
+          </div>
+
+          <div class="setting-row" id="twoFaStatus">
+            <div class="setting-desc" id="twoFaStatusInner" style="display:flex;align-items:center;gap:7px;">
+              <svg id="twoFaStatusIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span id="twoFaStatusText">Two-Factor Authentication is disabled</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Section 3: Notification Preferences ── -->
+        <div class="section-card" style="animation-delay:0.1s">
+          <div class="section-header">
+            <div class="section-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </div>
+            <div>
+              <div class="section-title">Notification Preferences</div>
+              <div class="section-sub">Choose how and when you want to be notified</div>
+            </div>
+          </div>
+
+          <div class="notif-section-label">Notification Channels</div>
+
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Email Notifications</div>
+              <div class="setting-desc">Receive notifications via your email address</div>
+            </div>
+            <div class="toggle-group">
+              <span class="toggle-state on" id="notifEmail-lbl">On</span>
+              <label class="toggle"><input type="checkbox" id="notifEmail" checked onchange="updateToggleLabel(this,'notifEmail-lbl');updateChannelDependency()" /><div class="toggle-track"></div></label>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">SMS Notifications</div>
+              <div class="setting-desc">Receive notifications via text message</div>
+            </div>
+            <div class="toggle-group">
+              <span class="toggle-state" id="notifSms-lbl">Off</span>
+              <label class="toggle"><input type="checkbox" id="notifSms" onchange="updateToggleLabel(this,'notifSms-lbl');updateChannelDependency()" /><div class="toggle-track"></div></label>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Push Notifications</div>
+              <div class="setting-desc">Receive in-browser push notifications</div>
+            </div>
+            <div class="toggle-group">
+              <span class="toggle-state on" id="notifPush-lbl">On</span>
+              <label class="toggle"><input type="checkbox" id="notifPush" checked onchange="updateToggleLabel(this,'notifPush-lbl');updateChannelDependency()" /><div class="toggle-track"></div></label>
+            </div>
+          </div>
+
+          <div class="notif-section-label">Notification Types</div>
+
+          <div class="setting-row" id="rowInquiries">
+            <div class="setting-info">
+              <div class="setting-label">Listing Inquiries</div>
+              <div class="setting-desc">Get notified when buyers send inquiries about your listings</div>
+            </div>
+            <div class="toggle-group">
+              <span class="toggle-state on" id="notifInquiries-lbl">On</span>
+              <label class="toggle"><input type="checkbox" id="notifInquiries" checked onchange="updateToggleLabel(this,'notifInquiries-lbl')" /><div class="toggle-track"></div></label>
+            </div>
+          </div>
+          <div class="setting-row" id="rowMessages">
+            <div class="setting-info">
+              <div class="setting-label">New Messages</div>
+              <div class="setting-desc">Get notified when buyers send you messages</div>
+            </div>
+            <div class="toggle-group">
+              <span class="toggle-state on" id="notifMessages-lbl">On</span>
+              <label class="toggle"><input type="checkbox" id="notifMessages" checked onchange="updateToggleLabel(this,'notifMessages-lbl')" /><div class="toggle-track"></div></label>
+            </div>
+          </div>
+          <div class="setting-row" id="rowListingStatus">
+            <div class="setting-info">
+              <div class="setting-label">Listing Status Updates</div>
+              <div class="setting-desc">Know when your listing is approved, rejected, or flagged</div>
+            </div>
+            <div class="toggle-group">
+              <span class="toggle-state on" id="notifListingStatus-lbl">On</span>
+              <label class="toggle"><input type="checkbox" id="notifListingStatus" checked onchange="updateToggleLabel(this,'notifListingStatus-lbl')" /><div class="toggle-track"></div></label>
+            </div>
+          </div>
+          <div class="setting-row" id="rowMarket">
+            <div class="setting-info">
+              <div class="setting-label">Price &amp; Market Alerts</div>
+              <div class="setting-desc">Receive updates on market trends and competitive pricing in your area</div>
+            </div>
+            <div class="toggle-group">
+              <span class="toggle-state" id="notifMarket-lbl">Off</span>
+              <label class="toggle"><input type="checkbox" id="notifMarket" onchange="updateToggleLabel(this,'notifMarket-lbl')" /><div class="toggle-track"></div></label>
+            </div>
+          </div>
+          <div class="setting-row" id="rowPromo">
+            <div class="setting-info">
+              <div class="setting-label">Promotions &amp; Updates</div>
+              <div class="setting-desc">Receive news, tips, and HomeSure platform updates</div>
+            </div>
+            <div class="toggle-group">
+              <span class="toggle-state" id="notifPromo-lbl">Off</span>
+              <label class="toggle"><input type="checkbox" id="notifPromo" onchange="updateToggleLabel(this,'notifPromo-lbl')" /><div class="toggle-track"></div></label>
+            </div>
+          </div>
+
+          <div class="notif-save-row">
+            <div class="notif-saved-msg" id="notifSavedMsg">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Preferences saved
+            </div>
+            <button class="btn-primary" onclick="saveNotifications()">Save Preferences</button>
+          </div>
+        </div>
+
+        <!-- ── Section 4: Identity Verification ── -->
+        <div class="section-card verify-card" style="animation-delay:0.15s">
+          <div class="section-header">
+            <div class="section-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+            </div>
+            <div>
+              <div class="section-title">Identity Verification</div>
+              <div class="section-sub">Manage your seller verification status</div>
+            </div>
+          </div>
+
+          <div class="verify-status-row" id="verifyStatusRow">
+            <!-- Filled dynamically -->
+          </div>
+        </div>
+
+        <!-- ── Section 5: Account Removal ── -->
+        <div class="section-card danger-card" style="animation-delay:0.2s">
+          <div class="section-header">
+            <div class="section-icon danger">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            </div>
+            <div>
+              <div class="section-title" style="color:var(--danger)">Account Removal</div>
+              <div class="section-sub">Permanently delete your account and all associated data</div>
+            </div>
+          </div>
+
+          <div class="danger-body">
+            <!-- Pending deletion banner (shown after scheduling) -->
+            <div class="pending-banner" id="pendingBanner" style="display:none">
+              <div class="pending-banner-left">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <div>
+                  <div class="pending-banner-title">Account scheduled for deletion</div>
+                  <div class="pending-banner-sub" id="pendingBannerSub"></div>
+                </div>
+              </div>
+              <button class="pending-cancel-btn" onclick="cancelScheduledDeletion()">Cancel Deletion</button>
+            </div>
+
+            <div class="danger-warning" id="deletionWarning">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <div class="danger-warning-text">
+                Your account, listings, messages, and all associated data will be <strong>permanently removed</strong>. You will have <strong>30 days</strong> to change your mind before deletion is finalized.
+              </div>
+            </div>
+
+            <div id="deleteBtn">
+              <button class="btn-danger" onclick="openDeleteModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                Delete My Account
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /settings-col -->
+    </div><!-- /content -->
+  </div>
+</div>
+
+<!-- ── 2FA Modal ── -->
+<div class="modal-backdrop" id="twoFaModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Enable Two-Factor Authentication</div>
+        <div class="modal-sub">Enter the code we sent to your email</div>
+      </div>
+      <button class="modal-close" onclick="close2FA()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="twofa-email-sent">
+      <div class="twofa-email-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      </div>
+      <div>
+        <div class="twofa-email-title">Code sent!</div>
+        <div class="twofa-email-sub">We sent a 6-digit code to <strong id="twoFaEmailTarget"></strong></div>
+      </div>
+    </div>
+
+    <div class="otp-boxes" id="twoFaBoxes">
+      <input class="otp-box" maxlength="1" type="text" inputmode="numeric" />
+      <input class="otp-box" maxlength="1" type="text" inputmode="numeric" />
+      <input class="otp-box" maxlength="1" type="text" inputmode="numeric" />
+      <input class="otp-box" maxlength="1" type="text" inputmode="numeric" />
+      <input class="otp-box" maxlength="1" type="text" inputmode="numeric" />
+      <input class="otp-box" maxlength="1" type="text" inputmode="numeric" />
+    </div>
+    <div class="otp-error" id="twoFaError">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Invalid code. Please try again.
+    </div>
+
+    <div class="twofa-resend">
+      <span id="twoFaResendText">Resend code in <strong id="twoFaTimer">30s</strong></span>
+      <span class="twofa-resend-link disabled" id="twoFaResendLink" onclick="resend2FA()">Resend</span>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="close2FA()">Cancel</button>
+      <button class="btn-primary" onclick="verify2FA()">Verify &amp; Enable</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Delete Account Modal ── -->
+<div class="modal-backdrop" id="deleteModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" style="color:var(--danger)">Delete Your Account?</div>
+        <div class="modal-sub">This will schedule your account for permanent deletion</div>
+      </div>
+      <button class="modal-close" onclick="closeDeleteModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="delete-modal-info">
+      <div class="delete-modal-step">
+        <div class="delete-step-num">1</div>
+        <div>Your account will be <strong>deactivated immediately</strong> and hidden from the platform.</div>
+      </div>
+      <div class="delete-modal-step">
+        <div class="delete-step-num">2</div>
+        <div>You have <strong>30 days</strong> to log back in and cancel the deletion.</div>
+      </div>
+      <div class="delete-modal-step">
+        <div class="delete-step-num">3</div>
+        <div>After 30 days, your account and all data will be <strong>permanently removed</strong>.</div>
+      </div>
+    </div>
+
+    <div class="field" style="margin-bottom:16px;">
+      <label>Confirm by typing your email</label>
+      <div class="field-input-wrap">
+        <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <input type="text" id="deleteEmailInput" placeholder="Enter your email address" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" />
+      </div>
+      <div class="otp-error" id="deleteEmailError" style="margin-top:8px;margin-bottom:0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Email does not match your account.
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeDeleteModal()">Keep My Account</button>
+      <button class="btn-danger" style="flex:2;justify-content:center" onclick="confirmScheduleDeletion()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        Schedule Deletion
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div class="toast-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="toastIcon"></svg></div>
+  <span id="toastMsg"></span>
+</div>
+
+<script src="../../assets/js/fake-data.js"></script>
+<script src="../../components/sidebar.js"></script>
+<script src="../../components/topbar.js"></script>
+<script>
+  const user = getSession();
+  if (!user || user.role !== 'seller') window.location.href = '../../auth/signin.html';
+
+  HomeSureSidebar.init({ activePage: 'settings' });
+  HomeSureTopbar.init({ placeholder: 'Search settings...' });
+
+  // ── Pre-fill personal info ──────────────────────────────────────────────────
+  const fullUser = FAKE_USERS.find(u => u.id === user.id) || {};
+  document.getElementById('profileName').value     = fullUser.name  || user.name  || '';
+  document.getElementById('profileEmail').value    = fullUser.email || user.email || '';
+  document.getElementById('profilePhone').value    = fullUser.phone || '';
+  document.getElementById('profileLocation').value = fullUser.location || 'Sta. Maria, Bulacan';
+
+  // ── Identity Verification status ───────────────────────────────────────────
+  (function renderVerifyStatus() {
+    const status = fullUser.accountStatus || 'unverified';
+    const row = document.getElementById('verifyStatusRow');
+
+    if (status === 'verified') {
+      row.innerHTML = `
+        <div class="setting-info">
+          <span class="verify-status-label verified">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Identity Verified
+          </span>
+          <div class="setting-desc" style="margin-top:8px;">Your identity has been verified. You are authorized to publish listings.</div>
+        </div>
+        <button class="btn-ghost teal" onclick="showToast('Re-verification flow coming soon.')">Re-verify</button>`;
+    } else if (status === 'pending') {
+      row.innerHTML = `
+        <div class="setting-info">
+          <span class="verify-status-label pending">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Verification Pending
+          </span>
+          <div class="setting-desc" style="margin-top:8px;">Your documents are under review. This usually takes 1–2 business days.</div>
+        </div>
+        <span class="verify-status-label pending" style="flex-shrink:0;">Under Review</span>`;
+    } else {
+      row.innerHTML = `
+        <div class="setting-info">
+          <span class="verify-status-label unverified">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Not Verified
+          </span>
+          <div class="setting-desc" style="margin-top:8px;">You need to verify your identity before publishing listings.</div>
+        </div>
+        <a href="verification.html" class="btn-primary" style="text-decoration:none;white-space:nowrap;">Start Verification →</a>`;
+    }
+  })();
+
+  // ── Toast ────────────────────────────────────────────────────────────────────
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.className = 'toast ' + type;
+    document.getElementById('toastMsg').textContent = msg;
+    document.getElementById('toastIcon').innerHTML = type === 'success'
+      ? '<polyline points="20 6 9 17 4 12"/>'
+      : '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // ── Personal info ────────────────────────────────────────────────────────────
+  function savePersonalInfo() {
+    const name  = document.getElementById('profileName').value.trim();
+    const phone = document.getElementById('profilePhone').value.trim();
+    if (!name) { showToast('Please enter your full name.', 'error'); return; }
+    showToast('Personal information updated.');
+  }
+
+  // ── Password ─────────────────────────────────────────────────────────────────
+  function togglePwForm() {
+    const form = document.getElementById('pwForm');
+    const btn  = document.getElementById('changePwBtn');
+    const isOpen = form.classList.contains('open');
+    form.classList.toggle('open');
+    btn.innerHTML = isOpen
+      ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Change Password`
+      : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Hide Form`;
+    if (isOpen) {
+      ['currentPw','newPw','confirmPw'].forEach(id => document.getElementById(id).value = '');
+      checkStrength('');
+    }
+  }
+
+  function toggleVis(inputId, btn) {
+    const inp = document.getElementById(inputId);
+    const isHidden = inp.type === 'password';
+    inp.type = isHidden ? 'text' : 'password';
+    btn.innerHTML = isHidden
+      ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`
+      : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+  }
+
+  function checkStrength(val) {
+    const wrap  = document.getElementById('pwStrengthWrap');
+    const label = document.getElementById('pwStrengthLabel');
+    const reqs  = document.getElementById('pwRequirements');
+    const bars  = [1,2,3,4].map(n => document.getElementById('pwBar' + n));
+
+    if (!val) {
+      wrap.classList.remove('show');
+      reqs.classList.remove('show');
+      bars.forEach(b => b.className = 'pw-bar');
+      return;
+    }
+
+    wrap.classList.add('show');
+    reqs.classList.add('show');
+
+    const checks = {
+      len:     val.length >= 8,
+      upper:   /[A-Z]/.test(val),
+      num:     /[0-9]/.test(val),
+      special: /[^A-Za-z0-9]/.test(val),
+    };
+
+    ['len','upper','num','special'].forEach(key => {
+      const el = document.getElementById('req-' + key);
+      el.classList.toggle('met', checks[key]);
+      el.querySelector('svg').innerHTML = checks[key]
+        ? '<polyline points="20 6 9 17 4 12"/>'
+        : '<circle cx="12" cy="12" r="10"/>';
+    });
+
+    const score = Object.values(checks).filter(Boolean).length;
+    const levels = ['','weak','fair','good','strong'];
+    const texts  = ['','Weak','Fair','Good','Strong'];
+
+    bars.forEach((b, i) => {
+      b.className = 'pw-bar' + (i < score ? ' ' + levels[score] : '');
+    });
+    label.className   = 'pw-strength-label ' + (levels[score] || '');
+    label.textContent = texts[score] || '';
+  }
+
+  function savePassword() {
+    const cur = document.getElementById('currentPw').value;
+    const nw  = document.getElementById('newPw').value;
+    const cf  = document.getElementById('confirmPw').value;
+
+    if (!cur || !nw || !cf) { showToast('Please fill in all password fields.', 'error'); return; }
+    if (fullUser && cur !== fullUser.password) { showToast('Current password is incorrect.', 'error'); return; }
+    if (nw.length < 8)              { showToast('Password must be at least 8 characters.', 'error'); return; }
+    if (!/[A-Z]/.test(nw))          { showToast('Password must include an uppercase letter.', 'error'); return; }
+    if (!/[0-9]/.test(nw))          { showToast('Password must include a number.', 'error'); return; }
+    if (!/[^A-Za-z0-9]/.test(nw))   { showToast('Password must include a special character.', 'error'); return; }
+    if (nw !== cf) { showToast('New passwords do not match.', 'error'); return; }
+
+    document.getElementById('pwForm').classList.remove('open');
+    document.getElementById('changePwBtn').innerHTML =
+      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Change Password`;
+    ['currentPw','newPw','confirmPw'].forEach(id => document.getElementById(id).value = '');
+    showToast('Password updated successfully.');
+  }
+
+  // ── 2FA ──────────────────────────────────────────────────────────────────────
+  let twoFaEnabled = false;
+  let twoFaResendInterval = null;
+
+  function handle2FA(checkbox) {
+    if (checkbox.checked && !twoFaEnabled) {
+      document.getElementById('twoFaEmailTarget').textContent = user.email;
+      document.getElementById('twoFaModal').classList.add('open');
+      document.getElementById('twoFaError').classList.remove('show');
+      document.querySelectorAll('#twoFaBoxes .otp-box').forEach(b => { b.value = ''; b.classList.remove('filled'); });
+      start2FAResendTimer();
+      setTimeout(() => document.querySelectorAll('#twoFaBoxes .otp-box')[0].focus(), 100);
+    } else if (!checkbox.checked && twoFaEnabled) {
+      twoFaEnabled = false;
+      setTwoFaStatus(false);
+      showToast('Two-factor authentication disabled.');
+    }
+  }
+
+  function start2FAResendTimer() {
+    clearInterval(twoFaResendInterval);
+    let secs = 30;
+    const timerEl = document.getElementById('twoFaTimer');
+    const textEl  = document.getElementById('twoFaResendText');
+    const linkEl  = document.getElementById('twoFaResendLink');
+    timerEl.textContent = secs + 's';
+    textEl.style.display = 'inline';
+    linkEl.classList.add('disabled');
+    twoFaResendInterval = setInterval(() => {
+      secs--;
+      if (secs <= 0) {
+        clearInterval(twoFaResendInterval);
+        textEl.style.display = 'none';
+        linkEl.classList.remove('disabled');
+      } else { timerEl.textContent = secs + 's'; }
+    }, 1000);
+  }
+
+  function resend2FA() {
+    document.querySelectorAll('#twoFaBoxes .otp-box').forEach(b => { b.value = ''; b.classList.remove('filled'); });
+    document.getElementById('twoFaError').classList.remove('show');
+    document.getElementById('twoFaResendText').style.display = 'inline';
+    start2FAResendTimer();
+    showToast('Verification code resent to ' + user.email + '.');
+  }
+
+  function close2FA(e) {
+    if (e) e.stopPropagation();
+    clearInterval(twoFaResendInterval);
+    document.getElementById('twoFaModal').classList.remove('open');
+    document.getElementById('twoFaError').classList.remove('show');
+    if (!twoFaEnabled) document.getElementById('twoFaToggle').checked = false;
+  }
+
+  function verify2FA() {
+    const code = [...document.querySelectorAll('#twoFaBoxes .otp-box')].map(b => b.value).join('');
+    if (code.length < 6) { showToast('Please enter the full 6-digit code.', 'error'); return; }
+    if (code === '123456') {
+      twoFaEnabled = true;
+      clearInterval(twoFaResendInterval);
+      setTwoFaStatus(true);
+      document.getElementById('twoFaToggle').checked = true;
+      document.getElementById('twoFaModal').classList.remove('open');
+      document.getElementById('twoFaError').classList.remove('show');
+      showToast('Two-factor authentication enabled!');
+    } else {
+      document.getElementById('twoFaError').classList.add('show');
+      document.querySelectorAll('#twoFaBoxes .otp-box').forEach(b => { b.value = ''; b.classList.remove('filled'); });
+      document.querySelectorAll('#twoFaBoxes .otp-box')[0].focus();
+    }
+  }
+
+  function setTwoFaStatus(enabled) {
+    const textEl = document.getElementById('twoFaStatusText');
+    const iconEl = document.getElementById('twoFaStatusIcon');
+    const inner  = document.getElementById('twoFaStatusInner');
+    textEl.textContent = enabled ? 'Two-Factor Authentication is enabled' : 'Two-Factor Authentication is disabled';
+    inner.style.color  = enabled ? 'var(--teal)' : '';
+    iconEl.innerHTML   = enabled
+      ? '<polyline points="20 6 9 17 4 12"/>'
+      : '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>';
+  }
+
+  // OTP auto-advance for 2FA modal
+  document.querySelectorAll('#twoFaBoxes .otp-box').forEach((box, i, boxes) => {
+    box.addEventListener('input', () => {
+      box.value = box.value.replace(/\D/g, '').slice(-1);
+      box.classList.toggle('filled', box.value !== '');
+      if (box.value && i < boxes.length - 1) boxes[i + 1].focus();
+    });
+    box.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !box.value && i > 0) boxes[i - 1].focus();
+    });
+  });
+
+  // ── Notifications ─────────────────────────────────────────────────────────────
+  function updateToggleLabel(input, labelId) {
+    const lbl = document.getElementById(labelId);
+    if (!lbl) return;
+    lbl.textContent = input.checked ? 'On' : 'Off';
+    lbl.className = 'toggle-state' + (input.checked ? ' on' : '');
+  }
+
+  function updateChannelDependency() {
+    const anyOn = ['notifEmail','notifSms','notifPush'].some(id => document.getElementById(id)?.checked);
+    ['rowInquiries','rowMessages','rowListingStatus','rowMarket','rowPromo'].forEach(id => {
+      const row = document.getElementById(id);
+      if (row) row.classList.toggle('dimmed', !anyOn);
+    });
+  }
+
+  function saveNotifications() {
+    const msg = document.getElementById('notifSavedMsg');
+    msg.classList.add('show');
+    setTimeout(() => msg.classList.remove('show'), 3000);
+  }
+
+  // ── Account Deletion ──────────────────────────────────────────────────────────
+  function openDeleteModal() {
+    document.getElementById('deleteModal').classList.add('open');
+    document.getElementById('deleteEmailInput').value = '';
+    document.getElementById('deleteEmailError').classList.remove('show');
+  }
+
+  function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.remove('open');
+    document.getElementById('deleteEmailInput').value = '';
+    document.getElementById('deleteEmailError').classList.remove('show');
+  }
+
+  function confirmScheduleDeletion() {
+    const val = document.getElementById('deleteEmailInput').value.trim();
+    if (val !== user.email) {
+      document.getElementById('deleteEmailError').classList.add('show'); return;
+    }
+
+    // Schedule deletion — 30 days from now
+    const deletionDate = new Date();
+    deletionDate.setDate(deletionDate.getDate() + 30);
+    const formatted = deletionDate.toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
+    const daysLeft = 30;
+
+    closeDeleteModal();
+
+    // Show pending banner, hide warning + button
+    document.getElementById('deletionWarning').style.display = 'none';
+    document.getElementById('deleteBtn').style.display = 'none';
+    const banner = document.getElementById('pendingBanner');
+    banner.style.display = 'flex';
+    document.getElementById('pendingBannerSub').textContent =
+      `Scheduled for ${formatted} — you have ${daysLeft} days to cancel.`;
+
+    showToast('Account scheduled for deletion in 30 days.');
+  }
+
+  function cancelScheduledDeletion() {
+    document.getElementById('pendingBanner').style.display = 'none';
+    document.getElementById('deletionWarning').style.display = 'flex';
+    document.getElementById('deleteBtn').style.display = '';
+    showToast('Account deletion cancelled. Your account is safe.');
+  }
+</script>
+</body>
+</html>

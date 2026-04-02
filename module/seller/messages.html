@@ -7,21 +7,59 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --bg: #1E293B; --card: #253347; --card2: #2c3d55; --border: rgba(255,255,255,0.07);
-      --teal: #00c9a7; --teal-faint: rgba(0,201,167,0.12); --teal-mid: rgba(0,201,167,0.25);
-      --text: #f1f5f9; --muted: rgba(255,255,255,0.4); --muted2: rgba(255,255,255,0.65);
-      --amber: #f59e0b; --amber-faint: rgba(245,158,11,0.1); --amber-mid: rgba(245,158,11,0.28);
+      --bg: #1E293B;
+      --card: #253347;
+      --card2: #2c3d55;
+      --border: rgba(255,255,255,0.07);
+      --teal: #00c9a7;
+      --teal-faint: rgba(0,201,167,0.12);
+      --teal-mid: rgba(0,201,167,0.25);
+      --text: #f1f5f9;
+      --muted: rgba(255,255,255,0.4);
+      --muted2: rgba(255,255,255,0.65);
       --radius: 14px;
     }
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
+
+    [data-theme="light"] {
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --card2: #f8fafc;
+      --border: rgba(0,0,0,0.09);
+      --text: #1e293b;
+      --muted: rgba(0,0,0,0.45);
+      --muted2: rgba(0,0,0,0.6);
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+      transition: background 0.25s, color 0.25s;
+    }
+
     .layout { display: flex; height: 100vh; }
     .main   { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-    .content { flex: 1; overflow-y: auto; padding: 22px 26px 32px; }
+
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 22px 26px 32px;
+      display: flex;
+      flex-direction: column;
+    }
     .content::-webkit-scrollbar { width: 5px; }
     .content::-webkit-scrollbar-track { background: transparent; }
-    .content::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #1fc8b4, #0a5e53); border-radius: 99px; }
-    .content::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #24e0ca, #1a9e8f); }
+    .content::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #1fc8b4, #0a5e53);
+      border-radius: 99px;
+    }
+    .content::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, #24e0ca, #1a9e8f);
+    }
 
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(12px); }
@@ -29,200 +67,342 @@
     }
 
     /* ── Page header ── */
-    .page-header { margin-bottom: 20px; animation: fadeUp 0.3s ease both; }
-    .page-title  { font-size: 22px; font-weight: 800; }
+    .page-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      animation: fadeUp 0.35s ease both;
+    }
+    .page-title { font-size: 22px; font-weight: 800; color: var(--text); }
+    .page-sub   { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
 
-    /* ══════════════════════════════════════
-       LOCKED / EMPTY STATE (non-verified)
-    ══════════════════════════════════════ */
-    .locked-wrap { display: flex; flex-direction: column; gap: 18px; animation: fadeUp 0.35s ease 0.05s both; }
-
+    /* ── Amber banner ── */
     .amber-banner {
-      background: var(--amber-faint); border: 1px solid var(--amber-mid);
-      border-radius: var(--radius); padding: 14px 18px;
-      display: flex; align-items: flex-start; gap: 13px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: rgba(251,191,36,0.10);
+      border: 1px solid rgba(251,191,36,0.45);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      margin-bottom: 22px;
+      animation: fadeUp 0.38s ease both;
+      animation-delay: 0.05s;
     }
-    .amber-banner-icon {
-      width: 34px; height: 34px; border-radius: 9px;
-      background: rgba(245,158,11,0.18); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
-    }
-    .amber-banner-icon svg { width: 18px; height: 18px; color: var(--amber); }
-    .amber-banner-text { flex: 1; min-width: 0; }
-    .amber-banner-title { font-size: 13.5px; font-weight: 700; color: var(--amber); margin-bottom: 3px; }
-    .amber-banner-body  { font-size: 13px; color: var(--muted2); line-height: 1.5; }
+    .amber-banner svg { flex-shrink: 0; margin-top: 1px; }
+    .amber-banner p { font-size: 13.5px; color: #fbbf24; line-height: 1.55; }
 
-    .empty-state-box {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 60px 24px;
-      display: flex; flex-direction: column; align-items: center; gap: 0; text-align: center;
+    /* ── Empty state ── */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      gap: 12px;
+      animation: fadeUp 0.42s ease both;
+      animation-delay: 0.1s;
+      padding: 40px 20px;
+      text-align: center;
     }
-    .empty-icon-wrap {
-      width: 72px; height: 72px; border-radius: 50%;
-      background: var(--teal-faint); display: flex; align-items: center; justify-content: center; margin-bottom: 18px;
+    .empty-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--teal-faint);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 6px;
     }
-    .empty-icon-wrap svg { width: 32px; height: 32px; color: var(--teal); }
-    .empty-title   { font-size: 17px; font-weight: 800; margin-bottom: 7px; }
-    .empty-sub     { font-size: 13.5px; color: var(--muted2); max-width: 320px; line-height: 1.55; margin-bottom: 24px; }
+    .empty-state h3 { font-size: 18px; font-weight: 700; color: var(--text); }
+    .empty-state p  { font-size: 13.5px; color: var(--muted2); max-width: 340px; line-height: 1.6; }
+    .btn-verify {
+      margin-top: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--teal);
+      color: #fff;
+      font-size: 13.5px;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 22px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity 0.18s;
+    }
+    .btn-verify:hover { opacity: 0.88; }
 
-    .btn-teal {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: var(--teal); color: #fff; font-family: inherit;
-      font-size: 13.5px; font-weight: 700; padding: 10px 22px;
-      border: none; border-radius: 10px; cursor: pointer; text-decoration: none;
-      transition: opacity 0.15s, transform 0.15s;
-    }
-    .btn-teal:hover { opacity: 0.88; transform: translateY(-1px); }
-    .btn-teal svg { width: 16px; height: 16px; }
-
-    /* ══════════════════════════════════════
-       MESSAGES LAYOUT (verified)
-    ══════════════════════════════════════ */
-    .messages-shell {
-      display: flex; gap: 0;
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: var(--radius); overflow: hidden;
-      height: calc(100vh - 120px);
-      animation: fadeUp 0.35s ease 0.05s both;
+    /* ── Two-column messaging layout ── */
+    .msg-card {
+      flex: 1;
+      display: flex;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      min-height: 0;
+      animation: fadeUp 0.38s ease both;
+      animation-delay: 0.05s;
     }
 
-    /* ── Conversation list ── */
+    /* LEFT: conversation list */
     .conv-list {
-      width: 280px; flex-shrink: 0;
+      width: 280px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
       border-right: 1px solid var(--border);
-      display: flex; flex-direction: column;
       overflow: hidden;
     }
-    .conv-list-header {
-      padding: 16px 18px 12px;
-      border-bottom: 1px solid var(--border); flex-shrink: 0;
+    .conv-search-wrap {
+      padding: 14px 14px 10px;
+      border-bottom: 1px solid var(--border);
     }
-    .conv-list-title { font-size: 14px; font-weight: 800; }
-    .conv-list-count { font-size: 12px; color: var(--muted); margin-top: 1px; }
+    .conv-search {
+      width: 100%;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 12px 8px 36px;
+      font-size: 13px;
+      font-family: inherit;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.18s;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2300c9a7' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 11px center;
+    }
+    .conv-search::placeholder { color: var(--muted); }
+    .conv-search:focus { border-color: var(--teal-mid); }
 
-    .conv-items { flex: 1; overflow-y: auto; }
+    .conv-items { overflow-y: auto; flex: 1; }
     .conv-items::-webkit-scrollbar { width: 4px; }
     .conv-items::-webkit-scrollbar-track { background: transparent; }
-    .conv-items::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #1fc8b4, #0a5e53); border-radius: 99px; }
+    .conv-items::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #1fc8b4, #0a5e53);
+      border-radius: 99px;
+    }
 
     .conv-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 13px 18px; cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      cursor: pointer;
       border-bottom: 1px solid var(--border);
-      transition: background 0.15s; position: relative;
+      transition: background 0.15s;
+      position: relative;
     }
-    .conv-item:last-child { border-bottom: none; }
-    .conv-item:hover { background: rgba(255,255,255,0.04); }
-    .conv-item.active { background: var(--teal-faint); border-right: 2px solid var(--teal); }
+    .conv-item:hover { background: var(--teal-faint); }
+    .conv-item.active { background: var(--teal-faint); }
 
     .conv-avatar {
-      width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px; font-weight: 800; color: #fff;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--teal-mid);
+      color: var(--teal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
     }
-    .conv-info { flex: 1; min-width: 0; }
-    .conv-name-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 2px; }
-    .conv-name  { font-size: 13.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .conv-time  { font-size: 11px; color: var(--muted); flex-shrink: 0; }
-    .conv-listing { font-size: 11.5px; color: var(--teal); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
-    .conv-preview { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .conv-item.has-unread .conv-preview { color: var(--text); font-weight: 600; }
-
+    .conv-meta { flex: 1; min-width: 0; }
+    .conv-name {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .conv-listing {
+      font-size: 11.5px;
+      color: var(--muted2);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 1px;
+    }
+    .conv-preview {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+    .conv-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+    .conv-time { font-size: 11px; color: var(--muted); }
     .unread-dot {
-      width: 9px; height: 9px; border-radius: 50%;
-      background: var(--teal); flex-shrink: 0;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #3b82f6;
+      flex-shrink: 0;
     }
 
-    /* ── Thread panel ── */
-    .thread-panel {
-      flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0;
+    /* RIGHT: thread view */
+    .thread-view {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
     }
 
-    .thread-header {
-      padding: 14px 20px; border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; gap: 13px; flex-shrink: 0;
+    .thread-topbar {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
     }
-    .thread-avatar {
-      width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 800; color: #fff;
+    .thread-buyer-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
     }
-    .thread-header-info { flex: 1; min-width: 0; }
-    .thread-buyer-name  { font-size: 14px; font-weight: 800; }
-    .thread-listing-ref { font-size: 12px; color: var(--teal); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .thread-listing-ref {
+      font-size: 12px;
+      color: var(--muted2);
+      margin-top: 2px;
+    }
+    .view-listing-link {
+      font-size: 12.5px;
+      color: var(--teal);
+      font-weight: 600;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: opacity 0.18s;
+      white-space: nowrap;
+    }
+    .view-listing-link:hover { opacity: 0.75; }
 
     .thread-messages {
-      flex: 1; overflow-y: auto;
-      padding: 20px; display: flex; flex-direction: column; gap: 14px;
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
-    .thread-messages::-webkit-scrollbar { width: 5px; }
+    .thread-messages::-webkit-scrollbar { width: 4px; }
     .thread-messages::-webkit-scrollbar-track { background: transparent; }
-    .thread-messages::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #1fc8b4, #0a5e53); border-radius: 99px; }
+    .thread-messages::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #1fc8b4, #0a5e53);
+      border-radius: 99px;
+    }
 
     .msg-row {
-      display: flex; align-items: flex-end; gap: 9px;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
     }
-    .msg-row.buyer  { flex-direction: row; }
-    .msg-row.seller { flex-direction: row-reverse; }
+    .msg-row.buyer  { justify-content: flex-start; }
+    .msg-row.seller { justify-content: flex-end; }
 
-    .msg-avatar-sm {
-      width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 10px; font-weight: 800; color: #fff;
+    .msg-bubble-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--teal-mid);
+      color: var(--teal);
+      font-size: 10px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
     }
 
     .msg-bubble {
-      max-width: 68%; padding: 10px 14px;
-      border-radius: 14px; font-size: 13.5px; line-height: 1.5;
+      max-width: 62%;
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-size: 13.5px;
+      line-height: 1.55;
     }
-    .msg-row.buyer  .msg-bubble { background: var(--card2); color: var(--text); border-bottom-left-radius: 4px; }
-    .msg-row.seller .msg-bubble { background: var(--teal); color: #fff; border-bottom-right-radius: 4px; }
+    .msg-bubble.buyer-bubble {
+      background: var(--card2);
+      color: var(--text);
+      border-bottom-left-radius: 4px;
+    }
+    .msg-bubble.seller-bubble {
+      background: var(--teal);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
 
-    .msg-meta { font-size: 11px; color: var(--muted); margin-top: 3px; }
-    .msg-row.buyer  .msg-meta { text-align: left; padding-left: 39px; }
-    .msg-row.seller .msg-meta { text-align: right; padding-right: 39px; }
+    .msg-time {
+      font-size: 10.5px;
+      color: var(--muted);
+      margin-top: 3px;
+      align-self: flex-end;
+      white-space: nowrap;
+    }
+    .msg-row.seller .msg-time { order: -1; }
 
-    /* compose bar — decorative only */
-    .compose-bar {
-      padding: 12px 16px; border-top: 1px solid var(--border);
-      display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+    /* message input */
+    .thread-input-area {
+      padding: 14px 18px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-shrink: 0;
     }
-    .compose-input {
-      flex: 1; background: var(--card2); border: 1px solid var(--border);
-      border-radius: 10px; padding: 10px 14px;
-      color: var(--muted); font-family: inherit; font-size: 13px;
-      outline: none; cursor: default;
+    .msg-input {
+      flex: 1;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13.5px;
+      font-family: inherit;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.18s;
+      resize: none;
+      max-height: 90px;
+      overflow-y: auto;
+      line-height: 1.5;
     }
-    .compose-send {
-      width: 38px; height: 38px; border-radius: 10px;
-      background: var(--teal-faint); border: 1px solid var(--teal-mid);
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; cursor: default; opacity: 0.6;
-    }
-    .compose-send svg { width: 16px; height: 16px; color: var(--teal); }
+    .msg-input::placeholder { color: var(--muted); }
+    .msg-input:focus { border-color: var(--teal-mid); }
 
-    /* date divider */
-    .date-divider {
-      display: flex; align-items: center; gap: 12px;
-      margin: 4px 0;
+    .send-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--teal);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: opacity 0.18s, transform 0.15s;
     }
-    .date-divider::before, .date-divider::after {
-      content: ''; flex: 1; height: 1px; background: var(--border);
-    }
-    .date-divider span { font-size: 11px; color: var(--muted); font-weight: 600; white-space: nowrap; }
-
-    /* ══════════════════════════════════════
-       LIGHT MODE
-    ══════════════════════════════════════ */
-    [data-theme="light"] {
-      --bg: #f1f5f9; --card: #ffffff; --card2: #f8fafc; --border: rgba(0,0,0,0.09);
-      --text: #1e293b; --muted: rgba(0,0,0,0.45); --muted2: rgba(0,0,0,0.6);
-    }
-    [data-theme="light"] .conv-item:hover { background: rgba(0,0,0,0.025); }
-    [data-theme="light"] .conv-item.active { background: rgba(0,201,167,0.07); }
-    [data-theme="light"] .msg-row.buyer .msg-bubble { background: #f1f5f9; border: 1px solid rgba(0,0,0,0.07); }
-    [data-theme="light"] .compose-input { background: #f8fafc; color: rgba(0,0,0,0.4); }
-    [data-theme="light"] .amber-banner-body { color: rgba(0,0,0,0.6); }
-    [data-theme="light"] .empty-sub { color: rgba(0,0,0,0.55); }
+    .send-btn:hover  { opacity: 0.85; transform: scale(1.05); }
+    .send-btn:active { transform: scale(0.97); }
+    .send-btn svg { pointer-events: none; }
   </style>
 </head>
 <body>
@@ -230,14 +410,8 @@
   <div id="hs-sidebar"></div>
   <div class="main">
     <div id="hs-topbar"></div>
-    <div class="content" id="mainContent">
-
-      <div class="page-header">
-        <div class="page-title">Messages</div>
-      </div>
-
-      <div id="pageBody"></div>
-
+    <div class="content" id="main-content">
+      <!-- Rendered by JS -->
     </div>
   </div>
 </div>
@@ -246,216 +420,303 @@
 <script src="../../components/sidebar.js"></script>
 <script src="../../components/topbar.js"></script>
 <script>
-  /* ── Auth guard ── */
+  // ── Auth guard ──────────────────────────────────────────────────────────────
   const session = getSession();
-  if (!session || session.role !== 'seller') window.location.href = '../../auth/signin.html';
+  if (!session || session.role !== 'seller') {
+    window.location.href = '../../auth/signin.html';
+  }
 
+  // ── Components ──────────────────────────────────────────────────────────────
   HomeSureSidebar.init({ activePage: 'messages' });
   HomeSureTopbar.init({ placeholder: 'Search messages...' });
 
-  /* ── Resolve full seller from FAKE_USERS ── */
-  const fullUser = FAKE_USERS.find(u => u.id === session.id) || {};
-  const isVerified = fullUser.accountStatus === 'verified';
+  // ── Find seller data ────────────────────────────────────────────────────────
+  const sellerData = FAKE_USERS.find(u => u.id === session.id) || {};
+  const isVerified = sellerData.accountStatus === 'verified';
 
-  /* ══════════════════════════════════════════════
-     FAKE CONVERSATIONS (for verified seller)
-  ══════════════════════════════════════════════ */
+  // ── Fake conversations ──────────────────────────────────────────────────────
   const CONVERSATIONS = [
     {
       id: 'conv-1',
-      buyer:   { initials: 'MS', name: 'Maria Santos',  color: '#0f766e' },
-      listing: '1-Bedroom Apartment for Rent near Town Proper',
-      preview: 'Is it still available this April?',
-      time:    '10:42 AM',
-      unread:  false,
+      buyerName: 'Maria Santos',
+      buyerInitials: 'MS',
+      listingTitle: '1-Bedroom Apartment near Town Proper',
+      listingId: 'prop-002',
+      lastMsg: 'Is it still available?',
+      time: '2m ago',
+      unread: true,
       messages: [
-        { from: 'buyer',  text: 'Hi! I saw your listing for the 1-Bedroom Apartment near Town Proper. Is it still available?', time: 'Mar 30, 9:14 AM' },
-        { from: 'seller', text: 'Hello Maria! Yes, it\'s still available. Would you like to schedule a viewing?', time: 'Mar 30, 9:28 AM' },
-        { from: 'buyer',  text: 'That\'d be great! Is it still available this April?', time: 'Today, 10:42 AM' },
+        { from: 'buyer',  text: 'Hi, is the 1-bedroom apartment still available?', time: '10:02 AM' },
+        { from: 'seller', text: "Yes it is! It's available starting April 15.", time: '10:05 AM' },
+        { from: 'buyer',  text: 'Is it still available?', time: '10:08 AM' },
+        { from: 'seller', text: "It's still open, feel free to schedule a visit.", time: '10:10 AM' },
       ],
     },
     {
       id: 'conv-2',
-      buyer:   { initials: 'JR', name: 'Jose Reyes',    color: '#3b82f6' },
-      listing: '3-Bedroom House for Sale in Pulong Yantok',
-      preview: 'Is the price still negotiable?',
-      time:    '9:05 AM',
-      unread:  true,
+      buyerName: 'Jose Reyes',
+      buyerInitials: 'JR',
+      listingTitle: '3-Bedroom House for Sale in Pulong Yantok',
+      listingId: 'prop-001',
+      lastMsg: 'Thank you for the info!',
+      time: '1h ago',
+      unread: false,
       messages: [
-        { from: 'buyer', text: 'Good morning! I\'m very interested in the 3-Bedroom House in Pulong Yantok. Is the price still negotiable?', time: 'Today, 9:05 AM' },
+        { from: 'buyer',  text: "Hello, I'm interested in the house in Pulong Yantok. What's the best price?", time: '9:15 AM' },
+        { from: 'seller', text: "We can discuss, it's open for negotiation. Call me at 09191234567.", time: '9:20 AM' },
+        { from: 'buyer',  text: 'Thank you for the info!', time: '9:35 AM' },
       ],
     },
     {
       id: 'conv-3',
-      buyer:   { initials: 'CM', name: 'Carlo Mendoza', color: '#8b5cf6' },
-      listing: 'Studio in Sonoma',
-      preview: 'What floor is the unit on?',
-      time:    'Yesterday',
-      unread:  false,
+      buyerName: 'Carlo Mendoza',
+      buyerInitials: 'CM',
+      listingTitle: 'Studio in Sonoma',
+      listingId: 'prop-006',
+      lastMsg: 'Can I schedule a viewing?',
+      time: 'Yesterday',
+      unread: true,
       messages: [
-        { from: 'buyer',  text: 'Hi Ramon! I\'m interested in the Studio in Sonoma. What floor is the unit on?', time: 'Yesterday, 4:18 PM' },
-        { from: 'seller', text: 'Hi Carlo! The unit is on the 3rd floor with a nice garden view. It\'s also fully air-conditioned.', time: 'Yesterday, 4:55 PM' },
+        { from: 'buyer',  text: "Good day, I'd like to inquire about the studio in Sonoma.", time: 'Yesterday 3:10 PM' },
+        { from: 'seller', text: "Hello! It's fully furnished and available immediately.", time: 'Yesterday 3:22 PM' },
+        { from: 'buyer',  text: 'Can I schedule a viewing?', time: 'Yesterday 3:45 PM' },
       ],
     },
   ];
 
+  // ── State ──────────────────────────────────────────────────────────────────
   let activeConvId = CONVERSATIONS[0].id;
 
-  /* ══════════════════════════════════════
-     RENDER
-  ══════════════════════════════════════ */
-  function render() {
-    const body = document.getElementById('pageBody');
-    if (!isVerified) {
-      body.innerHTML = renderLocked();
-    } else {
-      body.innerHTML = renderMessages();
-      attachConvListeners();
-    }
-  }
-
-  /* ── Locked state ── */
-  function renderLocked() {
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function renderConvItem(conv) {
+    const isActive = conv.id === activeConvId;
     return `
-      <div class="locked-wrap">
-        <div class="amber-banner">
-          <div class="amber-banner-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-          </div>
-          <div class="amber-banner-text">
-            <div class="amber-banner-title">Messages not available yet</div>
-            <div class="amber-banner-body">You don't have any messages yet. Once you publish your first listing, buyers will be able to contact you here.</div>
-          </div>
+      <div class="conv-item${isActive ? ' active' : ''}" data-conv-id="${conv.id}">
+        <div class="conv-avatar">${conv.buyerInitials}</div>
+        <div class="conv-meta">
+          <div class="conv-name">${conv.buyerName}</div>
+          <div class="conv-listing">${conv.listingTitle}</div>
+          <div class="conv-preview">${conv.lastMsg}</div>
         </div>
-
-        <div class="empty-state-box">
-          <div class="empty-icon-wrap">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-              <!-- inbox icon -->
-            </svg>
-          </div>
-          <div class="empty-icon-wrap" style="display:none"></div>
-          <div class="empty-title">No messages yet</div>
-          <div class="empty-sub">Messages from buyers about your listings will appear here once you're verified and your listing is published.</div>
-          <a class="btn-teal" href="verification.html">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            </svg>
-            Complete Verification
-          </a>
+        <div class="conv-right">
+          <span class="conv-time">${conv.time}</span>
+          ${conv.unread ? '<div class="unread-dot"></div>' : '<div style="width:8px;height:8px"></div>'}
         </div>
-      </div>`;
-  }
-
-  /* ── Full messages layout ── */
-  function renderMessages() {
-    const conv = CONVERSATIONS.find(c => c.id === activeConvId) || CONVERSATIONS[0];
-    return `
-      <div class="messages-shell">
-        ${renderConvList()}
-        ${renderThread(conv)}
-      </div>`;
-  }
-
-  function renderConvList() {
-    const unreadCount = CONVERSATIONS.filter(c => c.unread).length;
-    const items = CONVERSATIONS.map(c => `
-      <div class="conv-item ${c.unread ? 'has-unread' : ''} ${c.id === activeConvId ? 'active' : ''}" data-conv="${c.id}">
-        <div class="conv-avatar" style="background:${c.buyer.color}">${c.buyer.initials}</div>
-        <div class="conv-info">
-          <div class="conv-name-row">
-            <span class="conv-name">${c.buyer.name}</span>
-            <span class="conv-time">${c.time}</span>
-          </div>
-          <div class="conv-listing">${c.listing}</div>
-          <div class="conv-preview">${c.preview}</div>
-        </div>
-        ${c.unread ? '<div class="unread-dot"></div>' : ''}
-      </div>`).join('');
-
-    return `
-      <div class="conv-list">
-        <div class="conv-list-header">
-          <div class="conv-list-title">Conversations</div>
-          <div class="conv-list-count">${CONVERSATIONS.length} total${unreadCount ? ` · ${unreadCount} unread` : ''}</div>
-        </div>
-        <div class="conv-items">${items}</div>
-      </div>`;
+      </div>
+    `;
   }
 
   function renderThread(conv) {
-    /* Group messages: put a date divider before the first "Today" message */
-    const earlierMsgs = conv.messages.filter(m => !m.time.startsWith('Today'));
-    const todayMsgs   = conv.messages.filter(m =>  m.time.startsWith('Today'));
-
-    let msgHtml = '';
-    if (earlierMsgs.length) {
-      const firstDate = earlierMsgs[0].time.split(',')[0];
-      msgHtml += `<div class="date-divider"><span>${firstDate}</span></div>`;
-      msgHtml += earlierMsgs.map(m => msgBubble(m, conv.buyer)).join('');
-    }
-    if (todayMsgs.length) {
-      msgHtml += `<div class="date-divider"><span>Today</span></div>`;
-      msgHtml += todayMsgs.map(m => msgBubble(m, conv.buyer)).join('');
-    }
-    if (!conv.messages.length) {
-      msgHtml = `<div style="margin:auto;text-align:center;color:var(--muted);font-size:13.5px;">No messages yet.</div>`;
-    }
+    const msgs = conv.messages.map(m => {
+      if (m.from === 'buyer') {
+        return `
+          <div class="msg-row buyer">
+            <div class="msg-bubble-avatar">${conv.buyerInitials}</div>
+            <div class="msg-bubble buyer-bubble">${m.text}</div>
+            <span class="msg-time">${m.time}</span>
+          </div>`;
+      } else {
+        return `
+          <div class="msg-row seller">
+            <span class="msg-time">${m.time}</span>
+            <div class="msg-bubble seller-bubble">${m.text}</div>
+          </div>`;
+      }
+    }).join('');
 
     return `
-      <div class="thread-panel">
-        <div class="thread-header">
-          <div class="thread-avatar" style="background:${conv.buyer.color}">${conv.buyer.initials}</div>
-          <div class="thread-header-info">
-            <div class="thread-buyer-name">${conv.buyer.name}</div>
-            <div class="thread-listing-ref">${conv.listing}</div>
-          </div>
+      <div class="thread-topbar">
+        <div>
+          <div class="thread-buyer-name">${conv.buyerName}</div>
+          <div class="thread-listing-ref">Re: ${conv.listingTitle}</div>
         </div>
-        <div class="thread-messages">${msgHtml}</div>
-        <div class="compose-bar">
-          <div class="compose-input">Type a message…</div>
-          <div class="compose-send">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-            </svg>
-          </div>
-        </div>
-      </div>`;
-  }
-
-  function msgBubble(msg, buyer) {
-    const isSeller = msg.from === 'seller';
-    const initials = isSeller
-      ? (session.firstName[0] + session.lastName[0]).toUpperCase()
-      : buyer.initials;
-    const color = isSeller ? '#00c9a7' : buyer.color;
-    const timeLabel = msg.time.includes(',') ? msg.time.split(', ')[1] : msg.time;
-    return `
-      <div class="msg-row ${msg.from}">
-        <div class="msg-avatar-sm" style="background:${color}">${initials}</div>
-        <div class="msg-bubble">${msg.text}</div>
+        <a href="listings.html" class="view-listing-link">
+          View Listing
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+            <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+        </a>
       </div>
-      <div class="msg-meta">${timeLabel}</div>`;
+      <div class="thread-messages" id="thread-messages-scroll">
+        ${msgs}
+      </div>
+      <div class="thread-input-area">
+        <textarea class="msg-input" id="msg-input-field" placeholder="Type a message..." rows="1"></textarea>
+        <button class="send-btn" id="send-btn" title="Send">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </div>
+    `;
   }
 
-  function attachConvListeners() {
-    document.querySelectorAll('.conv-item').forEach(el => {
-      el.addEventListener('click', () => {
-        const id = el.dataset.conv;
-        /* Mark as read */
-        const c = CONVERSATIONS.find(x => x.id === id);
-        if (c) c.unread = false;
-        activeConvId = id;
-        document.getElementById('pageBody').innerHTML = renderMessages();
-        attachConvListeners();
-      });
+  function scrollToBottom() {
+    const el = document.getElementById('thread-messages-scroll');
+    if (el) el.scrollTop = el.scrollHeight;
+  }
+
+  function refreshConvList() {
+    const el = document.getElementById('conv-items');
+    if (el) el.innerHTML = CONVERSATIONS.map(renderConvItem).join('');
+  }
+
+  function refreshThread(conv) {
+    const el = document.getElementById('thread-view');
+    if (el) {
+      el.innerHTML = renderThread(conv);
+      bindSendEvent();
+      scrollToBottom();
+    }
+  }
+
+  function bindSendEvent() {
+    const sendBtn = document.getElementById('send-btn');
+    const inputField = document.getElementById('msg-input-field');
+    if (!sendBtn || !inputField) return;
+
+    function sendMessage() {
+      const text = inputField.value.trim();
+      if (!text) return;
+
+      const conv = CONVERSATIONS.find(c => c.id === activeConvId);
+      if (!conv) return;
+
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      conv.messages.push({ from: 'seller', text, time: timeStr });
+      conv.lastMsg = text;
+
+      inputField.value = '';
+      inputField.style.height = 'auto';
+
+      refreshThread(conv);
+      refreshConvList();
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    inputField.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+    inputField.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 90) + 'px';
     });
   }
 
-  render();
+  // ── Render: unverified state ───────────────────────────────────────────────
+  function renderUnverifiedState() {
+    const content = document.getElementById('main-content');
+    content.innerHTML = `
+      <div class="page-header-row">
+        <div>
+          <div class="page-title">Messages</div>
+        </div>
+      </div>
+
+      <div class="amber-banner">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <p>You don't have any messages yet. Messages from buyers will appear here once you publish your first listing.</p>
+      </div>
+
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#00c9a7" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <h3>No messages yet</h3>
+        <p>Buyers will message you here when they're interested in your listings.</p>
+        <a href="verification.html" class="btn-verify">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Complete Verification
+        </a>
+      </div>
+    `;
+  }
+
+  // ── Render: verified state ─────────────────────────────────────────────────
+  function renderVerifiedState() {
+    const content = document.getElementById('main-content');
+    content.style.overflow = 'hidden';
+    content.style.padding = '22px 26px 26px';
+
+    const activeConv = CONVERSATIONS.find(c => c.id === activeConvId);
+
+    content.innerHTML = `
+      <div class="page-header-row">
+        <div>
+          <div class="page-title">Messages</div>
+          <div class="page-sub">Your conversations with buyers</div>
+        </div>
+      </div>
+
+      <div class="msg-card">
+        <div class="conv-list">
+          <div class="conv-search-wrap">
+            <input type="text" class="conv-search" id="conv-search" placeholder="Search conversations..." />
+          </div>
+          <div class="conv-items" id="conv-items">
+            ${CONVERSATIONS.map(renderConvItem).join('')}
+          </div>
+        </div>
+
+        <div class="thread-view" id="thread-view">
+          ${renderThread(activeConv)}
+        </div>
+      </div>
+    `;
+
+    // Conversation click delegation
+    document.getElementById('conv-items').addEventListener('click', function(e) {
+      const item = e.target.closest('.conv-item');
+      if (!item) return;
+      const convId = item.dataset.convId;
+      if (convId === activeConvId) return;
+
+      activeConvId = convId;
+      const conv = CONVERSATIONS.find(c => c.id === convId);
+      if (!conv) return;
+      conv.unread = false;
+
+      refreshConvList();
+      refreshThread(conv);
+    });
+
+    // Conversation search filter
+    document.getElementById('conv-search').addEventListener('input', function() {
+      const q = this.value.toLowerCase().trim();
+      document.querySelectorAll('.conv-item').forEach(item => {
+        const conv = CONVERSATIONS.find(c => c.id === item.dataset.convId);
+        if (!conv) return;
+        const match = !q ||
+          conv.buyerName.toLowerCase().includes(q) ||
+          conv.listingTitle.toLowerCase().includes(q) ||
+          conv.lastMsg.toLowerCase().includes(q);
+        item.style.display = match ? '' : 'none';
+      });
+    });
+
+    bindSendEvent();
+    scrollToBottom();
+  }
+
+  // ── Init ────────────────────────────────────────────────────────────────────
+  if (isVerified) {
+    renderVerifiedState();
+  } else {
+    renderUnverifiedState();
+  }
 </script>
 </body>
 </html>

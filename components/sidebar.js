@@ -41,9 +41,8 @@
     seller: [
       { id: 'dashboard', label: 'Dashboard',      icon: 'grid'    },
       { id: 'listings',  label: 'My Listings',    icon: 'home'    },
-      { id: 'post',      label: 'Post Property',  icon: 'plus'    },
       { id: 'messages',  label: 'Messages',       icon: 'message' },
-      { id: 'profile',   label: 'Profile',        icon: 'user'   },
+      { id: 'profile',   label: 'Profile',        icon: 'user'    },
       { id: 'settings',  label: 'Settings',       icon: 'settings'},
     ],
     admin: [
@@ -362,7 +361,7 @@
     // Nav routing
     const NAV_ROUTES = {
       buyer:      { dashboard: 'buyer.html', saved: 'saved.html', messages: 'messages.html', notifications: 'notifications.html', profile: 'profile.html', settings: 'settings.html' },
-      seller:     { dashboard: 'seller.html', listings: 'listings.html', post: 'post.html', messages: 'messages.html', profile: 'profile.html', settings: 'settings.html' },
+      seller:     { dashboard: 'seller.html', listings: 'listings.html', messages: 'messages.html', profile: 'profile.html', settings: 'settings.html' },
       admin:      { dashboard: 'admin.html', approvals: 'approvals.html', users: 'users.html', reports: 'reports.html', settings: 'settings.html' },
       superadmin: { dashboard: 'super-admin.html', admins: 'admins.html', users: 'users.html', reports: 'reports.html', settings: 'settings.html' },
     };
