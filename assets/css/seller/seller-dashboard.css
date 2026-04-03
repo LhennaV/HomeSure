@@ -326,4 +326,45 @@
     [data-theme="light"] .verify-badge.verified   { background: rgba(0,201,167,0.08); }
     [data-theme="light"] .verify-badge.pending    { background: rgba(251,191,36,0.08); }
     [data-theme="light"] .verify-banner { background: rgba(0,201,167,0.05); }
+
+    /* ── Expiry / Expired banners ── */
+    .expiry-banner {
+      display: flex; align-items: flex-start; gap: 14px;
+      border-radius: 12px; padding: 16px 18px; margin-bottom: 18px;
+    }
+    .expiry-banner.warn  { background: rgba(251,191,36,0.1);  border: 1px solid rgba(251,191,36,0.3);  }
+    .expiry-banner.danger{ background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); }
+
+    .expiry-icon {
+      width: 38px; height: 38px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .expiry-banner.warn  .expiry-icon { background: rgba(251,191,36,0.15);  border: 1px solid rgba(251,191,36,0.3);  }
+    .expiry-banner.danger .expiry-icon{ background: rgba(248,113,113,0.15); border: 1px solid rgba(248,113,113,0.3); }
+
+    .expiry-body { flex: 1; min-width: 0; }
+    .expiry-title { font-size: 13.5px; font-weight: 700; margin-bottom: 3px; }
+    .expiry-banner.warn   .expiry-title { color: #b45309; }
+    .expiry-banner.danger .expiry-title { color: #dc2626; }
+    .expiry-sub { font-size: 12px; color: #1e293b; line-height: 1.5; }
+    .expiry-sub strong { color: #1e293b; }
+
+    .expiry-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 16px; border-radius: 8px;
+      font-size: 12.5px; font-weight: 700; text-decoration: none;
+      white-space: nowrap; flex-shrink: 0; border: 1px solid transparent;
+    }
+    .expiry-banner.warn  .expiry-btn { background: rgba(251,191,36,0.15); border-color: rgba(251,191,36,0.4); color: #92400e; }
+    .expiry-banner.danger .expiry-btn{ background: #dc2626; color: #fff; }
+    .expiry-btn:hover { filter: brightness(1.08); }
+
+    [data-theme="dark"] .expiry-title.warn  { color: #fbbf24; }
+    [data-theme="dark"] .expiry-title.danger{ color: #f87171; }
+    [data-theme="dark"] .expiry-sub { color: #ffffff; }
+    [data-theme="dark"] .expiry-sub strong { color: #ffffff; }
+    [data-theme="dark"] .expiry-banner.warn  .expiry-btn { color: #fbbf24; border-color: rgba(251,191,36,0.4); background: rgba(251,191,36,0.1); }
+    [data-theme="dark"] .expiry-banner.danger .expiry-btn{ background: #f87171; color: #fff; }
+    [data-theme="dark"] .expiry-banner.warn  .expiry-title { color: #fbbf24; }
+    [data-theme="dark"] .expiry-banner.danger .expiry-title{ color: #f87171; }
   

@@ -42,28 +42,28 @@
     if (daysLeft <= 0) {
       banner.style.display = 'block';
       banner.innerHTML = `
-        <div style="display:flex;align-items:flex-start;gap:14px;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.3);border-radius:12px;padding:16px 18px;margin-bottom:18px;">
-          <div style="width:38px;height:38px;border-radius:50%;background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div class="expiry-banner danger">
+          <div class="expiry-icon">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
           </div>
-          <div style="flex:1">
-            <div style="font-size:13.5px;font-weight:700;color:#f87171;margin-bottom:3px;">Verification Expired</div>
-            <div style="font-size:12px;color:rgba(255,255,255,0.65);line-height:1.5;">Your seller verification expired on <strong>${expiryFormatted}</strong>. Your listings have been paused until you re-verify.</div>
+          <div class="expiry-body">
+            <div class="expiry-title">Verification Expired</div>
+            <div class="expiry-sub">Your seller verification expired on <strong>${expiryFormatted}</strong>. Your listings have been paused until you re-verify.</div>
           </div>
-          <a href="verification.html" style="display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;background:#f87171;color:#fff;font-size:12.5px;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0;">Re-verify Now</a>
+          <a href="verification.html" class="expiry-btn">Re-verify Now</a>
         </div>`;
     } else if (daysLeft <= 30) {
       banner.style.display = 'block';
       banner.innerHTML = `
-        <div style="display:flex;align-items:flex-start;gap:14px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.28);border-radius:12px;padding:16px 18px;margin-bottom:18px;">
-          <div style="width:38px;height:38px;border-radius:50%;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.28);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <div class="expiry-banner warn">
+          <div class="expiry-icon">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           </div>
-          <div style="flex:1">
-            <div style="font-size:13.5px;font-weight:700;color:#fbbf24;margin-bottom:3px;">Verification Expiring in ${daysLeft} Day${daysLeft !== 1 ? 's' : ''}</div>
-            <div style="font-size:12px;color:rgba(255,255,255,0.65);line-height:1.5;">Your seller verification expires on <strong>${expiryFormatted}</strong>. Re-verify before it expires to avoid interruptions to your listings.</div>
+          <div class="expiry-body">
+            <div class="expiry-title">Verification Expiring in ${daysLeft} Day${daysLeft !== 1 ? 's' : ''}</div>
+            <div class="expiry-sub">Your seller verification expires on <strong>${expiryFormatted}</strong>. Re-verify before it expires to avoid interruptions to your listings.</div>
           </div>
-          <a href="verification.html" style="display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.35);color:#fbbf24;font-size:12.5px;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0;">Re-verify</a>
+          <a href="verification.html" class="expiry-btn">Re-verify</a>
         </div>`;
     }
   }
