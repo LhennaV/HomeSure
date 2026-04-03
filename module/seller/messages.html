@@ -5,15 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HomeSure – Messages</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../../assets/css/seller/seller-messages.css" />
+  <link rel="stylesheet" href="../../assets/css/buyer/buyer-messages.css" />
 </head>
 <body>
 <div class="layout">
   <div id="hs-sidebar"></div>
   <div class="main">
     <div id="hs-topbar"></div>
-    <div class="content" id="main-content">
-      <!-- Rendered by JS -->
+    <div class="content">
+      <div class="messages-layout">
+
+        <!-- ── Conversation list ── -->
+        <div class="conv-panel">
+          <div class="conv-top">
+            <div class="conv-title">Messages</div>
+            <div class="conv-search-wrap">
+              <span class="conv-search-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              </span>
+              <input class="conv-search" id="convSearch" placeholder="Search conversations..." oninput="filterConvs()" />
+            </div>
+          </div>
+          <div class="conv-list" id="convList"></div>
+        </div>
+
+        <!-- ── Chat area ── -->
+        <div class="chat-panel" id="chatPanel">
+          <div class="chat-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <p>Select a conversation to start messaging</p>
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
 </div>

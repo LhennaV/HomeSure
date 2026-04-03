@@ -41,10 +41,11 @@
       { id: 'messages',  label: 'Messages',       icon: 'message' },
     ],
     admin: [
-      { id: 'dashboard', label: 'Dashboard',      icon: 'grid'    },
-      { id: 'approvals', label: 'Approvals',      icon: 'check'   },
-      { id: 'users',     label: 'Users',          icon: 'users'   },
-      { id: 'reports',   label: 'Reports',        icon: 'flag'    },
+      { id: 'dashboard', label: 'Dashboard',          icon: 'grid'    },
+      { id: 'listings',  label: 'Listings Management', icon: 'home'    },
+      { id: 'users',     label: 'Users',              icon: 'users'   },
+      { id: 'reports',   label: 'Reports',            icon: 'flag'    },
+      { id: 'analytics', label: 'Analytics',          icon: 'chart'   },
     ],
     superadmin: [
       { id: 'dashboard', label: 'Dashboard',      icon: 'grid'    },
@@ -350,7 +351,7 @@
     const NAV_ROUTES = {
       buyer:      { dashboard: 'buyer.html', saved: 'saved.html', messages: 'messages.html' },
       seller:     { dashboard: 'seller.html', listings: 'listings.html', messages: 'messages.html' },
-      admin:      { dashboard: 'admin.html', approvals: 'approvals.html', users: 'users.html', reports: 'reports.html' },
+      admin:      { dashboard: 'admin.html', listings: 'listings.html', users: 'users.html', reports: 'reports.html', analytics: 'analytics.html' },
       superadmin: { dashboard: 'super-admin.html', admins: 'admins.html', users: 'users.html', reports: 'reports.html' },
     };
     const sessionUser = typeof getSession === 'function' ? getSession() : null;

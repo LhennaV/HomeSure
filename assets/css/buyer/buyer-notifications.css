@@ -39,7 +39,7 @@
       cursor: pointer; border: none; background: transparent; color: var(--muted2);
       transition: background 0.15s, color 0.15s;
     }
-    .notif-tab.active { background: var(--teal); color: #06201a; }
+    .notif-tab.active { background: var(--teal); color: #ffffff; }
     .notif-tab:not(.active):hover { background: rgba(255,255,255,0.07); color: var(--text); }
 
     /* ── Notifications list ── */

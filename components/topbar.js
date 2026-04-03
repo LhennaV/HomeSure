@@ -353,7 +353,7 @@
 
     .hs-rv-btn {
       width: 100%; padding: 12px; border-radius: 10px;
-      background: #00c9a7; border: none; color: #06201a;
+      background: #00c9a7; border: none; color: #ffffff;
       font-size: 14px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif;
       cursor: pointer; margin-top: 4px; transition: background 0.2s;
     }

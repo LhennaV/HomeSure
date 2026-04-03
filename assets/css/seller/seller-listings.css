@@ -47,7 +47,7 @@
       display: inline-flex; align-items: center; gap: 8px;
       padding: 9px 18px; border-radius: 10px; border: none;
       background: #00c9a7;
-      color: #06201a; font-family: inherit; font-size: 13px; font-weight: 700;
+      color: #ffffff; font-family: inherit; font-size: 13px; font-weight: 700;
       cursor: pointer; transition: opacity 0.2s;
       white-space: nowrap; flex-shrink: 0;
     }
@@ -236,7 +236,7 @@
     .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
     .modal-btn-primary {
       flex: 1; padding: 10px; border-radius: 9px; border: none;
-      background: var(--teal); color: #06201a;
+      background: var(--teal); color: #ffffff;
       font-family: inherit; font-size: 13px; font-weight: 700;
       cursor: pointer; transition: opacity 0.18s;
     }
@@ -285,7 +285,7 @@
       display: inline-flex; align-items: center; gap: 7px;
       padding: 9px 18px; border-radius: 10px; border: none;
       background: #00c9a7;
-      color: #06201a; font-family: inherit; font-size: 13px; font-weight: 700;
+      color: #ffffff; font-family: inherit; font-size: 13px; font-weight: 700;
       cursor: pointer; transition: opacity 0.2s; margin-top: 4px;
     }
     .btn-empty-add:hover { opacity: 0.88; }

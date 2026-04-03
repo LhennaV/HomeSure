@@ -130,7 +130,7 @@
       width: 100%; padding: 13px 24px;
       background: #00c9a7;
       border: none; border-radius: 10px;
-      color: #06201a; font-family: inherit; font-size: 14px; font-weight: 700;
+      color: #ffffff; font-family: inherit; font-size: 14px; font-weight: 700;
       cursor: pointer; transition: opacity 0.2s;
     }
     .btn-primary:hover:not(:disabled) { opacity: 0.88; }

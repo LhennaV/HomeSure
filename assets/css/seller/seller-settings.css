@@ -195,7 +195,7 @@
     .btn-primary {
       background: #00c9a7;
       border: none; border-radius: 9px; padding: 10px 22px;
-      color: #06201a; font-size: 13px; font-weight: 700; font-family: inherit;
+      color: #ffffff; font-size: 13px; font-weight: 700; font-family: inherit;
       cursor: pointer; transition: opacity 0.2s, transform 0.18s;
     }
     .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }

@@ -787,7 +787,11 @@ function Footer() {
         ...platformLinks.map((l) =>
           React.createElement(
             "a",
-            { key: l, className: "footer-link", href: "#" },
+            {
+              key: l,
+              className: "footer-link",
+              href: l === "About Us" ? "about.html" : "#",
+            },
             l,
           ),
         ),

@@ -1,298 +1,182 @@
 
-  // ── Auth guard ──────────────────────────────────────────────────────────────
-  const session = getSession();
-  if (!session || session.role !== 'seller') {
-    window.location.href = '../../auth/signin.html';
-  }
+  const user = getSession();
+  if (!user || user.role !== 'seller') window.location.href = '../../auth/signin.html';
 
-  // ── Components ──────────────────────────────────────────────────────────────
   HomeSureSidebar.init({ activePage: 'messages' });
   HomeSureTopbar.init({ placeholder: 'Search messages...' });
 
-  // ── Find seller data ────────────────────────────────────────────────────────
-  const sellerData = FAKE_USERS.find(u => u.id === session.id) || {};
+  const sellerData = FAKE_USERS.find(u => u.id === user.id) || {};
   const isVerified = sellerData.accountStatus === 'verified';
 
-  // ── Fake conversations ──────────────────────────────────────────────────────
-  const CONVERSATIONS = [
+  // ── Fake conversations ─────────────────────────────────────────────────────
+  const CONVS = [
     {
-      id: 'conv-1',
-      buyerName: 'Maria Santos',
-      buyerInitials: 'MS',
-      listingTitle: '1-Bedroom Apartment near Town Proper',
-      listingId: 'prop-002',
-      lastMsg: 'Is it still available?',
-      time: '2m ago',
-      unread: true,
+      id: 'c1', listingId: 'prop-002', buyerName: 'Maria Santos', unread: 2, dateLabel: 'Feb 27',
       messages: [
-        { from: 'buyer',  text: 'Hi, is the 1-bedroom apartment still available?', time: '10:02 AM' },
+        { from: 'buyer',  text: "Hi! I'm interested in this apartment. Is it still available?", time: '10:02 AM', read: true },
         { from: 'seller', text: "Yes it is! It's available starting April 15.", time: '10:05 AM' },
-        { from: 'buyer',  text: 'Is it still available?', time: '10:08 AM' },
+        { from: 'buyer',  text: 'Is it still available?', time: '10:08 AM', read: true },
         { from: 'seller', text: "It's still open, feel free to schedule a visit.", time: '10:10 AM' },
       ],
     },
     {
-      id: 'conv-2',
-      buyerName: 'Jose Reyes',
-      buyerInitials: 'JR',
-      listingTitle: '3-Bedroom House for Sale in Pulong Yantok',
-      listingId: 'prop-001',
-      lastMsg: 'Thank you for the info!',
-      time: '1h ago',
-      unread: false,
+      id: 'c2', listingId: 'prop-001', buyerName: 'Jose Reyes', unread: 0, dateLabel: 'Feb 26',
       messages: [
-        { from: 'buyer',  text: "Hello, I'm interested in the house in Pulong Yantok. What's the best price?", time: '9:15 AM' },
-        { from: 'seller', text: "We can discuss, it's open for negotiation. Call me at 09191234567.", time: '9:20 AM' },
-        { from: 'buyer',  text: 'Thank you for the info!', time: '9:35 AM' },
+        { from: 'buyer',  text: "Hello, I'm interested in the house in Pulong Yantok. What's the best price?", time: '9:15 AM', read: true },
+        { from: 'seller', text: "We can discuss, it's open for negotiation.", time: '9:20 AM' },
+        { from: 'buyer',  text: 'Thank you for the info!', time: '9:35 AM', read: true },
       ],
     },
     {
-      id: 'conv-3',
-      buyerName: 'Carlo Mendoza',
-      buyerInitials: 'CM',
-      listingTitle: 'Studio in Sonoma',
-      listingId: 'prop-006',
-      lastMsg: 'Can I schedule a viewing?',
-      time: 'Yesterday',
-      unread: true,
+      id: 'c3', listingId: 'prop-006', buyerName: 'Carlo Mendoza', unread: 1, dateLabel: 'Feb 25',
       messages: [
-        { from: 'buyer',  text: "Good day, I'd like to inquire about the studio in Sonoma.", time: 'Yesterday 3:10 PM' },
+        { from: 'buyer',  text: "Good day, I'd like to inquire about the studio in Sonoma.", time: 'Yesterday 3:10 PM', read: true },
         { from: 'seller', text: "Hello! It's fully furnished and available immediately.", time: 'Yesterday 3:22 PM' },
-        { from: 'buyer',  text: 'Can I schedule a viewing?', time: 'Yesterday 3:45 PM' },
+        { from: 'buyer',  text: 'Can I schedule a viewing?', time: 'Yesterday 3:45 PM', read: false },
       ],
     },
   ];
 
-  // ── State ──────────────────────────────────────────────────────────────────
-  let activeConvId = CONVERSATIONS[0].id;
+  // ── Icons ──────────────────────────────────────────────────────────────────
+  const iconCheck2 = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+  const iconSend   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>`;
+  const iconClip   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>`;
+  const iconVerify = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
-  function renderConvItem(conv) {
-    const isActive = conv.id === activeConvId;
-    return `
-      <div class="conv-item${isActive ? ' active' : ''}" data-conv-id="${conv.id}">
-        <div class="conv-avatar">${conv.buyerInitials}</div>
-        <div class="conv-meta">
-          <div class="conv-name">${conv.buyerName}</div>
-          <div class="conv-listing">${conv.listingTitle}</div>
-          <div class="conv-preview">${conv.lastMsg}</div>
-        </div>
-        <div class="conv-right">
-          <span class="conv-time">${conv.time}</span>
-          ${conv.unread ? '<div class="unread-dot"></div>' : '<div style="width:8px;height:8px"></div>'}
-        </div>
-      </div>
-    `;
-  }
+  let activeConvId = null;
 
-  function renderThread(conv) {
-    const msgs = conv.messages.map(m => {
-      if (m.from === 'buyer') {
-        return `
-          <div class="msg-row buyer">
-            <div class="msg-bubble-avatar">${conv.buyerInitials}</div>
-            <div class="msg-bubble buyer-bubble">${m.text}</div>
-            <span class="msg-time">${m.time}</span>
-          </div>`;
-      } else {
-        return `
-          <div class="msg-row seller">
-            <span class="msg-time">${m.time}</span>
-            <div class="msg-bubble seller-bubble">${m.text}</div>
-          </div>`;
-      }
+  // ── Render conversation list ───────────────────────────────────────────────
+  function renderConvList(filter = '') {
+    const list = document.getElementById('convList');
+
+    if (!isVerified) {
+      list.innerHTML = '';
+      return;
+    }
+
+    const filtered = CONVS.filter(c => {
+      const l = FAKE_LISTINGS.find(x => x.id === c.listingId);
+      const q = filter.toLowerCase();
+      return !q
+        || c.buyerName.toLowerCase().includes(q)
+        || (l && l.title.toLowerCase().includes(q));
+    });
+
+    list.innerHTML = filtered.map(c => {
+      const l = FAKE_LISTINGS.find(x => x.id === c.listingId);
+      if (!l) return '';
+      const last = c.messages[c.messages.length - 1];
+      return `
+        <div class="conv-item ${c.id === activeConvId ? 'active' : ''}"
+             onclick="openConv('${c.id}')">
+          <img class="conv-avatar" src="${l.images[0]}" alt="${l.title}" />
+          <div class="conv-info">
+            <div class="conv-name">
+              ${c.buyerName}
+              <span class="conv-verified">${iconVerify}</span>
+            </div>
+            <div class="conv-preview">${l.title.length > 20 ? l.title.slice(0, 20) + '…' : l.title} · ${last.text.slice(0, 28)}${last.text.length > 28 ? '…' : ''}</div>
+          </div>
+          <div class="conv-meta">
+            <span class="conv-time">${c.dateLabel}</span>
+            ${c.unread > 0 ? `<span class="conv-badge">${c.unread}</span>` : ''}
+          </div>
+        </div>`;
     }).join('');
+  }
 
-    return `
-      <div class="thread-topbar">
-        <div>
-          <div class="thread-buyer-name">${conv.buyerName}</div>
-          <div class="thread-listing-ref">Re: ${conv.listingTitle}</div>
+  function filterConvs() {
+    renderConvList(document.getElementById('convSearch').value);
+  }
+
+  // ── Open a conversation ────────────────────────────────────────────────────
+  function openConv(id) {
+    activeConvId = id;
+    const c = CONVS.find(x => x.id === id);
+    const l = FAKE_LISTINGS.find(x => x.id === c.listingId);
+    c.unread = 0;
+
+    renderConvList(document.getElementById('convSearch').value);
+
+    const isRent  = l.listingFor === 'rent';
+    const price   = '₱' + l.price.toLocaleString('en-PH');
+
+    // Seller messages appear on the right (use 'buyer' CSS class = teal/right)
+    // Buyer messages appear on the left (use 'seller' CSS class = card/left)
+    const messagesHtml = `
+      <div class="msg-date-divider">${c.dateLabel}</div>` +
+      c.messages.map(m => {
+        const side = m.from === 'seller' ? 'buyer' : 'seller';
+        return `
+          <div class="msg-row ${side}">
+            <div class="msg-bubble">${m.text}</div>
+            <div class="msg-time">
+              ${m.time}
+              ${m.from === 'seller' && m.read ? iconCheck2 : ''}
+            </div>
+          </div>`;
+      }).join('');
+
+    document.getElementById('chatPanel').innerHTML = `
+      <div class="chat-header">
+        <img class="chat-header-img" src="${l.images[0]}" alt="${l.title}" />
+        <div class="chat-header-info">
+          <div class="chat-header-title">${l.title}</div>
+          <div class="chat-header-seller">${iconVerify} ${c.buyerName}</div>
         </div>
-        <a href="listings.html" class="view-listing-link">
-          View Listing
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-            <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-          </svg>
-        </a>
+        <div class="chat-header-price">
+          ${price}
+          ${isRent ? `<span>/month</span>` : ''}
+        </div>
       </div>
-      <div class="thread-messages" id="thread-messages-scroll">
-        ${msgs}
-      </div>
-      <div class="thread-input-area">
-        <textarea class="msg-input" id="msg-input-field" placeholder="Type a message..." rows="1"></textarea>
-        <button class="send-btn" id="send-btn" title="Send">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-          </svg>
-        </button>
+
+      <div class="chat-messages" id="chatMessages">${messagesHtml}</div>
+
+      <div class="chat-input-area">
+        <button class="chat-input-btn" title="Attach file">${iconClip}</button>
+        <input class="chat-input" id="chatInput" placeholder="Type a message..."
+               onkeydown="if(event.key==='Enter') sendMessage('${id}')" />
+        <button class="chat-send-btn" onclick="sendMessage('${id}')">${iconSend}</button>
       </div>
     `;
+
+    const msgs = document.getElementById('chatMessages');
+    if (msgs) msgs.scrollTop = msgs.scrollHeight;
   }
 
-  function scrollToBottom() {
-    const el = document.getElementById('thread-messages-scroll');
-    if (el) el.scrollTop = el.scrollHeight;
+  // ── Send a message ─────────────────────────────────────────────────────────
+  function sendMessage(convId) {
+    const input = document.getElementById('chatInput');
+    const text  = input.value.trim();
+    if (!text) return;
+
+    const c = CONVS.find(x => x.id === convId);
+    const now  = new Date();
+    const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    c.messages.push({ from: 'seller', text, time, read: false });
+    input.value = '';
+
+    const msgs = document.getElementById('chatMessages');
+    const row  = document.createElement('div');
+    row.className = 'msg-row buyer'; // seller messages on right
+    row.innerHTML = `<div class="msg-bubble">${text}</div><div class="msg-time">${time}</div>`;
+    msgs.appendChild(row);
+    msgs.scrollTop = msgs.scrollHeight;
   }
 
-  function refreshConvList() {
-    const el = document.getElementById('conv-items');
-    if (el) el.innerHTML = CONVERSATIONS.map(renderConvItem).join('');
-  }
-
-  function refreshThread(conv) {
-    const el = document.getElementById('thread-view');
-    if (el) {
-      el.innerHTML = renderThread(conv);
-      bindSendEvent();
-      scrollToBottom();
-    }
-  }
-
-  function bindSendEvent() {
-    const sendBtn = document.getElementById('send-btn');
-    const inputField = document.getElementById('msg-input-field');
-    if (!sendBtn || !inputField) return;
-
-    function sendMessage() {
-      const text = inputField.value.trim();
-      if (!text) return;
-
-      const conv = CONVERSATIONS.find(c => c.id === activeConvId);
-      if (!conv) return;
-
-      const now = new Date();
-      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      conv.messages.push({ from: 'seller', text, time: timeStr });
-      conv.lastMsg = text;
-
-      inputField.value = '';
-      inputField.style.height = 'auto';
-
-      refreshThread(conv);
-      refreshConvList();
-    }
-
-    sendBtn.addEventListener('click', sendMessage);
-    inputField.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
-      }
-    });
-    inputField.addEventListener('input', function() {
-      this.style.height = 'auto';
-      this.style.height = Math.min(this.scrollHeight, 90) + 'px';
-    });
-  }
-
-  // ── Render: unverified state ───────────────────────────────────────────────
-  function renderUnverifiedState() {
-    const content = document.getElementById('main-content');
-    content.innerHTML = `
-      <div class="page-header-row">
-        <div>
-          <div class="page-title">Messages</div>
-        </div>
-      </div>
-
-      <div class="amber-banner">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="12" y1="8" x2="12" y2="12"/>
-          <line x1="12" y1="16" x2="12.01" y2="16"/>
-        </svg>
-        <p>You don't have any messages yet. Messages from buyers will appear here once you publish your first listing.</p>
-      </div>
-
-      <div class="empty-state">
-        <div class="empty-icon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#00c9a7" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-          </svg>
-        </div>
-        <h3>No messages yet</h3>
-        <p>Buyers will message you here when they're interested in your listings.</p>
-        <a href="verification.html" class="btn-verify">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
+  // ── Unverified state ───────────────────────────────────────────────────────
+  if (!isVerified) {
+    document.getElementById('chatPanel').innerHTML = `
+      <div class="chat-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:42px;height:42px;opacity:0.35"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <p>Complete your verification to receive messages from buyers.</p>
+        <a href="verification.html" style="margin-top:10px;display:inline-flex;align-items:center;gap:6px;background:#00c9a7;color:#fff;font-size:13px;font-weight:700;border-radius:9px;padding:9px 20px;text-decoration:none;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           Complete Verification
         </a>
       </div>
     `;
   }
 
-  // ── Render: verified state ─────────────────────────────────────────────────
-  function renderVerifiedState() {
-    const content = document.getElementById('main-content');
-    content.style.overflow = 'hidden';
-    content.style.padding = '22px 26px 26px';
-
-    const activeConv = CONVERSATIONS.find(c => c.id === activeConvId);
-
-    content.innerHTML = `
-      <div class="page-header-row">
-        <div>
-          <div class="page-title">Messages</div>
-          <div class="page-sub">Your conversations with buyers</div>
-        </div>
-      </div>
-
-      <div class="msg-card">
-        <div class="conv-list">
-          <div class="conv-search-wrap">
-            <input type="text" class="conv-search" id="conv-search" placeholder="Search conversations..." />
-          </div>
-          <div class="conv-items" id="conv-items">
-            ${CONVERSATIONS.map(renderConvItem).join('')}
-          </div>
-        </div>
-
-        <div class="thread-view" id="thread-view">
-          ${renderThread(activeConv)}
-        </div>
-      </div>
-    `;
-
-    // Conversation click delegation
-    document.getElementById('conv-items').addEventListener('click', function(e) {
-      const item = e.target.closest('.conv-item');
-      if (!item) return;
-      const convId = item.dataset.convId;
-      if (convId === activeConvId) return;
-
-      activeConvId = convId;
-      const conv = CONVERSATIONS.find(c => c.id === convId);
-      if (!conv) return;
-      conv.unread = false;
-
-      refreshConvList();
-      refreshThread(conv);
-    });
-
-    // Conversation search filter
-    document.getElementById('conv-search').addEventListener('input', function() {
-      const q = this.value.toLowerCase().trim();
-      document.querySelectorAll('.conv-item').forEach(item => {
-        const conv = CONVERSATIONS.find(c => c.id === item.dataset.convId);
-        if (!conv) return;
-        const match = !q ||
-          conv.buyerName.toLowerCase().includes(q) ||
-          conv.listingTitle.toLowerCase().includes(q) ||
-          conv.lastMsg.toLowerCase().includes(q);
-        item.style.display = match ? '' : 'none';
-      });
-    });
-
-    bindSendEvent();
-    scrollToBottom();
-  }
-
-  // ── Init ────────────────────────────────────────────────────────────────────
-  if (isVerified) {
-    renderVerifiedState();
-  } else {
-    renderUnverifiedState();
-  }
+  // ── Init ───────────────────────────────────────────────────────────────────
+  renderConvList();

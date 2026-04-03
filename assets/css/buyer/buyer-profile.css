@@ -196,7 +196,7 @@
     .otp-verify-btn {
       background: #00c9a7;
       border: none; border-radius: 9px; padding: 10px 22px;
-      color: #06201a; font-size: 13px; font-weight: 700;
+      color: #ffffff; font-size: 13px; font-weight: 700;
       font-family: inherit; cursor: pointer;
       transition: opacity 0.2s, transform 0.18s;
     }
@@ -214,7 +214,7 @@
     .save-btn {
       background: #00c9a7;
       border: none; border-radius: 9px; padding: 11px 26px;
-      color: #06201a; font-size: 13px; font-weight: 700;
+      color: #ffffff; font-size: 13px; font-weight: 700;
       font-family: inherit; cursor: pointer;
       display: flex; align-items: center; gap: 8px;
       transition: opacity 0.2s, transform 0.18s;

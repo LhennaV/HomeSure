@@ -86,7 +86,7 @@
     }
     .verify-btn {
       display: flex; align-items: center; gap: 6px;
-      background: var(--teal); color: #06201a;
+      background: var(--teal); color: #ffffff;
       font-family: inherit; font-size: 12.5px; font-weight: 700;
       border: none; border-radius: 8px; padding: 9px 18px;
       cursor: pointer; white-space: nowrap;
@@ -143,7 +143,7 @@
     }
     .qa-btn:hover:not(:disabled) { transform: translateY(-1px); opacity: 0.88; }
     .qa-btn svg { width: 14px; height: 14px; }
-    .qa-btn.primary { background: var(--teal); color: #06201a; }
+    .qa-btn.primary { background: var(--teal); color: #ffffff; }
     .qa-btn.primary:disabled {
       background: rgba(0,201,167,0.2); color: rgba(0,201,167,0.45);
       cursor: not-allowed; transform: none;
@@ -251,7 +251,7 @@
       padding: 3px 9px; border-radius: 20px;
       font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
     }
-    .badge-rent { background: #00c9a7; color: #06201a; }
+    .badge-rent { background: #00c9a7; color: #ffffff; }
     .badge-sale { background: #3b82f6; color: #051226; }
     .badge-tr {
       position: absolute; top: 10px; right: 10px; z-index: 1;
@@ -263,7 +263,7 @@
       position: absolute; bottom: 10px; left: 10px; z-index: 1;
       padding: 2px 8px; border-radius: 20px;
       font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
-      background: rgba(0,201,167,0.85); color: #06201a; backdrop-filter: blur(4px);
+      background: rgba(0,201,167,0.85); color: #ffffff; backdrop-filter: blur(4px);
     }
     .verified-check {
       display: inline-flex; align-items: center; justify-content: center;

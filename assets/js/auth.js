@@ -11,13 +11,19 @@ function togglePw(id, btn) {
   btn.innerHTML = isPassword ? eyeOff : eyeOpen;
 }
 
-function toggleTheme() {
+function applyAuthTheme(mode) {
   const body = document.body;
-  const isLight = body.classList.contains('light');
-  body.classList.toggle('dark', isLight);
-  body.classList.toggle('light', !isLight);
+  body.classList.toggle('dark', mode === 'dark');
+  body.classList.toggle('light', mode === 'light');
   const iconEl = document.getElementById('themeIcon');
-  if (iconEl) iconEl.outerHTML = isLight ? moonIcon : sunIcon;
+  if (iconEl) iconEl.outerHTML = mode === 'dark' ? moonIcon : sunIcon;
+}
+
+function toggleTheme() {
+  const isLight = document.body.classList.contains('light');
+  const next = isLight ? 'dark' : 'light';
+  localStorage.setItem('hs-theme', next);
+  applyAuthTheme(next);
 }
 
 function setRole(role) {
@@ -205,6 +211,10 @@ function resendReset() {
 
 // Close modal when clicking the backdrop
 document.addEventListener('DOMContentLoaded', () => {
+  // Apply saved theme preference from localStorage
+  const savedTheme = localStorage.getItem('hs-theme') || 'dark';
+  applyAuthTheme(savedTheme);
+
   const backdrop = document.getElementById('verifyModal');
   if (backdrop) {
     backdrop.addEventListener('click', (e) => {
