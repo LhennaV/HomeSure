@@ -94,17 +94,19 @@
 
     document.getElementById('listingModalContent').innerHTML = `
       <img class="modal-img" src="${l.images[0]}" alt="${l.title}" />
-      <div class="modal-title">${l.title}</div>
-      <div class="modal-meta">${l.barangay} · ${l.address}</div>
-      <div class="modal-detail">
-        <div class="modal-detail-item"><label>Seller</label><span>${sellerName}</span></div>
-        <div class="modal-detail-item"><label>Price</label><span>${price}</span></div>
-        <div class="modal-detail-item"><label>Type</label><span style="text-transform:capitalize">${l.type}</span></div>
-        <div class="modal-detail-item"><label>For</label><span style="text-transform:capitalize">${l.listingFor}</span></div>
-        <div class="modal-detail-item"><label>Bedrooms</label><span>${l.bedrooms ?? '—'}</span></div>
-        <div class="modal-detail-item"><label>Bathrooms</label><span>${l.bathrooms ?? '—'}</span></div>
-        <div class="modal-detail-item"><label>Floor Area</label><span>${l.floorArea ? l.floorArea + ' sqm' : '—'}</span></div>
-        <div class="modal-detail-item"><label>Posted</label><span>${l.postedAt}</span></div>
+      <div class="modal-inner">
+        <div class="modal-title">${l.title}</div>
+        <div class="modal-meta">${l.barangay} · ${l.address}</div>
+        <div class="modal-detail">
+          <div class="modal-detail-item"><label>Seller</label><span>${sellerName}</span></div>
+          <div class="modal-detail-item"><label>Price</label><span>${price}</span></div>
+          <div class="modal-detail-item"><label>Type</label><span style="text-transform:capitalize">${l.type}</span></div>
+          <div class="modal-detail-item"><label>For</label><span style="text-transform:capitalize">${l.listingFor}</span></div>
+          <div class="modal-detail-item"><label>Bedrooms</label><span>${l.bedrooms ?? '—'}</span></div>
+          <div class="modal-detail-item"><label>Bathrooms</label><span>${l.bathrooms ?? '—'}</span></div>
+          <div class="modal-detail-item"><label>Floor Area</label><span>${l.floorArea ? l.floorArea + ' sqm' : '—'}</span></div>
+          <div class="modal-detail-item"><label>Posted</label><span>${l.postedAt}</span></div>
+        </div>
       </div>
       <div class="modal-actions">
         ${l.status !== 'approved' ? `<button class="btn-modal approve" onclick="setStatus('${l.id}','approved')">Approve</button>` : ''}

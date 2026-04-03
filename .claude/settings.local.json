@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -l \"rel=\\\\\"icon\\\\\"\" c:/Users/vlhen/OneDrive/Desktop/HomeSure/**/*.html c:/Users/vlhen/OneDrive/Desktop/HomeSure/*.html)"
+    ]
+  }
+}
