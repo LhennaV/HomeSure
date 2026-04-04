@@ -155,6 +155,12 @@ const testimonials = [
   },
 ];
 
+// ── Theme init (read localStorage, default dark) ──────────────────────────────
+(function () {
+  const t = localStorage.getItem('hs-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+})();
+
 // ── SVG Helpers ───────────────────────────────────────────────────────────────
 
 const pinIcon = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b8fa0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
@@ -171,39 +177,136 @@ const LOGO_SRC = "assets/img/image.png";
 
 const { useState, useEffect, useRef } = React;
 
+// Typing Animation
+const typingPhrases = [
+  "Find your home.",
+  "Find verified properties.",
+  "Find your perfect place.",
+  "Find trusted listings.",
+  "Find your next home.",
+];
+
+function TypingText() {
+  const [displayed, setDisplayed] = useState('');
+  const [phraseIdx, setPhraseIdx] = useState(0);
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    const current = typingPhrases[phraseIdx];
+    let timer;
+
+    if (!deleting) {
+      if (displayed.length < current.length) {
+        timer = setTimeout(
+          () => setDisplayed(current.slice(0, displayed.length + 1)),
+          68 + Math.random() * 38,
+        );
+      } else {
+        timer = setTimeout(() => setDeleting(true), 1900);
+      }
+    } else {
+      if (displayed.length > 0) {
+        timer = setTimeout(
+          () => setDisplayed(d => d.slice(0, -1)),
+          28 + Math.random() * 18,
+        );
+      } else {
+        timer = setTimeout(() => {
+          setPhraseIdx(i => (i + 1) % typingPhrases.length);
+          setDeleting(false);
+        }, 280);
+      }
+    }
+
+    return () => clearTimeout(timer);
+  }, [displayed, deleting, phraseIdx]);
+
+  return React.createElement(
+    React.Fragment, null,
+    displayed,
+    React.createElement('span', { className: 'typing-cursor' }),
+  );
+}
+
+// Hero Wheel — center is fixed, only arms orbit clockwise
+function HeroCards() {
+  const cards = properties.slice(0, 3);
+  return React.createElement(
+    'div', { className: 'hero-cards' },
+    cards.map((prop, i) =>
+      React.createElement(
+        'div', { key: i, className: 'hero-card' },
+        React.createElement(
+          'div', { className: 'wc-img-wrap' },
+          React.createElement('img', { className: 'wc-img', src: prop.image, alt: prop.title }),
+          prop.verified
+            ? React.createElement(
+                'span', { className: 'wc-verified-badge' },
+                React.createElement('span', { dangerouslySetInnerHTML: { __html: `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>` } }),
+                'Verified',
+              )
+            : null,
+        ),
+        React.createElement(
+          'div', { className: 'wc-info' },
+          React.createElement('div', { className: 'wc-title' }, prop.title),
+          React.createElement('div', { className: 'wc-location' },
+            React.createElement('span', { dangerouslySetInnerHTML: { __html: `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>` } }),
+            prop.location,
+          ),
+          React.createElement('div', { className: 'wc-footer' },
+            React.createElement('span', { className: 'wc-price' }, prop.price, React.createElement('span', { className: 'wc-period' }, prop.period)),
+            React.createElement('span', { className: 'wc-view' }, 'View Details'),
+          ),
+        ),
+      )
+    ),
+  );
+}
+
+const sunSVG  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+const moonSVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+
 // Navbar
 function Navbar() {
+  const [theme, setTheme] = useState(
+    document.documentElement.getAttribute('data-theme') || 'dark'
+  );
+
+  function toggleTheme() {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('hs-theme', next);
+    setTheme(next);
+  }
+
   return React.createElement(
     "nav",
     null,
     React.createElement(
       "a",
       { className: "nav-logo", href: "#" },
-      React.createElement("img", {
-        src: LOGO_SRC,
-        alt: "HomeSure",
-        height: 32,
-        style: { display: "block" },
-      }),
+      React.createElement("span", { className: "nav-catstone-wrap" },
+        React.createElement("img", { src: "assets/img/CatsTone Logo.png", alt: "CatsTone", className: "nav-catstone-img" }),
+      ),
+      React.createElement("span", { className: "nav-logo-divider" }),
+      React.createElement("img", { src: LOGO_SRC, alt: "HomeSure", height: 30, style: { display: "block" } }),
       "HomeSure",
     ),
+    React.createElement("span", { className: "nav-tagline" }, "Sta. Maria, Bulacan — Property Platform"),
     React.createElement(
       "div",
       { className: "nav-btns" },
+      React.createElement("button", {
+        className: "nav-theme-btn",
+        onClick: toggleTheme,
+        title: theme === 'dark' ? 'Switch to Light' : 'Switch to Dark',
+        dangerouslySetInnerHTML: { __html: theme === 'dark' ? sunSVG : moonSVG },
+      }),
+      React.createElement("button", { className: "btn-outline", onClick: () => (window.location.href = "auth/signin.html") }, "Sign In"),
       React.createElement(
         "button",
-        {
-          className: "btn-outline",
-          onClick: () => (window.location.href = "auth/signin.html"),
-        },
-        "Sign In",
-      ),
-      React.createElement(
-        "button",
-        {
-          className: "btn-solid",
-          onClick: () => (window.location.href = "auth/signup.html"),
-        },
+        { className: "btn-solid", onClick: () => (window.location.href = "auth/signup.html") },
         "Sign Up",
       ),
     ),
@@ -212,78 +315,75 @@ function Navbar() {
 
 // Hero
 function Hero() {
+
   return React.createElement(
     "section",
     { className: "hero" },
-    React.createElement("div", { className: "hero-bg" }),
-    React.createElement("div", { className: "hero-overlay" }),
+
+    // ── Left column ──
     React.createElement(
       "div",
-      { className: "hero-content" },
+      { className: "hero-left" },
+      React.createElement(
+        "div",
+        { className: "hero-badge" },
+        React.createElement("span", { className: "hero-badge-dot" }),
+        "Sta. Maria, Bulacan — Property Platform",
+      ),
       React.createElement(
         "h1",
         { className: "hero-title" },
-        "Find Verified Homes ",
+        "Buy. Sell. Rent.",
+        React.createElement("br"),
+        "All in one place.",
+        React.createElement("br"),
         React.createElement(
-          "span",
-          { className: "hero-title-accent" },
-          "with Confidence",
+          "span", { className: "hero-title-accent" },
+          React.createElement(TypingText),
         ),
       ),
       React.createElement(
         "p",
-        { className: "hero-sub" },
-        "Browse secure listings for long-term rent and property purchase. No hidden listings. No unverified sellers.",
+        { className: "hero-desc" },
+        "HomeSure connects buyers with verified property owners across Sta. Maria, Bulacan. No hidden listings. No unverified sellers.",
       ),
       React.createElement(
         "div",
-        { className: "hero-search" },
-        React.createElement("input", {
-          className: "hero-search-input",
-          type: "text",
-          placeholder: "Search by barangay, property type...",
-        }),
-        React.createElement("div", { className: "hero-search-divider" }),
+        { className: "hero-ctas" },
         React.createElement(
           "button",
-          { className: "hero-search-btn" },
-          React.createElement("span", {
-            dangerouslySetInnerHTML: { __html: searchIcon },
-          }),
-          "Search",
+          { className: "hero-btn-primary", onClick: () => (window.location.href = "auth/signin.html") },
+          React.createElement("span", { dangerouslySetInnerHTML: { __html: searchIcon } }),
+          "Browse Listings",
+        ),
+        React.createElement(
+          "button",
+          { className: "hero-btn-secondary", onClick: () => (window.location.href = "auth/signup.html") },
+          "List Your Property",
+          React.createElement("span", { dangerouslySetInnerHTML: { __html: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>` } }),
         ),
       ),
       React.createElement(
         "div",
         { className: "hero-trust" },
-        React.createElement(
-          "span",
-          { className: "hero-trust-item" },
-          React.createElement("span", {
-            className: "hero-trust-icon",
-            dangerouslySetInnerHTML: { __html: shieldIcon },
-          }),
+        React.createElement("span", { className: "hero-trust-item" },
+          React.createElement("span", { className: "hero-trust-icon", dangerouslySetInnerHTML: { __html: shieldIcon } }),
           "Verified Listings",
         ),
-        React.createElement(
-          "span",
-          { className: "hero-trust-item" },
-          React.createElement("span", {
-            className: "hero-trust-icon",
-            dangerouslySetInnerHTML: { __html: starIcon },
-          }),
+        React.createElement("span", { className: "hero-trust-item" },
+          React.createElement("span", { className: "hero-trust-icon", dangerouslySetInnerHTML: { __html: starIcon } }),
           "4.8/5 Rating",
         ),
-        React.createElement(
-          "span",
-          { className: "hero-trust-item" },
-          React.createElement("span", {
-            className: "hero-trust-icon",
-            dangerouslySetInnerHTML: { __html: lockIcon },
-          }),
+        React.createElement("span", { className: "hero-trust-item" },
+          React.createElement("span", { className: "hero-trust-icon", dangerouslySetInnerHTML: { __html: lockIcon } }),
           "Secure Messaging",
         ),
       ),
+    ),
+
+    // ── Right column — Rotating Wheel ──
+    React.createElement("div", { className: "hero-right" },
+      React.createElement(HeroCards),
     ),
   );
 }
@@ -842,8 +942,6 @@ function App() {
     null,
     React.createElement(Navbar),
     React.createElement(Hero),
-    React.createElement(Categories),
-    React.createElement(Carousel),
     React.createElement(HowItWorks),
     React.createElement(Features),
     React.createElement(Stats),

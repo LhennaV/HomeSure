@@ -190,7 +190,7 @@
     .prop-price-per { font-size: 10.5px; color: var(--muted); font-weight: 400; }
     .badge-negotiable {
       padding: 2px 8px; border-radius: 20px;
-      background: var(--teal-faint); color: var(--teal);
+      background: #00c9a7; color: #fff;
       font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
     }
 
