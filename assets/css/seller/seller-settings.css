@@ -341,9 +341,9 @@
     }
     .twofa-email-icon {
       width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
-      background: rgba(0,201,167,0.18); display: flex; align-items: center; justify-content: center;
+      background: #00c9a7; display: flex; align-items: center; justify-content: center;
     }
-    .twofa-email-icon svg { width: 18px; height: 18px; color: var(--teal); }
+    .twofa-email-icon svg { width: 18px; height: 18px; color: #fff; }
     .twofa-email-title { font-size: 13px; font-weight: 700; color: var(--teal); margin-bottom: 3px; }
     .twofa-email-sub   { font-size: 12px; color: var(--muted2); }
     .twofa-email-sub strong { color: var(--text); }

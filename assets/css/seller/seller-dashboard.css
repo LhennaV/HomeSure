@@ -263,7 +263,7 @@
       position: absolute; bottom: 10px; left: 10px; z-index: 1;
       padding: 2px 8px; border-radius: 20px;
       font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
-      background: rgba(0,201,167,0.85); color: #ffffff; backdrop-filter: blur(4px);
+      background: #00c9a7; color: #ffffff;
     }
     .verified-check {
       display: inline-flex; align-items: center; justify-content: center;
@@ -293,7 +293,7 @@
     .prop-price-per { font-size: 10.5px; color: var(--muted); font-weight: 400; }
     .badge-negotiable {
       padding: 2px 8px; border-radius: 20px;
-      background: var(--teal-faint); color: var(--teal);
+      background: #00c9a7; color: #fff;
       font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
     }
     .prop-seller { font-size: 10.5px; color: var(--muted); margin-top: 6px; }

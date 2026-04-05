@@ -27,12 +27,12 @@ nav {
 }
 .nav-btns { display: flex; gap: 12px; }
 .btn-outline {
-  background: transparent; border: 1.5px solid rgba(255,255,255,0.22);
+  background: #1e293b; border: 1px solid #334155;
   color: #fff; padding: 7px 22px; border-radius: 8px;
   font-weight: 600; font-size: 14px; cursor: pointer;
   transition: all 0.2s; font-family: inherit;
 }
-.btn-outline:hover { border-color: #1fc8b4; color: #1fc8b4; }
+.btn-outline:hover { border-color: #475569; }
 .btn-solid {
   background: #1a9e8f; border: none; color: #fff;
   padding: 7px 22px; border-radius: 8px;

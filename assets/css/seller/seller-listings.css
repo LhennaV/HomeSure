@@ -143,9 +143,9 @@
       padding: 3px 10px; border-radius: 20px;
       font-size: 11px; font-weight: 700;
     }
-    .status-badge.approved { background: var(--teal-faint); color: var(--teal); border: 1px solid var(--teal-mid); }
-    .status-badge.pending  { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
-    .status-badge.rejected { background: var(--danger-faint); color: var(--danger); border: 1px solid var(--danger-mid); }
+    .status-badge.approved { background: #00c9a7; color: #fff; border: none; }
+    .status-badge.pending  { background: #f59e0b; color: #fff; border: none; }
+    .status-badge.rejected { background: #ef4444; color: #fff; border: none; }
 
     .status-dot {
       width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0;

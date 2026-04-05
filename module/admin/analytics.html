@@ -36,40 +36,30 @@
       <div class="stat-grid" id="analyticsStats"></div>
 
       <!-- Charts Row -->
-      <div class="charts-grid">
-
+      <div class="charts-row">
         <div class="chart-card">
           <div class="chart-header">
-            <span class="chart-title">Listings by Status</span>
+            <span class="chart-title">High-Demand Areas</span>
           </div>
-          <div class="donut-wrap">
-            <svg class="donut-svg" id="donutSvg" viewBox="0 0 120 120"></svg>
-            <div class="donut-legend" id="donutLegend"></div>
-          </div>
+          <div class="vchart-wrap" id="demandChart"></div>
         </div>
-
         <div class="chart-card">
           <div class="chart-header">
-            <span class="chart-title">Listings by Type</span>
+            <span class="chart-title">Search Trends (Last 7 Months)</span>
           </div>
-          <div class="bar-chart" id="typeBarChart"></div>
+          <div class="linechart-wrap" id="trendsChart"></div>
         </div>
-
-        <div class="chart-card">
-          <div class="chart-header">
-            <span class="chart-title">For Rent vs For Sale</span>
-          </div>
-          <div class="donut-wrap">
-            <svg class="donut-svg" id="donutSvg2" viewBox="0 0 120 120"></svg>
-            <div class="donut-legend" id="donutLegend2"></div>
-          </div>
-        </div>
-
       </div>
 
-      <!-- Data Table -->
+      <!-- Key Insights -->
+      <div class="key-insights-section">
+        <h3 class="ki-heading">Key Insights</h3>
+        <div class="ki-row" id="keyInsights"></div>
+      </div>
+
+      <!-- Barangay Table -->
       <div class="table-card">
-        <div class="chart-header" style="padding:16px 20px; border-bottom:1px solid var(--border)">
+        <div class="chart-header">
           <span class="chart-title">Listings Per Barangay</span>
         </div>
         <table class="data-table">
@@ -77,10 +67,10 @@
             <tr>
               <th>Barangay</th>
               <th>Total Listings</th>
-              <th>Approved</th>
-              <th>Pending</th>
               <th>For Rent</th>
               <th>For Sale</th>
+              <th>Approved</th>
+              <th>Pending</th>
             </tr>
           </thead>
           <tbody id="barangayTable"></tbody>

@@ -86,9 +86,9 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); colo
 
 /* ── Badges ── */
 .badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 99px; white-space: nowrap; }
-.badge.approved { background: rgba(0,201,167,0.12); color: #00c9a7; border: 1px solid rgba(0,201,167,0.22); }
-.badge.pending  { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.22); }
-.badge.rejected { background: rgba(239,68,68,0.12);  color: #f87171; border: 1px solid rgba(239,68,68,0.22); }
+.badge.approved { background: #00c9a7; color: #fff; border: none; }
+.badge.pending  { background: #f59e0b; color: #fff; border: none; }
+.badge.rejected { background: #ef4444; color: #fff; border: none; }
 
 /* ── Row Buttons ── */
 .action-btns { display: flex; gap: 5px; }
@@ -98,9 +98,9 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); colo
   transition: all 0.18s; white-space: nowrap;
 }
 .btn-sm:hover { opacity: 0.82; transform: translateY(-1px); }
-.btn-sm.approve { background: rgba(0,201,167,0.1);   color: #00c9a7; border-color: rgba(0,201,167,0.2); }
-.btn-sm.reject  { background: rgba(239,68,68,0.1);   color: #f87171; border-color: rgba(239,68,68,0.2); }
-.btn-sm.view    { background: rgba(255,255,255,0.05); color: var(--muted2); border-color: var(--border); }
+.btn-sm.approve { background: #00c9a7; color: #fff; border-color: #00c9a7; }
+.btn-sm.reject  { background: #ef4444; color: #fff; border-color: #ef4444; }
+.btn-sm.view    { background: #1e293b; color: #fff; border-color: #334155; }
 
 /* ── Modal ── */
 .modal-backdrop {
