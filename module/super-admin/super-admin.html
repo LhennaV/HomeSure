@@ -14,32 +14,124 @@
   <div class="main">
     <div id="hs-topbar"></div>
     <div class="content">
-      <div class="dash-title" id="dashTitle">Super Admin Control Panel</div>
-      <div class="dash-sub">Full system oversight – all users, admins, listings, and reports.</div>
 
-      <div class="cards">
-        <div class="card"><div class="card-label">Total Users</div><div class="card-value" id="totalUsers">0</div></div>
-        <div class="card"><div class="card-label">Admins</div><div class="card-value" id="totalAdmins">0</div></div>
-        <div class="card"><div class="card-label">Sellers</div><div class="card-value" id="totalSellers">0</div></div>
-        <div class="card"><div class="card-label">Buyers</div><div class="card-value" id="totalBuyers">0</div></div>
-        <div class="card"><div class="card-label">Listings</div><div class="card-value" id="totalListings">0</div></div>
-        <div class="card"><div class="card-label">Open Reports</div><div class="card-value" id="openReports">0</div></div>
+      <!-- Page Header -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title" id="dashTitle">Super Admin Control Panel</h1>
+          <p class="page-sub">Full system oversight — users, admins, listings, and audit trail.</p>
+        </div>
       </div>
 
-      <div class="grid-2">
-        <div><div class="section-title">Admin Management</div><div class="placeholder-section"><h3>Admin Accounts Module</h3><p>Add, manage, or remove admin accounts.</p></div></div>
-        <div><div class="section-title">System Reports</div><div class="placeholder-section"><h3>Reports Module</h3><p>View overall system statistics and analytics.</p></div></div>
-      </div>
+      <!-- Stat Cards -->
+      <div class="stat-grid" id="statGrid"></div>
 
-      <div class="section-title">Recent Activity Log</div>
-      <div class="log-wrap">
-        <table class="log-table">
-          <thead><tr><th>Action</th><th>Detail</th><th>Timestamp</th></tr></thead>
-          <tbody id="activityLog"></tbody>
+      <!-- System Health -->
+      <div class="health-row" id="healthRow"></div>
+
+      <!-- Admin Management -->
+      <div class="section-card">
+        <div class="section-head">
+          <div>
+            <div class="section-title">Admin Management</div>
+            <div class="section-sub">Manage admin accounts — add, deactivate, or reset credentials.</div>
+          </div>
+          <button class="btn-primary" id="addAdminBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Admin
+          </button>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Admin</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Date Added</th>
+              <th>Added By</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="adminTable"></tbody>
         </table>
       </div>
+
+      <!-- Audit Trail -->
+      <div class="section-card">
+        <div class="section-head">
+          <div>
+            <div class="section-title">Audit Trail</div>
+            <div class="section-sub">Complete log of all significant actions across the platform.</div>
+          </div>
+        </div>
+        <div class="filter-tabs" id="auditTabs">
+          <button class="filter-tab active" data-type="all">All</button>
+          <button class="filter-tab" data-type="listing">Listings</button>
+          <button class="filter-tab" data-type="user">Users</button>
+          <button class="filter-tab" data-type="report">Reports</button>
+          <button class="filter-tab" data-type="admin">Admins</button>
+          <button class="filter-tab" data-type="system">System</button>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>User</th>
+              <th>Role</th>
+              <th>Action</th>
+              <th>IP Address</th>
+              <th>Status</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody id="auditTable"></tbody>
+        </table>
+      </div>
+
     </div>
   </div>
+</div>
+
+<!-- Add Admin Modal -->
+<div class="modal-backdrop" id="addAdminModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Add New Admin</span>
+      <button class="modal-close" id="closeAdminModal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group">
+        <div class="field">
+          <label>First Name</label>
+          <input type="text" id="newAdminFirst" placeholder="First name" />
+        </div>
+        <div class="field">
+          <label>Last Name</label>
+          <input type="text" id="newAdminLast" placeholder="Last name" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Email Address</label>
+        <input type="email" id="newAdminEmail" placeholder="admin@homesure.com" />
+      </div>
+      <div class="field">
+        <label>Temporary Password</label>
+        <input type="password" id="newAdminPass" placeholder="Set a temporary password" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" id="cancelAdminModal">Cancel</button>
+      <button class="btn-primary" id="confirmAddAdmin">Create Admin</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toastMsg"></span>
 </div>
 
 <script src="../../assets/js/fake-data.js"></script>

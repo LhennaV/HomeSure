@@ -51,6 +51,7 @@
       margin-bottom: 26px;
     }
 
+    .avatar-wrap-seller { position: relative; flex-shrink: 0; }
     .avatar {
       width: 56px;
       height: 56px;
@@ -62,9 +63,17 @@
       font-size: 20px;
       font-weight: 800;
       color: #fff;
-      flex-shrink: 0;
       letter-spacing: 0.02em;
     }
+    .avatar-wrap-seller .avatar-edit-btn {
+      position: absolute; bottom: 0; right: 0;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: #00c9a7; border: 2px solid var(--card);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: transform 0.18s;
+    }
+    .avatar-wrap-seller .avatar-edit-btn:hover { transform: scale(1.15); }
+    .avatar-wrap-seller .avatar-edit-btn svg { width: 9px; height: 9px; color: #fff; }
 
     .profile-info { flex: 1; min-width: 0; }
 

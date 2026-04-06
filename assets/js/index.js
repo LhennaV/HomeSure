@@ -293,7 +293,6 @@ function Navbar() {
       React.createElement("img", { src: LOGO_SRC, alt: "HomeSure", height: 30, style: { display: "block" } }),
       "HomeSure",
     ),
-    React.createElement("span", { className: "nav-tagline" }, "Sta. Maria, Bulacan — Property Platform"),
     React.createElement(
       "div",
       { className: "nav-btns" },

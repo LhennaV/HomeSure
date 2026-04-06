@@ -264,6 +264,33 @@ const FAKE_ACTIVITY_LOGS = [
   { id: 'log-005', action: 'Admin added',         detail: 'Andrea Villanueva added as Admin',       timestamp: '2025-08-15 08:00' },
 ];
 
+// ── Audit Trail (Super Admin) ─────────────────────────────────────────────────
+const FAKE_AUDIT_TRAIL = [
+  { id: 'aud-001', actor: 'Andrea Villanueva', actorRole: 'admin',      action: 'Approved listing',       ipAddress: '192.168.1.12',  status: 'success', details: '3-Bedroom House for Sale in Pulong Yantok',          type: 'listing',  timestamp: '2026-04-06 09:14' },
+  { id: 'aud-002', actor: 'Andrea Villanueva', actorRole: 'admin',      action: 'Rejected listing',       ipAddress: '192.168.1.12',  status: 'success', details: 'Studio Apartment in Bagbaguin – incomplete docs',     type: 'listing',  timestamp: '2026-04-05 11:32' },
+  { id: 'aud-003', actor: 'Ricardo Dela Cruz', actorRole: 'superadmin', action: 'Added admin account',    ipAddress: '10.0.0.1',      status: 'success', details: 'Andrea Villanueva (admin@homesure.com)',             type: 'admin',    timestamp: '2026-04-05 08:00' },
+  { id: 'aud-004', actor: 'Andrea Villanueva', actorRole: 'admin',      action: 'Resolved report',        ipAddress: '192.168.1.12',  status: 'success', details: 'Report rep-001 – Suspicious listing prop-004',       type: 'report',   timestamp: '2026-04-04 15:20' },
+  { id: 'aud-005', actor: 'Andrea Villanueva', actorRole: 'admin',      action: 'Issued warning',         ipAddress: '192.168.1.12',  status: 'success', details: 'Seller: Lourdes Navarro – misleading listing',        type: 'user',     timestamp: '2026-04-04 14:05' },
+  { id: 'aud-006', actor: 'Andrea Villanueva', actorRole: 'admin',      action: 'Verified seller',        ipAddress: '192.168.1.12',  status: 'success', details: 'Ramon Cruz (seller@homesure.com)',                   type: 'user',     timestamp: '2026-04-03 10:48' },
+  { id: 'aud-007', actor: 'Ricardo Dela Cruz', actorRole: 'superadmin', action: 'Viewed audit trail',     ipAddress: '10.0.0.1',      status: 'success', details: 'Full audit log accessed',                            type: 'system',   timestamp: '2026-04-03 09:00' },
+  { id: 'aud-008', actor: 'Andrea Villanueva', actorRole: 'admin',      action: 'Approved listing',       ipAddress: '192.168.1.12',  status: 'success', details: '1-Bedroom Apartment for Rent near Town Proper',       type: 'listing',  timestamp: '2026-04-02 16:30' },
+  { id: 'aud-009', actor: 'Andrea Villanueva', actorRole: 'admin',      action: 'Suspended account',      ipAddress: '192.168.1.12',  status: 'success', details: 'Seller: Ana Reyes – repeated policy violations',      type: 'user',     timestamp: '2026-04-01 13:15' },
+  { id: 'aud-010', actor: 'Ricardo Dela Cruz', actorRole: 'superadmin', action: 'Reset admin password',   ipAddress: '10.0.0.1',      status: 'success', details: 'Andrea Villanueva (admin@homesure.com)',             type: 'admin',    timestamp: '2026-03-30 11:00' },
+  { id: 'aud-011', actor: 'Andrea Villanueva', actorRole: 'admin',      action: 'Rejected report',        ipAddress: '192.168.1.12',  status: 'failed',  details: 'Report flagged as invalid – insufficient evidence',   type: 'report',   timestamp: '2026-03-28 09:45' },
+  { id: 'aud-012', actor: 'Andrea Villanueva', actorRole: 'admin',      action: 'Removed listing',        ipAddress: '192.168.1.12',  status: 'success', details: 'prop-005 – fraudulent property details',             type: 'listing',  timestamp: '2026-03-25 14:00' },
+  { id: 'aud-013', actor: 'Ricardo Dela Cruz', actorRole: 'superadmin', action: 'Exported system report', ipAddress: '10.0.0.1',      status: 'success', details: 'Full listings export (CSV)',                          type: 'system',   timestamp: '2026-03-20 08:30' },
+  { id: 'aud-014', actor: 'Andrea Villanueva', actorRole: 'admin',      action: 'Approved listing',       ipAddress: '192.168.1.12',  status: 'success', details: 'House for Rent near Highway – Bagbaguin',             type: 'listing',  timestamp: '2026-03-15 10:22' },
+  { id: 'aud-015', actor: 'Ricardo Dela Cruz', actorRole: 'superadmin', action: 'Added admin account',    ipAddress: '10.0.0.1',      status: 'success', details: 'New Admin (pending setup)',                          type: 'admin',    timestamp: '2026-03-10 09:00' },
+];
+
+// ── Admin Accounts (Super Admin view) ────────────────────────────────────────
+const FAKE_ADMINS = FAKE_USERS.filter(u => u.role === 'admin').map(u => ({
+  ...u,
+  status: 'active',
+  addedBy: 'Ricardo Dela Cruz',
+  addedAt: u.joinedAt,
+}));
+
 // ── Auth Helpers ──────────────────────────────────────────────────────────────
 function fakeLogin(email, password) {
   return FAKE_USERS.find(
@@ -278,6 +305,7 @@ function saveSession(user) {
     email: user.email, phone: user.phone,
     verified: user.verified, accountStatus: user.accountStatus || null,
     savedListings: user.savedListings || [],
+    avatar: user.avatar || null,
   };
   sessionStorage.setItem('homesure_user', JSON.stringify(session));
 }

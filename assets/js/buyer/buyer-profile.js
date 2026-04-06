@@ -12,9 +12,37 @@
   document.getElementById('phone').value     = user.phone     || '';
 
   // Identity card
-  document.getElementById('avatarCircle').textContent  = (user.firstName[0] + user.lastName[0]).toUpperCase();
+  const avatarCircle = document.getElementById('avatarCircle');
+  function renderAvatar() {
+    if (user.avatar) {
+      avatarCircle.textContent = '';
+      avatarCircle.style.backgroundImage = `url(${user.avatar})`;
+      avatarCircle.style.backgroundSize = 'cover';
+      avatarCircle.style.backgroundPosition = 'center';
+    } else {
+      avatarCircle.textContent = (user.firstName[0] + user.lastName[0]).toUpperCase();
+      avatarCircle.style.backgroundImage = '';
+    }
+  }
+  renderAvatar();
   document.getElementById('identityName').textContent  = user.firstName + ' ' + user.lastName;
   document.getElementById('identityEmail').textContent = user.email;
+
+  // Avatar upload
+  const avatarInput = document.getElementById('avatarInput');
+  document.getElementById('avatarEditBtn').addEventListener('click', () => avatarInput.click());
+  avatarInput.addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      user.avatar = e.target.result;
+      saveSession(user);
+      renderAvatar();
+      showToast('Profile photo updated.');
+    };
+    reader.readAsDataURL(file);
+  });
 
   // Stats
   const fullUser = FAKE_USERS.find(u => u.id === user.id);
@@ -49,8 +77,8 @@
     user.firstName = fn; user.lastName = ln;
     saveSession(user);
 
-    document.getElementById('identityName').textContent  = fn + ' ' + ln;
-    document.getElementById('avatarCircle').textContent  = (fn[0] + ln[0]).toUpperCase();
+    document.getElementById('identityName').textContent = fn + ' ' + ln;
+    renderAvatar();
     showToast('Profile updated successfully.');
   }
 

@@ -30,8 +30,36 @@
   );
 
   // ── Render profile card ──────────────────────────────────────────────────────
-  const initials = (seller.firstName[0] || '') + (seller.lastName[0] || '');
-  document.getElementById('profileAvatar').textContent = initials.toUpperCase();
+  const initials      = (seller.firstName[0] || '') + (seller.lastName[0] || '');
+  const profileAvatar = document.getElementById('profileAvatar');
+
+  function renderSellerAvatar() {
+    if (session.avatar) {
+      profileAvatar.textContent = '';
+      profileAvatar.style.backgroundImage = `url(${session.avatar})`;
+      profileAvatar.style.backgroundSize = 'cover';
+      profileAvatar.style.backgroundPosition = 'center';
+    } else {
+      profileAvatar.textContent = initials.toUpperCase();
+      profileAvatar.style.backgroundImage = '';
+    }
+  }
+  renderSellerAvatar();
+
+  // Avatar upload
+  const avatarInput = document.getElementById('avatarInput');
+  document.getElementById('avatarEditBtn').addEventListener('click', () => avatarInput.click());
+  avatarInput.addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      session.avatar = e.target.result;
+      saveSession(session);
+      renderSellerAvatar();
+    };
+    reader.readAsDataURL(file);
+  });
 
   document.getElementById('profileName').textContent =
     seller.firstName + ' ' + seller.lastName;

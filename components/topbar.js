@@ -459,9 +459,12 @@
     if (!el) { console.warn('HomeSureTopbar: #hs-topbar not found.'); return; }
 
     const user = typeof getSession === 'function' ? getSession() : null;
-    const initials = user ? (user.firstName[0] + user.lastName[0]).toUpperCase() : 'U';
-    const fullName = user ? user.firstName + ' ' + user.lastName : 'User';
-    const role     = user ? user.role : 'buyer';
+    const initials  = user ? (user.firstName[0] + user.lastName[0]).toUpperCase() : 'U';
+    const fullName  = user ? user.firstName + ' ' + user.lastName : 'User';
+    const role      = user ? user.role : 'buyer';
+    const avatarContent = user && user.avatar
+      ? `<img src="${user.avatar}" alt="${fullName}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;" />`
+      : initials;
 
     el.className = 'hs-topbar';
     el.innerHTML = `
@@ -518,7 +521,7 @@
 
         <!-- Profile Avatar -->
         <div class="hs-profile-wrap">
-          <div class="hs-topbar-avatar" id="hsAvatarBtn" title="${fullName}">${initials}</div>
+          <div class="hs-topbar-avatar" id="hsAvatarBtn" title="${fullName}">${avatarContent}</div>
 
           <div class="hs-profile-dropdown" id="hsProfileDropdown">
             <div class="hs-profile-head">
