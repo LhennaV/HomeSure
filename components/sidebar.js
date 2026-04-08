@@ -48,10 +48,10 @@
       { id: 'analytics', label: 'Analytics',          icon: 'chart'   },
     ],
     superadmin: [
-      { id: 'dashboard', label: 'Dashboard',      icon: 'grid'    },
-      { id: 'admins',    label: 'Admin Accounts', icon: 'shield'  },
-      { id: 'users',     label: 'All Users',      icon: 'users'   },
-      { id: 'reports',   label: 'System Reports', icon: 'chart'   },
+      { id: 'dashboard',   label: 'Dashboard',        icon: 'grid'   },
+      { id: 'admins',      label: 'Admin Management', icon: 'shield' },
+      { id: 'audit-trail', label: 'Audit Trail',      icon: 'flag'   },
+      { id: 'reports',     label: 'System Reports',   icon: 'chart'  },
     ],
   };
 
@@ -352,7 +352,7 @@
       buyer:      { dashboard: 'buyer.html', saved: 'saved.html', messages: 'messages.html' },
       seller:     { dashboard: 'seller.html', listings: 'listings.html', messages: 'messages.html' },
       admin:      { dashboard: 'admin.html', listings: 'listings.html', users: 'users.html', reports: 'reports.html', analytics: 'analytics.html' },
-      superadmin: { dashboard: 'super-admin.html', admins: 'admins.html', users: 'users.html', reports: 'reports.html' },
+      superadmin: { dashboard: 'super-admin.html', admins: 'admins.html', 'audit-trail': 'audit-trail.html', reports: 'reports.html' },
     };
     const sessionUser = typeof getSession === 'function' ? getSession() : null;
     const navRole = sessionUser ? sessionUser.role : 'buyer';

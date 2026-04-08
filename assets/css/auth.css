@@ -129,6 +129,14 @@ body.light {
 .field-input::placeholder {
   color: var(--text-muted);
 }
+.field-input:-webkit-autofill,
+.field-input:-webkit-autofill:hover,
+.field-input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--input-bg) inset;
+  -webkit-text-fill-color: var(--text);
+  caret-color: var(--text);
+  transition: background-color 5000s ease-in-out 0s;
+}
 .field-input:focus {
   border-color: #1a9e8f;
 }

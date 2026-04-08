@@ -63,6 +63,30 @@
   <div class="modal" id="listingModalContent"></div>
 </div>
 
+<!-- Reject Reason Modal -->
+<div class="modal-backdrop" id="rejectModal">
+  <div class="modal reject-modal">
+    <div class="reject-modal-header">
+      <div class="reject-modal-title">Reject Listing</div>
+      <button class="reject-close-btn" onclick="closeRejectModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="reject-modal-body">
+      <p class="reject-modal-sub">Select a reason for rejection. The seller will see this message.</p>
+      <div class="reject-reasons" id="rejectReasons"></div>
+      <div class="reject-custom-wrap">
+        <label class="reject-custom-label">Or write a custom reason</label>
+        <textarea id="rejectCustom" class="reject-textarea" placeholder="e.g. Photos are low quality and do not represent the property accurately…" rows="3"></textarea>
+      </div>
+    </div>
+    <div class="reject-modal-footer">
+      <button class="btn-modal close" onclick="closeRejectModal()">Cancel</button>
+      <button class="btn-modal reject" onclick="confirmReject()">Confirm Rejection</button>
+    </div>
+  </div>
+</div>
+
 <script src="../../assets/js/fake-data.js"></script>
 <script src="../../components/sidebar.js"></script>
 <script src="../../components/topbar.js"></script>

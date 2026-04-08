@@ -151,67 +151,41 @@
       `${fn} ${ln} (${email})`, 'admin');
   });
 
-  // ── Audit Trail ─────────────────────────────────────────────────────────────
-  let auditFilter = 'all';
-  let auditData   = [...FAKE_AUDIT_TRAIL];
-
-  const typeColors = {
-    listing: '#00c9a7', user: '#3b82f6', report: '#f59e0b',
-    admin: '#8b5cf6', system: '#6b7280',
-  };
-  const typeLabels = {
-    listing: 'Listing', user: 'User', report: 'Report',
-    admin: 'Admin', system: 'System',
-  };
+  // ── Audit Trail Preview (latest 5) ─────────────────────────────────────────
   const roleColors = { admin: '#3b82f6', superadmin: '#8b5cf6' };
 
-  function renderAuditTable() {
-    const filtered = auditFilter === 'all'
-      ? auditData
-      : auditData.filter(e => e.type === auditFilter);
-
-    document.getElementById('auditTable').innerHTML = filtered.length
-      ? filtered.map(e => {
-          const initials = e.actor.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
-          const roleLabel = e.actorRole === 'superadmin' ? 'Super Admin' : 'Admin';
-          const roleColor = roleColors[e.actorRole] || '#6b7280';
-          const statusBg  = e.status === 'success' ? '#00c9a7' : '#ef4444';
-          const statusLabel = e.status === 'success' ? 'Success' : 'Failed';
-          return `
-          <tr>
-            <td style="color:var(--muted);font-size:12px;white-space:nowrap">${e.timestamp}</td>
-            <td>
-              <div class="user-cell">
-                <div class="user-avatar" style="background:${roleColor}">${initials}</div>
-                <span style="font-weight:700">${e.actor}</span>
-              </div>
-            </td>
-            <td><span class="type-badge" style="background:${roleColor}">${roleLabel}</span></td>
-            <td style="font-weight:600">${e.action}</td>
-            <td style="font-family:monospace;font-size:12px;color:var(--muted2)">${e.ipAddress || '—'}</td>
-            <td><span class="badge" style="background:${statusBg};color:#fff">${statusLabel}</span></td>
-            <td style="color:var(--muted2);font-size:12.5px">${e.details}</td>
-          </tr>`;
-        }).join('')
-      : `<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--muted)">No entries found.</td></tr>`;
+  function renderAuditPreview() {
+    const preview = FAKE_AUDIT_TRAIL.slice(0, 5);
+    document.getElementById('auditTable').innerHTML = preview.map(e => {
+      const initials   = e.actor.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+      const roleLabel  = e.actorRole === 'superadmin' ? 'Super Admin' : 'Admin';
+      const roleColor  = roleColors[e.actorRole] || '#6b7280';
+      const statusBg   = e.status === 'success' ? '#00c9a7' : '#ef4444';
+      const statusLabel = e.status === 'success' ? 'Success' : 'Failed';
+      return `
+      <tr>
+        <td style="color:var(--muted);font-size:12px;white-space:nowrap">${e.timestamp}</td>
+        <td>
+          <div class="user-cell">
+            <div class="user-avatar" style="background:${roleColor}">${initials}</div>
+            <span style="font-weight:700">${e.actor}</span>
+          </div>
+        </td>
+        <td><span class="type-badge" style="background:${roleColor}">${roleLabel}</span></td>
+        <td style="font-weight:600">${e.action}</td>
+        <td style="font-family:monospace;font-size:12px;color:var(--muted2)">${e.ipAddress || '—'}</td>
+        <td><span class="badge" style="background:${statusBg};color:#fff">${statusLabel}</span></td>
+        <td style="color:var(--muted2);font-size:12.5px">${e.details}</td>
+      </tr>`;
+    }).join('');
   }
-  renderAuditTable();
-
-  // Filter tabs
-  document.getElementById('auditTabs').addEventListener('click', e => {
-    const btn = e.target.closest('.filter-tab');
-    if (!btn) return;
-    document.querySelectorAll('#auditTabs .filter-tab').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    auditFilter = btn.dataset.type;
-    renderAuditTable();
-  });
+  renderAuditPreview();
 
   function addAuditEntry(actor, actorRole, action, details, type, status = 'success') {
     const now = new Date();
     const ts  = now.toISOString().slice(0, 16).replace('T', ' ');
-    auditData.unshift({ id: 'aud-' + Date.now(), actor, actorRole, action, details, type, ipAddress: '10.0.0.1', status, timestamp: ts });
-    renderAuditTable();
+    FAKE_AUDIT_TRAIL.unshift({ id: 'aud-' + Date.now(), actor, actorRole, action, details, type, ipAddress: '10.0.0.1', status, timestamp: ts });
+    renderAuditPreview();
   }
 
   // ── Toast ───────────────────────────────────────────────────────────────────

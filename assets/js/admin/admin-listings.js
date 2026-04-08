@@ -43,12 +43,16 @@
       const price = l.listingFor === 'rent'
         ? '₱' + l.price.toLocaleString('en-PH') + '/mo'
         : '₱' + l.price.toLocaleString('en-PH');
-      const actionBtns = l.status === 'pending'
-        ? `<button class="btn-sm approve" onclick="setStatus('${l.id}','approved')">Approve</button>
-           <button class="btn-sm reject"  onclick="setStatus('${l.id}','rejected')">Reject</button>`
-        : l.status === 'approved'
-        ? `<button class="btn-sm reject" onclick="setStatus('${l.id}','rejected')">Reject</button>`
-        : `<button class="btn-sm approve" onclick="setStatus('${l.id}','approved')">Approve</button>`;
+
+      const approveBtn = l.status !== 'approved'
+        ? `<button class="btn-sm approve" onclick="setStatus('${l.id}','approved')">Approve</button>`
+        : `<button class="btn-sm approve" disabled style="opacity:0.3;cursor:not-allowed">Approve</button>`;
+      const rejectBtn = l.status !== 'rejected'
+        ? `<button class="btn-sm reject" onclick="openRejectModal('${l.id}')">Reject</button>`
+        : `<button class="btn-sm reject" disabled style="opacity:0.3;cursor:not-allowed">Reject</button>`;
+      const eyeBtn = `<button class="btn-sm btn-icon" onclick="window.location.href='listing-detail.html?id=${l.id}'" title="View">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>`;
 
       return `
         <tr>
@@ -68,8 +72,9 @@
           <td><span class="badge ${l.status}">${l.status.charAt(0).toUpperCase() + l.status.slice(1)}</span></td>
           <td>
             <div class="action-btns">
-              ${actionBtns}
-              <button class="btn-sm view" onclick="openModal('${l.id}')">View</button>
+              ${approveBtn}
+              ${rejectBtn}
+              ${eyeBtn}
             </div>
           </td>
         </tr>`;
@@ -77,12 +82,70 @@
   };
 
   // ── Set status ──────────────────────────────────────────────────────────────
-  window.setStatus = function (id, status) {
+  window.setStatus = function (id, status, reason) {
     const l = FAKE_LISTINGS.find(x => x.id === id);
-    if (l) { l.status = status; renderListings(); closeModal(); }
+    if (!l) return;
+    l.status = status;
+    if (reason) l.rejectionReason = reason;
+    renderListings();
+    closeModal();
   };
 
+  // ── Reject Modal ─────────────────────────────────────────────────────────────
+  const REJECT_REASONS = [
+    'Incomplete property documents. Please re-upload a valid Transfer Certificate of Title (TCT).',
+    'Photos are unclear or do not accurately represent the property.',
+    'Property details (price, area, amenities) are inaccurate or misleading.',
+    'Listing violates HomeSure community guidelines.',
+    'Duplicate listing — this property has already been posted.',
+    'Property address could not be verified in Sta. Maria, Bulacan.',
+  ];
+
+  let _rejectTargetId = null;
+
+  window.openRejectModal = function (id) {
+    _rejectTargetId = id;
+    document.getElementById('rejectCustom').value = '';
+    document.getElementById('rejectReasons').innerHTML = REJECT_REASONS.map((r, i) => `
+      <label class="reject-reason-item">
+        <input type="radio" name="rejectReason" value="${i}" />
+        <span>${r}</span>
+      </label>`).join('');
+    document.getElementById('rejectModal').style.display = 'flex';
+  };
+
+  window.closeRejectModal = function () {
+    document.getElementById('rejectModal').style.display = 'none';
+    _rejectTargetId = null;
+  };
+
+  window.confirmReject = function () {
+    const selected = document.querySelector('input[name="rejectReason"]:checked');
+    const custom   = document.getElementById('rejectCustom').value.trim();
+    const reason   = custom || (selected ? REJECT_REASONS[selected.value] : null);
+    if (!reason) {
+      alert('Please select or write a rejection reason.');
+      return;
+    }
+    setStatus(_rejectTargetId, 'rejected', reason);
+    closeRejectModal();
+  };
+
+  document.getElementById('rejectModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('rejectModal')) closeRejectModal();
+  });
+
   // ── Modal ───────────────────────────────────────────────────────────────────
+  let _carouselIdx = 0;
+  let _carouselImgs = [];
+
+  window.carouselGo = function (dir) {
+    _carouselIdx = (_carouselIdx + dir + _carouselImgs.length) % _carouselImgs.length;
+    document.getElementById('carouselImg').src = _carouselImgs[_carouselIdx];
+    document.getElementById('carouselCounter').textContent = (_carouselIdx + 1) + ' / ' + _carouselImgs.length;
+    document.querySelectorAll('.carousel-dot').forEach((d, i) => d.classList.toggle('active', i === _carouselIdx));
+  };
+
   window.openModal = function (id) {
     const l = FAKE_LISTINGS.find(x => x.id === id);
     if (!l) return;
@@ -92,8 +155,37 @@
       ? '₱' + l.price.toLocaleString('en-PH') + '/month'
       : '₱' + l.price.toLocaleString('en-PH');
 
+    _carouselIdx  = 0;
+    _carouselImgs = l.images || [];
+
+    const dotsHtml = _carouselImgs.map((_, i) =>
+      `<span class="carousel-dot${i === 0 ? ' active' : ''}"></span>`
+    ).join('');
+
+    const docsHtml = (l.documents && l.documents.length)
+      ? `<div class="modal-docs-title">Submitted Documents</div>
+         <div class="modal-docs-row">
+           ${l.documents.map(d => `
+             <a href="${d.url}" target="_blank" class="modal-doc-thumb" title="${d.label}">
+               <img src="${d.url}" alt="${d.label}" />
+               <span>${d.label}</span>
+             </a>`).join('')}
+         </div>`
+      : '';
+
+    const rejectionHtml = l.rejectionReason
+      ? `<div class="modal-rejection"><strong>Rejection Reason:</strong> ${l.rejectionReason}</div>`
+      : '';
+
     document.getElementById('listingModalContent').innerHTML = `
-      <img class="modal-img" src="${l.images[0]}" alt="${l.title}" />
+      <div class="modal-carousel">
+        <img class="carousel-img" id="carouselImg" src="${_carouselImgs[0]}" alt="${l.title}" />
+        ${_carouselImgs.length > 1 ? `
+          <button class="carousel-btn prev" onclick="carouselGo(-1)">&#8249;</button>
+          <button class="carousel-btn next" onclick="carouselGo(1)">&#8250;</button>
+          <div class="carousel-counter" id="carouselCounter">1 / ${_carouselImgs.length}</div>
+          <div class="carousel-dots">${dotsHtml}</div>` : ''}
+      </div>
       <div class="modal-inner">
         <div class="modal-title">${l.title}</div>
         <div class="modal-meta">${l.barangay} · ${l.address}</div>
@@ -107,10 +199,12 @@
           <div class="modal-detail-item"><label>Floor Area</label><span>${l.floorArea ? l.floorArea + ' sqm' : '—'}</span></div>
           <div class="modal-detail-item"><label>Posted</label><span>${l.postedAt}</span></div>
         </div>
+        ${rejectionHtml}
+        ${docsHtml}
       </div>
       <div class="modal-actions">
         ${l.status !== 'approved' ? `<button class="btn-modal approve" onclick="setStatus('${l.id}','approved')">Approve</button>` : ''}
-        ${l.status !== 'rejected' ? `<button class="btn-modal reject"  onclick="setStatus('${l.id}','rejected')">Reject</button>` : ''}
+        ${l.status !== 'rejected' ? `<button class="btn-modal reject" onclick="closeModal();openRejectModal('${l.id}')">Reject</button>` : ''}
         <button class="btn-modal close" onclick="closeModal()">Close</button>
       </div>`;
     document.getElementById('listingModal').classList.add('open');
