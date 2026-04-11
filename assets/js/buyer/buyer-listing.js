@@ -202,7 +202,7 @@
             <button class="save-btn" id="saveBtn">
               ${iconHeart} Save Listing
             </button>
-            <button class="msg-btn" onclick="window.location.href='messages.html'"> ${iconMsg} Message Seller </button>
+            ${user.id !== listing.sellerId ? `<button class="msg-btn" onclick="window.location.href='${user.role === 'seller' ? '../../module/seller/messages.html' : 'messages.html'}'"> ${iconMsg} Message Seller </button>` : ''}
           </div>
         </div>
 

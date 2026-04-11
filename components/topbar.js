@@ -380,6 +380,33 @@
     }
     .hs-rv-success-close:hover { background: rgba(255,255,255,0.1); color: #f1f5f9; }
 
+    /* ── Hamburger (mobile only) ── */
+    .hs-hamburger {
+      display: none;
+      align-items: center; justify-content: center;
+      width: 36px; height: 36px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 9px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .hs-hamburger:hover { background: rgba(255,255,255,0.14); }
+    .hs-hamburger svg { width: 17px; height: 17px; color: rgba(255,255,255,0.8); display: block; }
+    @media (max-width: 768px) {
+      .hs-hamburger { display: flex; }
+      .hs-topbar-search { max-width: 200px; }
+    }
+    @media (max-width: 400px) {
+      .hs-topbar-search { max-width: 130px; }
+    }
+    [data-theme="light"] .hs-hamburger {
+      background: rgba(0,0,0,0.05);
+      border-color: rgba(0,0,0,0.1);
+    }
+    [data-theme="light"] .hs-hamburger svg { color: rgba(0,0,0,0.6); }
+
     /* ── Light mode ── */
     [data-theme="light"] .hs-topbar {
       background: #ffffff;
@@ -468,6 +495,13 @@
 
     el.className = 'hs-topbar';
     el.innerHTML = `
+      <button class="hs-hamburger" id="hsHamburger" aria-label="Open menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
       <div class="hs-topbar-search">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
              stroke-linecap="round" stroke-linejoin="round">
@@ -681,6 +715,16 @@
         modal.classList.add('open');
       }
       global._hsOpenReverify = openReverify;
+    }
+
+    // ── Hamburger → open sidebar ────────────────────────────────────────────
+    const hamburger = el.querySelector('#hsHamburger');
+    if (hamburger) {
+      hamburger.addEventListener('click', () => {
+        if (typeof HomeSureSidebar !== 'undefined' && HomeSureSidebar.toggleMobile) {
+          HomeSureSidebar.toggleMobile();
+        }
+      });
     }
 
     // ── Search callback ─────────────────────────────────────────────────────

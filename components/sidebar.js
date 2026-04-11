@@ -260,6 +260,31 @@
     }
     .hs-logout-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
     .hs-logout-btn:hover { background: rgba(239,68,68,0.14); color: #f87171; }
+
+    /* ── Mobile Drawer ── */
+    .hs-sidebar-overlay {
+      display: none; position: fixed; inset: 0; z-index: 490;
+      background: rgba(0,0,0,0.55); backdrop-filter: blur(2px);
+    }
+    .hs-sidebar-overlay.active { display: block; }
+
+    @media (max-width: 768px) {
+      .hs-sidebar {
+        position: fixed !important;
+        left: -224px; top: 0; bottom: 0;
+        width: 220px !important; min-width: 220px !important;
+        height: 100vh !important;
+        z-index: 500;
+        overflow-y: auto;
+        transition: left 0.28s cubic-bezier(0.4,0,0.2,1) !important;
+        animation: none !important;
+        box-shadow: none;
+      }
+      .hs-sidebar.mobile-open {
+        left: 0 !important;
+        box-shadow: 4px 0 40px rgba(0,0,0,0.55) !important;
+      }
+    }
   `;
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -388,6 +413,24 @@
 
     bindEvents(el);
     animateIn(el);
+
+    // ── Mobile overlay ─────────────────────────────────────────────────────────
+    let overlay = document.getElementById('hs-sidebar-overlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'hs-sidebar-overlay';
+      overlay.className = 'hs-sidebar-overlay';
+      document.body.appendChild(overlay);
+    }
+    overlay.addEventListener('click', () => {
+      el.classList.remove('mobile-open');
+      overlay.classList.remove('active');
+    });
+
+    global.HomeSureSidebar.toggleMobile = function () {
+      const isOpen = el.classList.toggle('mobile-open');
+      overlay.classList.toggle('active', isOpen);
+    };
   }
 
   global.HomeSureSidebar = { init };

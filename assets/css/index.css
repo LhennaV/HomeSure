@@ -149,6 +149,8 @@ nav {
   display: flex; align-items: center; gap: 8px;
 }
 .hero-btn-primary:hover { opacity: 0.88; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,201,167,0.3); }
+.hero-btn-primary span, .hero-btn-secondary span { display: inline-flex; align-items: center; line-height: 0; }
+.hero-btn-primary span svg, .hero-btn-secondary span svg { display: block; }
 [data-theme="light"] .hero-btn-primary { background: #111827; box-shadow: none; }
 [data-theme="light"] .hero-btn-primary:hover { background: #1f2937; box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
 
@@ -162,8 +164,9 @@ nav {
 .hero-btn-secondary:hover { border-color: var(--text); transform: translateY(-1px); }
 
 .hero-trust { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; padding-top: 4px; }
-.hero-trust-item { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--muted); }
-.hero-trust-icon { display: flex; align-items: center; color: var(--teal); }
+.hero-trust-item { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.hero-trust-icon { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--teal); }
+.hero-trust-icon svg { display: block; }
 
 /* ── TYPING ANIMATION ── */
 .typing-cursor {
