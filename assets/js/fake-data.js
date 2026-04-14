@@ -10,13 +10,15 @@ const FAKE_USERS = [
     firstName: 'Maria', lastName: 'Santos',
     email: 'buyer@homesure.com', password: 'buyer1234',
     phone: '09171234567', avatar: null, verified: true,
+    isVerified: true, verifiedAt: '2025-11-20', verificationExpiry: '2026-05-20',
     savedListings: ['prop-002', 'prop-004', 'prop-006', 'prop-007', 'prop-009'], joinedAt: '2025-11-10',
   },
   {
     id: 'usr-002', role: 'buyer',
     firstName: 'Jose', lastName: 'Reyes',
     email: 'jose.reyes@gmail.com', password: 'buyer1234',
-    phone: '09281234567', avatar: null, verified: true,
+    phone: '09281234567', avatar: null, verified: false,
+    isVerified: false,
     savedListings: ['prop-001'], joinedAt: '2026-01-05',
   },
   {

@@ -30,7 +30,19 @@
         }
       }
 
+      function isBuyerVerified() {
+        const u = getSession();
+        if (!u || u.role !== 'buyer') return true;
+        if (!u.isVerified) return false;
+        if (u.verificationExpiry && new Date(u.verificationExpiry) < new Date()) return false;
+        return true;
+      }
+
       function toggleSave(listingId) {
+        if (!isBuyerVerified()) {
+          window.location.href = 'verification.html';
+          return;
+        }
         const cu = getSession();
         const saved = cu.savedListings || [];
         const idx = saved.indexOf(listingId);
@@ -71,7 +83,6 @@
         }
         err.style.display = "none";
         closeReportModal();
-        // Show a brief success toast (inline, no alert)
         const toast = document.createElement("div");
         toast.textContent = "Report submitted. Thank you.";
         Object.assign(toast.style, {
@@ -98,7 +109,6 @@
         setTimeout(() => toast.remove(), 2700);
       }
 
-      // Close modal on overlay click
       document
         .getElementById("reportModal")
         .addEventListener("click", function (e) {
@@ -202,7 +212,7 @@
             <button class="save-btn" id="saveBtn">
               ${iconHeart} Save Listing
             </button>
-            ${user.id !== listing.sellerId ? `<button class="msg-btn" onclick="window.location.href='${user.role === 'seller' ? '../../module/seller/messages.html' : 'messages.html'}'"> ${iconMsg} Message Seller </button>` : ''}
+            ${user.id !== listing.sellerId ? `<button class="msg-btn" onclick="handleMessageSeller()"> ${iconMsg} Message Seller </button>` : ''}
           </div>
         </div>
 
@@ -217,4 +227,11 @@
           .getElementById("saveBtn")
           .addEventListener("click", () => toggleSave(listing.id));
       }
-    
+
+      function handleMessageSeller() {
+        if (!isBuyerVerified()) {
+          window.location.href = 'verification.html';
+          return;
+        }
+        window.location.href = 'messages.html';
+      }

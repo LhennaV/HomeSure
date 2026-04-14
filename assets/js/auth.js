@@ -193,7 +193,9 @@ let _dodgeActive = false;
 let _dodgeCount  = 0;
 let _dodgeHooked = false;
 
-const DODGE_MSGS = ['Fill me in! 😄', 'Nope!', 'Not yet!', 'Almost... not.', 'Nice try!', 'Fill the form first!'];
+const DODGE_MSG = 'Fill up the form first!';
+const DODGE_BASE_SIZE = 12.5;
+const DODGE_MAX_SIZE  = 28;
 
 function isPageEmpty() {
   const isSignup = !!document.getElementById('pw2');
@@ -220,13 +222,13 @@ function showDodgeMsg() {
   if (!msg) {
     msg = document.createElement('p');
     msg.id = 'dodgeMsg';
-    msg.style.cssText = 'color:#f87171;font-size:12.5px;font-weight:600;text-align:center;margin-top:10px;transition:opacity 0.2s;';
+    msg.style.cssText = 'color:#f87171;font-weight:600;text-align:center;margin-top:10px;transition:font-size 0.2s;';
     btn.parentElement.insertBefore(msg, btn.nextSibling);
   }
-  msg.textContent = DODGE_MSGS[_dodgeCount % DODGE_MSGS.length];
+  const newSize = Math.min(DODGE_BASE_SIZE + (_dodgeCount - 1) * 2, DODGE_MAX_SIZE);
+  msg.style.fontSize = newSize + 'px';
+  msg.textContent = DODGE_MSG;
   msg.style.opacity = '1';
-  clearTimeout(msg._hideTimer);
-  msg._hideTimer = setTimeout(() => { msg.style.opacity = '0'; }, 2000);
 }
 
 function dodgeMove() {
@@ -270,6 +272,38 @@ function disableDodge() {
   if (msg) msg.remove();
 }
 
+// ── Google Toast ──────────────────────────────────────────────────────────────
+
+function showGoogleToast() {
+  let toast = document.getElementById('googleToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'googleToast';
+    toast.style.cssText = `
+      position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(12px);
+      background:#1c2f42; border:1px solid rgba(255,255,255,0.1);
+      color:#e8f0f5; font-family:'Plus Jakarta Sans',sans-serif;
+      font-size:13px; font-weight:500; padding:12px 20px;
+      border-radius:10px; box-shadow:0 8px 32px rgba(0,0,0,0.4);
+      display:flex; align-items:center; gap:10px;
+      opacity:0; transition:opacity 0.2s, transform 0.2s; z-index:9999;
+      white-space:nowrap;
+    `;
+    toast.innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Google Sign-In? Still cooking! 🍳
+    `;
+    document.body.appendChild(toast);
+  }
+  toast.style.opacity = '1';
+  toast.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(toast._hideTimer);
+  toast._hideTimer = setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) translateY(12px)';
+  }, 3000);
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -280,10 +314,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   enableDodge();
 
+  const isSignup = !!document.getElementById('pw2');
+
   document.querySelectorAll('input').forEach(el => {
     el.addEventListener('input', () => {
       if (!isPageEmpty()) disableDodge();
       else if (!_dodgeHooked) enableDodge();
+    });
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        if (isSignup) openVerifyModal();
+        else submitSignin();
+      }
     });
   });
 });

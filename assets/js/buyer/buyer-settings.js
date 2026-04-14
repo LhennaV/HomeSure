@@ -187,7 +187,6 @@
       : '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>';
   }
 
-  // OTP auto-advance for 2FA modal
   document.querySelectorAll('#twoFaBoxes .otp-box').forEach((box, i, boxes) => {
     box.addEventListener('input', () => {
       box.value = box.value.replace(/\D/g, '').slice(-1);
@@ -240,7 +239,6 @@
       document.getElementById('deleteEmailError').classList.add('show'); return;
     }
 
-    // Schedule deletion — 30 days from now
     const deletionDate = new Date();
     deletionDate.setDate(deletionDate.getDate() + 30);
     const formatted = deletionDate.toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -248,7 +246,6 @@
 
     closeDeleteModal();
 
-    // Show pending banner, hide warning + button
     document.getElementById('deletionWarning').style.display = 'none';
     document.getElementById('deleteBtn').style.display = 'none';
     const banner = document.getElementById('pendingBanner');

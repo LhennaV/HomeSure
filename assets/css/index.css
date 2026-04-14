@@ -311,12 +311,22 @@ nav {
 
 /* ── HOW IT WORKS ── */
 .how-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 12px; }
-.how-step { text-align: center; }
+.how-step { text-align: center; position: relative; }
+.how-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 21px;
+  left: calc(50% + 22px);
+  right: calc(-50% - 3px);
+  height: 1px;
+  background: rgba(31,200,180,0.3);
+}
 .how-step-num {
   width: 42px; height: 42px; border-radius: 50%;
   background: var(--teal); color: #fff;
   font-size: 15px; font-weight: 800;
   display: flex; align-items: center; justify-content: center; margin: 0 auto 14px;
+  position: relative; z-index: 1;
 }
 [data-theme="light"] .how-step-num { background: #111827; }
 .how-step-title { font-size: 14.5px; font-weight: 800; color: var(--text); margin-bottom: 8px; }

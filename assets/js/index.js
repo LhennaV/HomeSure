@@ -918,7 +918,11 @@ function Footer() {
         ...legalLinks.map((l) =>
           React.createElement(
             "a",
-            { key: l, className: "footer-link", href: "#" },
+            {
+              key: l,
+              className: "footer-link",
+              href: l === "Privacy Policy" ? "privacy-policy.html" : "terms.html",
+            },
             l,
           ),
         ),

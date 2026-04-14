@@ -318,47 +318,55 @@
     .hs-rv-sub { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.6; margin-bottom: 22px; font-family: 'Plus Jakarta Sans', sans-serif; }
 
     .hs-rv-steps {
-      display: flex; gap: 8px; margin-bottom: 20px;
+      display: flex; gap: 6px; margin-bottom: 6px; align-items: center;
     }
     .hs-rv-step-dot {
-      flex: 1; height: 3px; border-radius: 99px; background: rgba(255,255,255,0.1);
+      flex: 1; height: 4px; border-radius: 99px; background: rgba(255,255,255,0.1);
       transition: background 0.3s;
     }
     .hs-rv-step-dot.done { background: #00c9a7; }
 
     .hs-rv-step-label {
-      font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.35);
-      text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 14px;
+      font-size: 10.5px; font-weight: 700; color: rgba(255,255,255,0.35);
+      text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px;
       font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     .hs-rv-upload {
-      border: 1.5px dashed rgba(255,255,255,0.14); border-radius: 12px;
-      padding: 22px 16px; text-align: center; margin-bottom: 14px;
+      border: 1.5px dashed rgba(255,255,255,0.14); border-radius: 14px;
+      padding: 32px 20px; text-align: center; margin-bottom: 14px;
       cursor: pointer; transition: border-color 0.2s, background 0.2s;
-      background: rgba(255,255,255,0.02);
+      background: rgba(255,255,255,0.02); display: block;
     }
-    .hs-rv-upload:hover { border-color: rgba(0,201,167,0.45); background: rgba(0,201,167,0.04); }
-    .hs-rv-upload.has-file { border-color: #00c9a7; background: rgba(0,201,167,0.06); }
+    .hs-rv-upload:hover { border-color: rgba(0,201,167,0.5); background: rgba(0,201,167,0.05); }
+    .hs-rv-upload.has-file { border-color: #00c9a7; background: rgba(0,201,167,0.07); }
     .hs-rv-upload input { display: none; }
     .hs-rv-upload-icon {
-      width: 40px; height: 40px; border-radius: 10px;
-      background: rgba(255,255,255,0.06); margin: 0 auto 10px;
+      width: 52px; height: 52px; border-radius: 14px;
+      background: rgba(255,255,255,0.07); margin: 0 auto 14px;
       display: flex; align-items: center; justify-content: center;
     }
-    .hs-rv-upload-icon svg { width: 20px; height: 20px; color: rgba(255,255,255,0.4); }
-    .hs-rv-upload-label { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.7); font-family: 'Plus Jakarta Sans', sans-serif; }
-    .hs-rv-upload-hint { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 3px; font-family: 'Plus Jakarta Sans', sans-serif; }
-    .hs-rv-upload-filename { font-size: 12px; color: #00c9a7; font-weight: 600; margin-top: 6px; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .hs-rv-upload-icon svg { width: 24px; height: 24px; color: rgba(255,255,255,0.45); }
+    .hs-rv-upload.has-file .hs-rv-upload-icon { background: rgba(0,201,167,0.12); }
+    .hs-rv-upload.has-file .hs-rv-upload-icon svg { color: #00c9a7; }
+    .hs-rv-upload-label { font-size: 13.5px; font-weight: 700; color: rgba(255,255,255,0.8); font-family: 'Plus Jakarta Sans', sans-serif; margin-bottom: 4px; }
+    .hs-rv-upload-hint { font-size: 11.5px; color: rgba(255,255,255,0.3); font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.5; }
+    .hs-rv-upload-filename {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; color: #00c9a7; font-weight: 600; margin-top: 10px;
+      background: rgba(0,201,167,0.1); padding: 4px 10px; border-radius: 20px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
 
     .hs-rv-btn {
-      width: 100%; padding: 12px; border-radius: 10px;
-      background: #00c9a7; border: none; color: #ffffff;
+      width: 100%; padding: 13px; border-radius: 10px;
+      background: #00c9a7; border: none; color: #fff;
       font-size: 14px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif;
-      cursor: pointer; margin-top: 4px; transition: background 0.2s;
+      cursor: pointer; margin-top: 6px; transition: background 0.2s, opacity 0.2s;
+      letter-spacing: 0.01em;
     }
-    .hs-rv-btn:hover { background: #00b396; }
-    .hs-rv-btn:disabled { background: rgba(0,201,167,0.3); color: rgba(6,32,26,0.5); cursor: not-allowed; }
+    .hs-rv-btn:hover:not(:disabled) { background: #00b396; }
+    .hs-rv-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
     /* Success state */
     .hs-rv-success { display: none; padding: 36px 24px; text-align: center; }
@@ -463,8 +471,12 @@
     [data-theme="light"] .hs-reverify-modal { background: #ffffff; border-color: rgba(0,0,0,0.09); }
     [data-theme="light"] .hs-rv-title { color: #1e293b; }
     [data-theme="light"] .hs-rv-sub { color: rgba(0,0,0,0.45); }
-    [data-theme="light"] .hs-rv-upload { border-color: rgba(0,0,0,0.12); background: rgba(0,0,0,0.02); }
+    [data-theme="light"] .hs-rv-upload { border-color: rgba(0,0,0,0.13); background: rgba(0,0,0,0.02); }
     [data-theme="light"] .hs-rv-upload:hover { border-color: rgba(0,201,167,0.5); background: rgba(0,201,167,0.04); }
+    [data-theme="light"] .hs-rv-upload-icon { background: rgba(0,0,0,0.06); }
+    [data-theme="light"] .hs-rv-upload-icon svg { color: rgba(0,0,0,0.35); }
+    [data-theme="light"] .hs-rv-upload-label { color: rgba(0,0,0,0.75); }
+    [data-theme="light"] .hs-rv-upload-hint { color: rgba(0,0,0,0.35); }
     [data-theme="light"] .hs-rv-step-dot { background: rgba(0,0,0,0.1); }
     [data-theme="light"] .hs-rv-step-label { color: rgba(0,0,0,0.35); }
     [data-theme="light"] .hs-rv-success-title { color: #1e293b; }
@@ -590,131 +602,11 @@
       </div>
     `;
 
-    // ── Reverification Modal (buyers only) ─────────────────────────────────────
     if (role === 'buyer') {
-      const modal = document.createElement('div');
-      modal.className = 'hs-reverify-backdrop';
-      modal.id = 'hsReverifyBackdrop';
-      modal.innerHTML = `
-        <div class="hs-reverify-modal">
-
-          <!-- Form view -->
-          <div id="hsRvForm">
-            <div class="hs-rv-header">
-              <div class="hs-rv-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              </div>
-              <button class="hs-rv-close" id="hsRvClose">&times;</button>
-            </div>
-            <div class="hs-rv-body">
-              <div class="hs-rv-title">Re-verify Your Account</div>
-              <div class="hs-rv-sub">Upload a valid government ID and a selfie to re-verify your identity. Your account will be reviewed within 24 hours.</div>
-
-              <div class="hs-rv-steps">
-                <div class="hs-rv-step-dot done" id="rvDot0"></div>
-                <div class="hs-rv-step-dot" id="rvDot1"></div>
-              </div>
-              <div class="hs-rv-step-label" id="rvStepLabel">Step 1 of 2 — Government ID</div>
-
-              <!-- Step 1: Gov ID -->
-              <div id="rvStep1">
-                <label class="hs-rv-upload" id="rvIdUpload">
-                  <input type="file" id="rvIdFile" accept="image/*,.pdf" />
-                  <div class="hs-rv-upload-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                  </div>
-                  <div class="hs-rv-upload-label">Upload Government ID</div>
-                  <div class="hs-rv-upload-hint">UMID, SSS, PhilHealth, Passport, Driver's License</div>
-                  <div class="hs-rv-upload-filename" id="rvIdName" style="display:none"></div>
-                </label>
-                <button class="hs-rv-btn" id="rvNextBtn" disabled>Continue</button>
-              </div>
-
-              <!-- Step 2: Selfie -->
-              <div id="rvStep2" style="display:none">
-                <label class="hs-rv-upload" id="rvSelfieUpload">
-                  <input type="file" id="rvSelfieFile" accept="image/*" />
-                  <div class="hs-rv-upload-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                  </div>
-                  <div class="hs-rv-upload-label">Take or Upload a Selfie</div>
-                  <div class="hs-rv-upload-hint">Hold your ID next to your face</div>
-                  <div class="hs-rv-upload-filename" id="rvSelfieName" style="display:none"></div>
-                </label>
-                <button class="hs-rv-btn" id="rvSubmitBtn" disabled>Submit for Review</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Success view -->
-          <div class="hs-rv-success" id="hsRvSuccess">
-            <div class="hs-rv-success-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            </div>
-            <div class="hs-rv-success-title">Request Submitted!</div>
-            <div class="hs-rv-success-msg">Your documents are under review. We'll notify you within 24 hours once your account has been re-verified.</div>
-            <button class="hs-rv-success-close" id="hsRvSuccessClose">Close</button>
-          </div>
-
-        </div>
-      `;
-      document.body.appendChild(modal);
-
-      // File upload handlers
-      const idFile      = modal.querySelector('#rvIdFile');
-      const idUpload    = modal.querySelector('#rvIdUpload');
-      const idName      = modal.querySelector('#rvIdName');
-      const nextBtn     = modal.querySelector('#rvNextBtn');
-      const selfieFile  = modal.querySelector('#rvSelfieFile');
-      const selfieUpload= modal.querySelector('#rvSelfieUpload');
-      const selfieName  = modal.querySelector('#rvSelfieName');
-      const submitBtn   = modal.querySelector('#rvSubmitBtn');
-      const step1       = modal.querySelector('#rvStep1');
-      const step2       = modal.querySelector('#rvStep2');
-      const dot1        = modal.querySelector('#rvDot1');
-      const stepLabel   = modal.querySelector('#rvStepLabel');
-
-      idFile.addEventListener('change', () => {
-        if (idFile.files.length) {
-          idName.textContent = idFile.files[0].name;
-          idName.style.display = 'block';
-          idUpload.classList.add('has-file');
-          nextBtn.disabled = false;
-        }
-      });
-
-      nextBtn.addEventListener('click', () => {
-        step1.style.display = 'none';
-        step2.style.display = 'block';
-        dot1.classList.add('done');
-        stepLabel.textContent = 'Step 2 of 2 — Selfie with ID';
-      });
-
-      selfieFile.addEventListener('change', () => {
-        if (selfieFile.files.length) {
-          selfieName.textContent = selfieFile.files[0].name;
-          selfieName.style.display = 'block';
-          selfieUpload.classList.add('has-file');
-          submitBtn.disabled = false;
-        }
-      });
-
-      submitBtn.addEventListener('click', () => {
-        modal.querySelector('#hsRvForm').style.display = 'none';
-        modal.querySelector('#hsRvSuccess').classList.add('show');
-      });
-
-      modal.querySelector('#hsRvClose').addEventListener('click', () => closeReverify());
-      modal.querySelector('#hsRvSuccessClose').addEventListener('click', () => closeReverify());
-      modal.addEventListener('click', e => { if (e.target === modal) closeReverify(); });
-
-      function closeReverify() {
-        modal.classList.remove('open');
-      }
-      function openReverify() {
-        modal.classList.add('open');
-      }
-      global._hsOpenReverify = openReverify;
+      global._hsOpenReverify = function() {
+        const p = window.location.pathname;
+        window.location.href = p.includes('/module/') ? 'verification.html' : 'module/buyer/verification.html';
+      };
     }
 
     // ── Hamburger → open sidebar ────────────────────────────────────────────

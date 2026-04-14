@@ -11,7 +11,6 @@
   document.getElementById('email').value     = user.email     || '';
   document.getElementById('phone').value     = user.phone     || '';
 
-  // Identity card
   const avatarCircle = document.getElementById('avatarCircle');
   function renderAvatar() {
     if (user.avatar) {
@@ -28,7 +27,6 @@
   document.getElementById('identityName').textContent  = user.firstName + ' ' + user.lastName;
   document.getElementById('identityEmail').textContent = user.email;
 
-  // Avatar upload
   const avatarInput = document.getElementById('avatarInput');
   document.getElementById('avatarEditBtn').addEventListener('click', () => avatarInput.click());
   avatarInput.addEventListener('change', function () {
@@ -44,7 +42,6 @@
     reader.readAsDataURL(file);
   });
 
-  // Stats
   const fullUser = FAKE_USERS.find(u => u.id === user.id);
   if (fullUser) {
     const joined = new Date(fullUser.joinedAt);

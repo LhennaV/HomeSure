@@ -131,7 +131,6 @@
       </div>
     `;
 
-    // Scroll to bottom
     const msgs = document.getElementById('chatMessages');
     if (msgs) msgs.scrollTop = msgs.scrollHeight;
   }

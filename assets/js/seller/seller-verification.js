@@ -7,30 +7,15 @@
 
   const fullUser   = FAKE_USERS.find(u => u.id === user.id);
   const isVerified = fullUser && fullUser.accountStatus === 'verified';
+  const isExpired  = isVerified && fullUser.verificationExpiry && new Date(fullUser.verificationExpiry) < new Date();
 
   const col = document.getElementById('verifyCol');
 
-  if (isVerified) {
-    // ── Already Verified state ──────────────────────────────────────────────
-    col.innerHTML = `
-      <div class="verified-card">
-        <div class="verified-icon-wrap">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-            <polyline points="22 4 12 14.01 9 11.01"/>
-          </svg>
-        </div>
-        <div>
-          <div class="verified-title">Already Verified</div>
-          <div class="verified-desc">Your identity has been verified. You can now publish listings and operate as a trusted seller on HomeSure.</div>
-        </div>
-      </div>
-    `;
-  } else {
+  {
     // ── Upload form ─────────────────────────────────────────────────────────
     col.innerHTML = `
-      <!-- Verification Required banner -->
-      <div class="banner-card">
+      <!-- Verification banner -->
+      <div class="banner-card ${isExpired ? 'danger' : ''}">
         <div class="banner-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
@@ -38,8 +23,8 @@
           </svg>
         </div>
         <div>
-          <div class="banner-title">Verification Required</div>
-          <div class="banner-desc">Please submit your identity documents to start selling on HomeSure. This helps build trust and ensures a safe marketplace for all users.</div>
+          <div class="banner-title">${isExpired ? 'Verification Expired' : isVerified ? 'Re-verify Your Identity' : 'Verification Required'}</div>
+          <div class="banner-desc">${isVerified ? 'Re-upload your government ID and a selfie to renew your verification and keep your listings active.' : 'Please submit your identity documents to start selling on HomeSure. This helps build trust and ensures a safe marketplace for all users.'}</div>
         </div>
       </div>
 

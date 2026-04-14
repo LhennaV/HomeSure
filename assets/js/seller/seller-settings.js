@@ -39,7 +39,7 @@
               <div style="font-size:13px;font-weight:700;color:#f87171;margin-bottom:3px;">Verification Expired</div>
               <div style="font-size:12px;color:var(--muted2);line-height:1.5;">Your verification expired on <strong>${expiryFormatted}</strong>. Your listings have been paused. Please re-verify to continue publishing.</div>
             </div>
-            <a href="verification.html" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;background:#f87171;color:#fff;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0;">Re-verify Now</a>
+            <a href="verification.html?reverify=true" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;background:#f87171;color:#fff;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0;">Re-verify Now</a>
           </div>`;
       } else if (isNearExpiry) {
         expiryBanner = `
@@ -49,7 +49,7 @@
               <div style="font-size:13px;font-weight:700;color:#fbbf24;margin-bottom:3px;">Verification Expiring Soon</div>
               <div style="font-size:12px;color:var(--muted2);line-height:1.5;">Your verification expires in <strong>${daysLeft} day${daysLeft !== 1 ? 's' : ''}</strong> on <strong>${expiryFormatted}</strong>. Re-verify before it expires to avoid listing interruptions.</div>
             </div>
-            <a href="verification.html" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.4);color:#fbbf24;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0;">Re-verify</a>
+            <a href="verification.html?reverify=true" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.4);color:#fbbf24;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0;">Re-verify</a>
           </div>`;
       } else {
         expiryBanner = `
@@ -71,7 +71,7 @@
               ${verifiedFormatted ? `<span style="display:block;margin-top:3px;font-size:11.5px;color:var(--muted);">Verified on ${verifiedFormatted} · renews every 6 months</span>` : ''}
             </div>
           </div>
-          <a href="verification.html" class="btn-ghost" style="text-decoration:none;white-space:nowrap;font-size:12.5px;">Re-verify</a>
+          <a href="verification.html?reverify=true" class="btn-ghost" style="text-decoration:none;white-space:nowrap;font-size:12.5px;">Re-verify</a>
         </div>
         <div style="padding-bottom:16px;">${expiryBanner}</div>`;
 

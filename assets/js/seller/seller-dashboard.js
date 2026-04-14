@@ -15,7 +15,6 @@
   const isVerified = fullUser && fullUser.accountStatus === 'verified';
   const isPending  = fullUser && fullUser.accountStatus === 'pending';
 
-  // Verification badge
   const badge = document.getElementById('verifyBadge');
   if (isVerified) {
     badge.textContent = '✓ Verified';
@@ -28,7 +27,6 @@
     badge.className = 'verify-badge unverified';
   }
 
-  // Show verification banner for non-verified sellers
   if (!isVerified) document.getElementById('verifyBanner').style.display = 'flex';
 
   // Show expiry banner on dashboard only when near expiry (≤30 days) or expired
@@ -50,7 +48,7 @@
             <div class="expiry-title">Verification Expired</div>
             <div class="expiry-sub">Your seller verification expired on <strong>${expiryFormatted}</strong>. Your listings have been paused until you re-verify.</div>
           </div>
-          <a href="verification.html" class="expiry-btn">Re-verify Now</a>
+          <a href="verification.html?reverify=true" class="expiry-btn">Re-verify Now</a>
         </div>`;
     } else if (daysLeft <= 30) {
       banner.style.display = 'block';
@@ -63,19 +61,17 @@
             <div class="expiry-title">Verification Expiring in ${daysLeft} Day${daysLeft !== 1 ? 's' : ''}</div>
             <div class="expiry-sub">Your seller verification expires on <strong>${expiryFormatted}</strong>. Re-verify before it expires to avoid interruptions to your listings.</div>
           </div>
-          <a href="verification.html" class="expiry-btn">Re-verify</a>
+          <a href="verification.html?reverify=true" class="expiry-btn">Re-verify</a>
         </div>`;
     }
   }
 
-  // Disable Add Listing if not verified
   const addBtn = document.getElementById('addListingBtn');
   if (!isVerified) {
     addBtn.disabled = true;
     addBtn.title = 'Complete identity verification to post listings';
   }
 
-  // Stats
   const myListings = FAKE_LISTINGS.filter(l => l.sellerId === session.id);
   document.getElementById('statActive').textContent  = myListings.filter(l => l.status === 'approved').length;
   document.getElementById('statPending').textContent = myListings.filter(l => l.status === 'pending').length;

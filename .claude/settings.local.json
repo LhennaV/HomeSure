@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n \"^\\\\s*//\" c:/Users/vlhen/OneDrive/Desktop/HomeSure/assets/js/buyer/buyer-listing.js)",
+      "Bash(grep -n \"^\\\\s*//\" c:/Users/vlhen/OneDrive/Desktop/HomeSure/assets/js/buyer/buyer-dashboard.js)",
+      "Bash(grep -rn \"^\\\\s*//\" c:/Users/vlhen/OneDrive/Desktop/HomeSure/assets/js/buyer/buyer-listing.js c:/Users/vlhen/OneDrive/Desktop/HomeSure/assets/js/buyer/buyer-dashboard.js c:/Users/vlhen/OneDrive/Desktop/HomeSure/assets/js/buyer/buyer-messages.js c:/Users/vlhen/OneDrive/Desktop/HomeSure/assets/js/buyer/buyer-profile.js c:/Users/vlhen/OneDrive/Desktop/HomeSure/assets/js/buyer/buyer-settings.js c:/Users/vlhen/OneDrive/Desktop/HomeSure/assets/js/seller/seller-dashboard.js c:/Users/vlhen/OneDrive/Desktop/HomeSure/assets/js/admin/admin-dashboard.js)"
+    ]
+  }
+}
