@@ -8,7 +8,7 @@
   }
 
   HomeSureSidebar.init({ activePage: 'audit-trail' });
-  HomeSureTopbar.init({ placeholder: 'Search...' });
+  HomeSureTopbar.init({ placeholder: 'Search user, action, IP…', onSearch: function() { searchQuery = (document.getElementById('hsSearch')||{}).value?.trim() || ''; renderTable(); } });
 
   const roleColors = { admin: '#3b82f6', superadmin: '#8b5cf6' };
   let auditFilter  = 'all';
@@ -66,10 +66,5 @@
     renderTable();
   });
 
-  // Search
-  document.getElementById('auditSearch').addEventListener('input', function () {
-    searchQuery = this.value.trim();
-    renderTable();
-  });
 
 })();

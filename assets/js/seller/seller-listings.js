@@ -10,7 +10,6 @@
   const fullUser   = FAKE_USERS.find(u => u.id === session.id) || {};
   const isVerified = fullUser.accountStatus === 'verified';
 
-  // Mutable copy so deletes don't touch the original array
   let myListings = FAKE_LISTINGS.filter(l => l.sellerId === session.id);
 
   // ── Add button & warning banner ─────────────────────────────────────────────
@@ -21,9 +20,10 @@
   }
 
   // ── Buckets ─────────────────────────────────────────────────────────────────
-  const getActive = () => myListings.filter(l => l.status === 'approved');
-  const getDraft  = () => myListings.filter(l => l.status === 'pending' || l.status === 'rejected');
-  const getClosed = () => myListings.filter(l => l.status === 'closed');
+  const getActive  = () => myListings.filter(l => l.status === 'approved');
+  const getDraft   = () => myListings.filter(l => l.status === 'draft' || l.status === 'rejected');
+  const getPending = () => myListings.filter(l => l.status === 'pending');
+  const getClosed  = () => myListings.filter(l => l.status === 'closed');
 
   // ── Formatting helpers ──────────────────────────────────────────────────────
   function formatPrice(listing) {
@@ -40,7 +40,7 @@
   }
 
   // ── Build card HTML ─────────────────────────────────────────────────────────
-  function buildCard(listing) {
+  function buildCard(listing, tab) {
     const thumb = (listing.images && listing.images[0])
       ? listing.images[0]
       : 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400';
@@ -48,8 +48,57 @@
     const pillCls   = listing.listingFor === 'rent' ? 'pill-rent' : 'pill-sale';
     const pillLabel = listing.listingFor === 'rent' ? 'For Rent' : 'For Sale';
 
-    const statusCls   = { approved: 'approved', pending: 'pending', rejected: 'rejected' }[listing.status] || 'pending';
-    const statusLabel = { approved: 'Approved',  pending: 'Pending',  rejected: 'Rejected'  }[listing.status] || listing.status;
+    const statusMap = {
+      approved: { cls: 'approved', label: 'Active' },
+      pending:  { cls: 'pending',  label: 'Under Review' },
+      draft:    { cls: 'draft',    label: 'Draft' },
+      rejected: { cls: 'rejected', label: 'Rejected' },
+      closed:   { cls: 'closed',   label: 'Closed' },
+    };
+    const { cls: statusCls, label: statusLabel } = statusMap[listing.status] || { cls: 'draft', label: 'Draft' };
+
+    // Action buttons per tab
+    let actionBtns = '';
+    if (tab === 'active') {
+      actionBtns = `
+        <button class="btn-edit" onclick="handleEdit('${listing.id}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit
+        </button>
+        <button class="btn-close" onclick="promptClose('${listing.id}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg>
+          Close Listing
+        </button>`;
+    } else if (tab === 'draft') {
+      actionBtns = `
+        <button class="btn-edit" onclick="handleEdit('${listing.id}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit
+        </button>
+        <button class="btn-submit" onclick="submitForReview('${listing.id}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Submit for Review
+        </button>`;
+    } else if (tab === 'pending') {
+      actionBtns = `<span class="review-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Under admin review — editing disabled
+      </span>`;
+    } else if (tab === 'closed') {
+      actionBtns = `
+        <button class="btn-reopen" onclick="reopenListing('${listing.id}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.29"/></svg>
+          Resubmit for Review
+        </button>`;
+    }
+
+    // Rejection reason banner (only in draft tab for rejected listings)
+    const rejectionBanner = (tab === 'draft' && listing.status === 'rejected' && listing.rejectionReason)
+      ? `<div class="rejection-banner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span><strong>Rejected:</strong> ${listing.rejectionReason}</span>
+        </div>`
+      : '';
 
     return `
       <div class="listing-card" id="card-${listing.id}">
@@ -69,23 +118,10 @@
             <span class="status-badge ${statusCls}">
               <span class="status-dot"></span>${statusLabel}
             </span>
-            <div class="action-btns">
-              <button class="btn-edit" onclick="handleEdit('${listing.id}')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                </svg>
-                Edit
-              </button>
-              <button class="btn-close" onclick="promptClose('${listing.id}')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M18 6 6 18"/><path d="M6 6l12 12"/>
-                </svg>
-                Close Listing
-              </button>
-            </div>
+            <div class="action-btns">${actionBtns}</div>
           </div>
         </div>
+        ${rejectionBanner}
         <div class="close-confirm" id="confirm-${listing.id}" style="display:none">
           <span class="close-confirm-text">Move this listing to Closed?</span>
           <button class="btn-confirm-close" onclick="confirmClose('${listing.id}')">Confirm</button>
@@ -96,48 +132,38 @@
 
   // ── Empty state HTML ────────────────────────────────────────────────────────
   function buildEmpty(tab) {
-    if (tab === 'active') {
-      const cta = isVerified
-        ? `<button class="btn-empty-add" onclick="handleAddListing()">
-             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
-               <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-             </svg>
-             Add your first listing
-           </button>`
-        : `<span style="font-size:13px;color:var(--muted)">Verify your account to start posting</span>`;
-      return `<div class="empty-state">
-        <div class="empty-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>
-            <polyline points="9 21 9 12 15 12 15 21"/>
-          </svg>
-        </div>
-        <div class="empty-title">No active listings</div>
-        <div class="empty-sub">Your approved listings will appear here once published.</div>
-        ${cta}
-      </div>`;
-    }
-    if (tab === 'draft') {
-      return `<div class="empty-state">
-        <div class="empty-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <polyline points="12 6 12 12 16 14"/>
-          </svg>
-        </div>
-        <div class="empty-title">No draft listings</div>
-        <div class="empty-sub">Listings pending review or needing revisions will appear here.</div>
-      </div>`;
-    }
+    const icons = {
+      active:  `<path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/>`,
+      draft:   `<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>`,
+      pending: `<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>`,
+      closed:  `<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>`,
+    };
+    const messages = {
+      active:  { title: 'No active listings',  sub: 'Your approved listings will appear here once published.' },
+      draft:   { title: 'No draft listings',   sub: 'Save a listing as draft before submitting it for review.' },
+      pending: { title: 'No pending listings', sub: 'Listings submitted for admin review will appear here.' },
+      closed:  { title: 'No closed listings',  sub: 'Listings you\'ve closed will appear here.' },
+    };
+    const { title, sub } = messages[tab] || messages.closed;
+    const cta = (tab === 'active') ? (isVerified
+      ? `<button class="btn-empty-add" onclick="handleAddListing()">
+           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+           </svg>
+           Add your first listing
+         </button>`
+      : `<span style="font-size:13px;color:var(--muted)">Verify your account to start posting</span>`)
+    : '';
+
     return `<div class="empty-state">
       <div class="empty-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+          ${icons[tab] || icons.closed}
         </svg>
       </div>
-      <div class="empty-title">No closed listings</div>
-      <div class="empty-sub">Listings you've manually closed will appear here.</div>
+      <div class="empty-title">${title}</div>
+      <div class="empty-sub">${sub}</div>
+      ${cta}
     </div>`;
   }
 
@@ -147,23 +173,25 @@
     if (listings.length === 0) {
       el.innerHTML = buildEmpty(tab);
     } else {
-      el.innerHTML = `<div class="listing-list">${listings.map(buildCard).join('')}</div>`;
+      el.innerHTML = `<div class="listing-list">${listings.map(l => buildCard(l, tab)).join('')}</div>`;
     }
   }
 
   // ── Update counts in tabs ───────────────────────────────────────────────────
   function updateCounts() {
-    document.getElementById('countActive').textContent = getActive().length;
-    document.getElementById('countDraft').textContent  = getDraft().length;
-    document.getElementById('countClosed').textContent = getClosed().length;
+    document.getElementById('countActive').textContent  = getActive().length;
+    document.getElementById('countDraft').textContent   = getDraft().length;
+    document.getElementById('countPending').textContent = getPending().length;
+    document.getElementById('countClosed').textContent  = getClosed().length;
   }
 
   // ── Initial full render ─────────────────────────────────────────────────────
   function renderAll() {
     updateCounts();
-    renderPanel('active', getActive(), 'listActive');
-    renderPanel('draft',  getDraft(),  'listDraft');
-    renderPanel('closed', getClosed(), 'listClosed');
+    renderPanel('active',  getActive(),  'listActive');
+    renderPanel('draft',   getDraft(),   'listDraft');
+    renderPanel('pending', getPending(), 'listPending');
+    renderPanel('closed',  getClosed(),  'listClosed');
   }
   renderAll();
 
@@ -173,15 +201,47 @@
     if (tab === currentTab) return;
     currentTab = tab;
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-    document.getElementById('listActive').style.display = tab === 'active' ? '' : 'none';
-    document.getElementById('listDraft').style.display  = tab === 'draft'  ? '' : 'none';
-    document.getElementById('listClosed').style.display = tab === 'closed' ? '' : 'none';
+    document.getElementById('listActive').style.display  = tab === 'active'  ? '' : 'none';
+    document.getElementById('listDraft').style.display   = tab === 'draft'   ? '' : 'none';
+    document.getElementById('listPending').style.display = tab === 'pending' ? '' : 'none';
+    document.getElementById('listClosed').style.display  = tab === 'closed'  ? '' : 'none';
   }
 
   // ── Add listing ─────────────────────────────────────────────────────────────
   function handleAddListing() {
     if (!isVerified) return;
     window.location.href = 'post.html';
+  }
+
+  // ── Submit draft for admin review ───────────────────────────────────────────
+  function submitForReview(id) {
+    const listing = myListings.find(l => l.id === id);
+    if (!listing) return;
+    listing.status = 'pending';
+    delete listing.rejectionReason;
+    const card = document.getElementById('card-' + id);
+    if (card) {
+      card.classList.add('removing');
+      card.addEventListener('animationend', () => {
+        renderAll();
+        switchTab('pending');
+      }, { once: true });
+    }
+  }
+
+  // ── Reopen closed listing (resubmit for review) ─────────────────────────────
+  function reopenListing(id) {
+    const listing = myListings.find(l => l.id === id);
+    if (!listing) return;
+    listing.status = 'pending';
+    const card = document.getElementById('card-' + id);
+    if (card) {
+      card.classList.add('removing');
+      card.addEventListener('animationend', () => {
+        renderAll();
+        switchTab('pending');
+      }, { once: true });
+    }
   }
 
   // ── Edit modal ───────────────────────────────────────────────────────────────
@@ -229,7 +289,7 @@
     }, { once: true });
   }
 
-  // ── Close Listing: prompt ────────────────────────────────────────────────────
+  // ── Close Listing ────────────────────────────────────────────────────────────
   function promptClose(id) {
     document.querySelectorAll('.close-confirm').forEach(el => {
       if (el.id !== 'confirm-' + id) el.style.display = 'none';
@@ -243,7 +303,6 @@
     if (row) row.style.display = 'none';
   }
 
-  // ── Close Listing: move to Closed tab ────────────────────────────────────────
   function confirmClose(id) {
     const listing = myListings.find(l => l.id === id);
     if (!listing) return;

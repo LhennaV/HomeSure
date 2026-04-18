@@ -8,7 +8,7 @@
   }
 
   HomeSureSidebar.init({ activePage: 'reports' });
-  HomeSureTopbar.init({ placeholder: 'Search reports...' });
+  HomeSureTopbar.init({ placeholder: 'Search reports...', onSearch: () => window.renderReports && window.renderReports() });
 
   // ── Fake report data ────────────────────────────────────────────────────────
   const REPORTS = [
@@ -83,7 +83,7 @@
 
   // ── Render ──────────────────────────────────────────────────────────────────
   window.renderReports = function () {
-    const q = document.getElementById('reportSearch').value.toLowerCase();
+    const q = (document.getElementById('hsSearch') || {}).value?.toLowerCase() || '';
     const filtered = REPORTS.filter(r => {
       const matchStatus = activeStatus === 'all' || r.status === activeStatus;
       const matchQ = !q || r.subject.toLowerCase().includes(q) || r.description.toLowerCase().includes(q);

@@ -8,7 +8,7 @@
   }
 
   HomeSureSidebar.init({ activePage: 'listings' });
-  HomeSureTopbar.init({ placeholder: 'Search listings...' });
+  HomeSureTopbar.init({ placeholder: 'Search listings...', onSearch: () => window.renderListings && window.renderListings() });
 
   let activeStatus = 'all';
 
@@ -24,8 +24,9 @@
 
   // ── Render table ────────────────────────────────────────────────────────────
   window.renderListings = function () {
-    const q = document.getElementById('listingSearch').value.toLowerCase();
+    const q = (document.getElementById('hsSearch') || {}).value?.toLowerCase() || '';
     const filtered = FAKE_LISTINGS.filter(l => {
+      if (l.status === 'draft') return false; // not visible until seller submits
       const matchStatus = activeStatus === 'all' || l.status === activeStatus;
       const matchQ = !q || l.title.toLowerCase().includes(q) || l.barangay.toLowerCase().includes(q);
       return matchStatus && matchQ;

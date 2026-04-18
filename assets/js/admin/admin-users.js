@@ -8,7 +8,7 @@
   }
 
   HomeSureSidebar.init({ activePage: 'users' });
-  HomeSureTopbar.init({ placeholder: 'Search users...' });
+  HomeSureTopbar.init({ placeholder: 'Search users...', onSearch: renderUsers });
 
   // Only buyers and sellers are shown here
   let users = FAKE_USERS.filter(u => u.role === 'buyer' || u.role === 'seller');
@@ -20,7 +20,7 @@
 
   // ── Render Table ─────────────────────────────────────────────────────────────
   function renderUsers() {
-    const q = document.getElementById('userSearch').value.toLowerCase();
+    const q = (document.getElementById('hsSearch') || {}).value?.toLowerCase() || '';
     const filtered = users.filter(u => {
       const matchRole   = activeFilter === 'all' || activeFilter === u.role ||
                           (activeFilter === 'pending' && u.accountStatus === 'pending');
@@ -88,7 +88,6 @@
     renderUsers();
   });
 
-  document.getElementById('userSearch').addEventListener('input', renderUsers);
 
   // ── Verification Modal ───────────────────────────────────────────────────────
   let _currentUserId = null;

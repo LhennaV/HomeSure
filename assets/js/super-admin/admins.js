@@ -4,7 +4,7 @@ const user = getSession();
 if (!user || user.role !== 'superadmin') window.location.href = '../../auth/signin.html';
 
 HomeSureSidebar.init({ activePage: 'admins' });
-HomeSureTopbar.init({ placeholder: 'Search admins...' });
+HomeSureTopbar.init({ placeholder: 'Search admins...', onSearch: function() { searchQuery = (document.getElementById('hsSearch')||{}).value?.trim() || ''; renderAdminTable(); } });
 
 let adminList   = [...FAKE_ADMINS];
 let filterState = 'all';
@@ -73,11 +73,6 @@ document.getElementById('filterTabs').addEventListener('click', e => {
   renderAdminTable();
 });
 
-// ── Search ────────────────────────────────────────────────────────────────────
-document.getElementById('adminSearch').addEventListener('input', e => {
-  searchQuery = e.target.value.trim();
-  renderAdminTable();
-});
 
 // ── Toggle Active/Inactive ────────────────────────────────────────────────────
 window.toggleAdmin = function (id) {

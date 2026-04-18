@@ -243,5 +243,5 @@
 
   /* ── Save as Draft ── */
   function saveAsDraft() {
-    showToast('success', 'Listing saved as draft.');
+    showToast('success', 'Listing saved as draft. You can submit it for review from My Listings.');
   }

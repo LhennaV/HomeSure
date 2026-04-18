@@ -48,15 +48,17 @@
 
       <!-- Tab Bar -->
       <div class="tab-bar">
-        <div class="tab active" data-tab="active" onclick="switchTab('active')">Active (<span id="countActive">0</span>)</div>
-        <div class="tab" data-tab="draft" onclick="switchTab('draft')">Draft (<span id="countDraft">0</span>)</div>
-        <div class="tab" data-tab="closed" onclick="switchTab('closed')">Closed (<span id="countClosed">0</span>)</div>
+        <div class="tab active" data-tab="active"  onclick="switchTab('active')">Active (<span id="countActive">0</span>)</div>
+        <div class="tab" data-tab="draft"   onclick="switchTab('draft')">Draft (<span id="countDraft">0</span>)</div>
+        <div class="tab" data-tab="pending" onclick="switchTab('pending')">Pending (<span id="countPending">0</span>)</div>
+        <div class="tab" data-tab="closed"  onclick="switchTab('closed')">Closed (<span id="countClosed">0</span>)</div>
       </div>
 
       <!-- Listing Panels -->
       <div id="listActive"></div>
-      <div id="listDraft"  style="display:none"></div>
-      <div id="listClosed" style="display:none"></div>
+      <div id="listDraft"   style="display:none"></div>
+      <div id="listPending" style="display:none"></div>
+      <div id="listClosed"  style="display:none"></div>
 
     </div>
   </div>

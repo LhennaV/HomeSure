@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sed -n '34,45p' c:/Users/vlhen/OneDrive/Desktop/HomeSure/assets/css/seller/seller-verification.css)",
+      "Bash(sed -n '65,80p' c:/Users/vlhen/OneDrive/Desktop/HomeSure/assets/css/seller/seller-verification.css)",
+      "Bash(sed -n '47,56p' c:/Users/vlhen/OneDrive/Desktop/HomeSure/assets/css/seller/seller-post.css)",
+      "Bash(sed -n '50,60p' c:/Users/vlhen/OneDrive/Desktop/HomeSure/assets/css/seller/seller-settings.css)",
+      "Bash(sed -n '50,56p' c:/Users/vlhen/OneDrive/Desktop/HomeSure/assets/css/seller/seller-settings.css)",
+      "Bash(sed -n '47,52p' c:/Users/vlhen/OneDrive/Desktop/HomeSure/assets/css/seller/seller-post.css)",
+      "Bash(sed -n '69,74p' c:/Users/vlhen/OneDrive/Desktop/HomeSure/assets/css/seller/seller-verification.css)"
+    ]
+  }
+}

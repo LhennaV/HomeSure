@@ -71,7 +71,7 @@
               ${verifiedFormatted ? `<span style="display:block;margin-top:3px;font-size:11.5px;color:var(--muted);">Verified on ${verifiedFormatted} · renews every 6 months</span>` : ''}
             </div>
           </div>
-          <a href="verification.html?reverify=true" class="btn-ghost" style="text-decoration:none;white-space:nowrap;font-size:12.5px;">Re-verify</a>
+          ${!isNearExpiry && !isExpired ? `<a href="verification.html?reverify=true" class="btn-ghost" style="text-decoration:none;white-space:nowrap;font-size:12.5px;">Re-verify</a>` : ''}
         </div>
         <div style="padding-bottom:16px;">${expiryBanner}</div>`;
 

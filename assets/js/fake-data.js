@@ -26,7 +26,7 @@ const FAKE_USERS = [
     firstName: 'Ramon', lastName: 'Cruz',
     email: 'seller@homesure.com', password: 'seller1234',
     phone: '09191234567', avatar: null, verified: true,
-    accountStatus: 'verified', listings: ['prop-001', 'prop-002', 'prop-003', 'prop-006', 'prop-007', 'prop-008'],
+    accountStatus: 'verified', listings: ['prop-001', 'prop-002', 'prop-003', 'prop-006', 'prop-007', 'prop-008', 'prop-014', 'prop-015'],
     joinedAt: '2025-10-01',
     verifiedAt: '2025-10-15', verificationExpiry: '2026-04-20',
     verificationDocs: [
@@ -231,7 +231,33 @@ const FAKE_LISTINGS = [
     amenities: ['Security', 'Near Market', 'Near School'], postedAt: '2026-03-10', featured: false,
   },
 
-  // ── Pending / Rejected (not visible to buyers) ────────────────────────────────
+  // ── Draft (saved by seller, not yet submitted) ───────────────────────────────
+  {
+    id: 'prop-014', sellerId: 'usr-003',
+    type: 'house', listingFor: 'sale',
+    title: '4-Bedroom House with Garage in Tumana',
+    description: 'Spacious 4-bedroom single detached house with a covered garage, wide living room, and tiled kitchen. Located in a quiet subdivision near the highway.',
+    price: 4200000, barangay: 'Tumana',
+    address: '22 Kamagong St, Tumana, Sta. Maria, Bulacan',
+    bedrooms: 4, bathrooms: 2, floorArea: 180, lotArea: 220,
+    status: 'draft', verified: false, negotiable: true,
+    images: ['https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800'],
+    documents: [], amenities: ['Garage', 'Perimeter Fence'], postedAt: '2026-04-15', featured: false,
+  },
+  {
+    id: 'prop-015', sellerId: 'usr-003',
+    type: 'apartment', listingFor: 'rent',
+    title: '1-Bedroom Apartment for Rent in Bagbaguin',
+    description: 'Fully furnished 1-bedroom apartment with air conditioning, private bathroom, and kitchen area. Ideal for young professionals.',
+    price: 8500, barangay: 'Bagbaguin',
+    address: '10 Sampaguita Ave, Bagbaguin, Sta. Maria, Bulacan',
+    bedrooms: 1, bathrooms: 1, floorArea: 35, lotArea: null,
+    status: 'draft', verified: false, negotiable: false,
+    images: ['https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800'],
+    documents: [], amenities: ['Furnished', 'Air Conditioning'], postedAt: '2026-04-17', featured: false,
+  },
+
+  // ── Pending / Rejected (submitted for admin review) ───────────────────────────
   {
     id: 'prop-004', sellerId: 'usr-004',
     type: 'apartment', listingFor: 'rent',

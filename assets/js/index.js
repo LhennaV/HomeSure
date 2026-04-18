@@ -177,6 +177,20 @@ const LOGO_SRC = "assets/img/image.png";
 
 const { useState, useEffect, useRef } = React;
 
+function useReveal(threshold = 0.12) {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
+      { threshold }
+    );
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
+  return [ref, visible];
+}
+
 // Typing Animation
 const typingPhrases = [
   "Find your home.",
@@ -389,9 +403,10 @@ function Hero() {
 
 // Categories
 function Categories() {
+  const [ref, visible] = useReveal();
   return React.createElement(
     "section",
-    { className: "section" },
+    { className: `section reveal-section${visible ? ' in-view' : ''}`, ref },
     React.createElement(
       "span",
       { className: "section-label" },
@@ -432,6 +447,7 @@ function Categories() {
 
 // Spotlight Carousel
 function Carousel() {
+  const [ref, visible] = useReveal();
   const len = properties.length;
   const [idx, setIdx] = useState(0);
   const [autoKey, setAutoKey] = useState(0);
@@ -483,7 +499,7 @@ function Carousel() {
 
   return React.createElement(
     "section",
-    { className: "section-alt" },
+    { className: `section-alt reveal-section${visible ? ' in-view' : ''}`, ref },
     React.createElement(
       "span",
       { className: "section-label" },
@@ -604,9 +620,10 @@ function Carousel() {
 
 // How It Works
 function HowItWorks() {
+  const [ref, visible] = useReveal();
   return React.createElement(
     "section",
-    { className: "section" },
+    { className: `section reveal-section${visible ? ' in-view' : ''}`, ref },
     React.createElement("span", { className: "section-label" }, "How It Works"),
     React.createElement(
       "h2",
@@ -636,9 +653,10 @@ function HowItWorks() {
 
 // Features
 function Features() {
+  const [ref, visible] = useReveal();
   return React.createElement(
     "section",
-    { className: "section-alt" },
+    { className: `section-alt reveal-section${visible ? ' in-view' : ''}`, ref },
     React.createElement(
       "div",
       { className: "features-inner" },
@@ -723,9 +741,10 @@ function StatBox({ stat }) {
 }
 
 function Stats() {
+  const [ref, visible] = useReveal();
   return React.createElement(
     "section",
-    { className: "section" },
+    { className: `section reveal-section${visible ? ' in-view' : ''}`, ref },
     React.createElement(
       "div",
       { className: "stats-inner" },
@@ -757,9 +776,10 @@ function Stats() {
 
 // Testimonials
 function Testimonials() {
+  const [ref, visible] = useReveal();
   return React.createElement(
     "section",
-    { className: "section-alt" },
+    { className: `section-alt reveal-section${visible ? ' in-view' : ''}`, ref },
     React.createElement("span", { className: "section-label" }, "Testimonials"),
     React.createElement(
       "h2",
@@ -803,9 +823,10 @@ function Testimonials() {
 
 // CTA
 function CTA() {
+  const [ref, visible] = useReveal();
   return React.createElement(
     "div",
-    { className: "cta-section" },
+    { className: `cta-section reveal-section${visible ? ' in-view' : ''}`, ref },
     React.createElement(
       "div",
       { className: "cta-inner" },
