@@ -108,8 +108,11 @@
           </div>
         </div>`).join('');
 
+    const iconBack = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
+
     document.getElementById('chatPanel').innerHTML = `
       <div class="chat-header">
+        <button class="chat-back-btn" onclick="closeMobileChat()" aria-label="Back">${iconBack}</button>
         <img class="chat-header-img" src="${l.images[0]}" alt="${l.title}" />
         <div class="chat-header-info">
           <div class="chat-header-title">${l.title}</div>
@@ -131,8 +134,17 @@
       </div>
     `;
 
+    // Mobile: slide into chat view
+    document.querySelector('.messages-layout').classList.add('chat-open');
+
     const msgs = document.getElementById('chatMessages');
     if (msgs) msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function closeMobileChat() {
+    document.querySelector('.messages-layout').classList.remove('chat-open');
+    activeConvId = null;
+    renderConvList(document.getElementById('convSearch').value);
   }
 
   // ── Send a message ─────────────────────────────────────────────────────────

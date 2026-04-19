@@ -3,10 +3,10 @@
 const properties = [
   {
     title: "House for Sale",
-    location: "Liva, Paoa, Bulacan",
-    price: "₱1,000",
-    period: "/mo",
-    verified: false,
+    location: "Pulong Buhangin, Sta. Maria, Bulacan",
+    price: "₱10,000",
+    period: "/month",
+    verified: true,
     image:
       "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=400&q=80",
   },

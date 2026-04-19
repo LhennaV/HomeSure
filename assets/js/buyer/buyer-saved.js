@@ -43,7 +43,7 @@
       return `
         <div class="saved-card" style="animation-delay:${0.05 + i * 0.05}s"
              onclick="window.location.href='listing.html?id=${l.id}&from=saved'">
-          <img class="saved-img" src="${l.images[0]}" alt="${l.title}" loading="lazy" />
+          <div class="saved-img-wrap"><img class="saved-img" src="${l.images[0]}" alt="${l.title}" loading="lazy" /></div>
           <div class="saved-body">
             <div class="saved-title">${l.title}</div>
             <div class="saved-location">${iconPin} ${l.address}</div>

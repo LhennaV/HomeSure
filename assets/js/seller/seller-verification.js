@@ -49,7 +49,7 @@
         <div class="upload-grid">
           <!-- Government-Issued ID -->
           <div>
-            <div class="upload-label">Government-Issued ID</div>
+            <div class="upload-label">Government-Issued ID <span class="required-star">*</span></div>
             <div class="upload-box" id="idUploadBox" onclick="document.getElementById('idFileInput').click()">
               <div class="upload-box-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -61,12 +61,12 @@
               <div class="upload-filename" id="idFileName">1x1 Picture.png</div>
               <div class="upload-filesub">PNG, JPG up to 10MB &bull; Passport, Driver's License, or National ID</div>
             </div>
-            <input type="file" id="idFileInput" accept="image/*" onchange="handleFileSelect('id', this)" />
+            <input type="file" id="idFileInput" accept="image/*" capture="environment" onchange="handleFileSelect('id', this)" />
           </div>
 
           <!-- Selfie Verification -->
           <div>
-            <div class="upload-label">Selfie Verification</div>
+            <div class="upload-label">Selfie Verification <span class="required-star">*</span></div>
             <div class="upload-box" id="selfieUploadBox" onclick="document.getElementById('selfieFileInput').click()">
               <div class="upload-box-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -78,7 +78,7 @@
               <div class="upload-filename" id="selfieFileName">Click to upload selfie</div>
               <div class="upload-filesub">PNG, JPG up to 10MB &bull; Hold your ID next to your face</div>
             </div>
-            <input type="file" id="selfieFileInput" accept="image/*" onchange="handleFileSelect('selfie', this)" />
+            <input type="file" id="selfieFileInput" accept="image/*" capture="user" onchange="handleFileSelect('selfie', this)" />
           </div>
         </div>
 
@@ -101,7 +101,7 @@
 
         <!-- Submit button -->
         <div class="submit-wrap">
-          <button class="btn-primary" id="submitBtn" onclick="submitVerification()">Submit for Verification</button>
+          <button class="btn-primary" id="submitBtn" onclick="submitVerification()" disabled>Submit for Verification</button>
         </div>
       </div>
     `;
@@ -119,6 +119,9 @@
       document.getElementById('selfieFileName').textContent = name;
       document.getElementById('selfieUploadBox').classList.add('has-file');
     }
+    const bothFilled = document.getElementById('idUploadBox').classList.contains('has-file')
+                    && document.getElementById('selfieUploadBox').classList.contains('has-file');
+    document.getElementById('submitBtn').disabled = !bothFilled;
   }
 
   // ── Submit handler ──────────────────────────────────────────────────────────

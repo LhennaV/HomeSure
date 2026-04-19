@@ -78,21 +78,53 @@
   .listings-grid  { grid-template-columns: 1fr !important; }
 }
 
-/* ── 7. Messages Layout ─────────────────────────────────── */
+/* ── 7. Messages Layout — Messenger-style slide on mobile ─── */
+.chat-back-btn { display: none; }
+
 @media (max-width: 768px) {
   .messages-layout {
-    flex-direction: column !important;
+    position: relative !important;
+    overflow: hidden !important;
   }
   .conv-panel {
-    width: 100% !important;
+    position: absolute !important;
+    top: 0; left: 0;
+    width: 100% !important; height: 100% !important;
     min-width: unset !important;
-    height: 260px !important;
     border-right: none !important;
-    border-bottom: 1px solid rgba(255,255,255,0.07) !important;
-    flex-shrink: 0;
+    transform: translateX(0);
+    transition: transform 0.28s cubic-bezier(0.4,0,0.2,1) !important;
+    z-index: 1;
   }
-  .chat-area { flex: 1; min-height: 0; }
-  /* Shrink topbar in messages so it doesn't eat height */
+  .chat-panel {
+    position: absolute !important;
+    top: 0; left: 0;
+    width: 100% !important; height: 100% !important;
+    transform: translateX(100%);
+    transition: transform 0.28s cubic-bezier(0.4,0,0.2,1) !important;
+    z-index: 2;
+    background: var(--bg, #1E293B);
+  }
+  .messages-layout.chat-open .conv-panel {
+    transform: translateX(-20%) !important;
+    opacity: 0.5;
+  }
+  .messages-layout.chat-open .chat-panel {
+    transform: translateX(0) !important;
+    opacity: 1;
+  }
+  .chat-back-btn {
+    display: flex !important;
+    align-items: center; justify-content: center;
+    width: 34px; height: 34px; border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: none; cursor: pointer;
+    color: rgba(255,255,255,0.8);
+    flex-shrink: 0; margin-right: 8px;
+    transition: background 0.2s;
+  }
+  .chat-back-btn:hover { background: rgba(255,255,255,0.15); }
+  .chat-back-btn svg { width: 18px; height: 18px; display: block; }
   .content.no-pad { padding: 0 !important; }
 }
 
@@ -239,4 +271,69 @@
 @media (max-width: 480px) {
   .hs-notif-panel  { width: calc(100vw - 24px) !important; right: -60px !important; }
   .hs-profile-dropdown { right: 0 !important; }
+}
+
+/* ── 24. Tab Bars (seller listings, admin tabs) ──────────── */
+@media (max-width: 640px) {
+  .tab-bar, .filter-tabs {
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .tab-bar::-webkit-scrollbar,
+  .filter-tabs::-webkit-scrollbar { display: none; }
+  .tab, .filter-tab { flex-shrink: 0; white-space: nowrap; }
+}
+
+/* ── 25. Page Header Buttons on Mobile ───────────────────── */
+@media (max-width: 640px) {
+  .page-header { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
+  .btn-add, .btn-primary-sm { width: 100% !important; justify-content: center; }
+}
+
+/* ── 26. Warn / Verify Banner ────────────────────────────── */
+@media (max-width: 640px) {
+  .warn-banner { flex-direction: column !important; gap: 12px !important; align-items: flex-start !important; }
+  .btn-verify  { width: 100% !important; text-align: center; }
+}
+
+/* ── 27. Listing Cards (seller my-listings) ──────────────── */
+@media (max-width: 640px) {
+  .listing-card { flex-direction: column !important; }
+  .listing-card .card-thumb { width: 100% !important; height: 180px !important; }
+  .card-actions { flex-wrap: wrap; gap: 8px !important; }
+}
+
+
+/* ── 28. Verification Steps ──────────────────────────────── */
+@media (max-width: 640px) {
+  .step-bar { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+  .step-item { flex-shrink: 0; }
+}
+
+/* ── 29. Seller Post Form Sections ───────────────────────── */
+@media (max-width: 768px) {
+  .section-grid   { grid-template-columns: 1fr !important; }
+  .doc-grid       { grid-template-columns: 1fr !important; }
+  .upload-zone    { padding: 28px 16px !important; }
+}
+
+/* ── 30. Profile / Settings Form Cards ──────────────────── */
+@media (max-width: 768px) {
+  .form-cards-row { flex-direction: column !important; gap: 16px !important; }
+  .form-card      { width: 100% !important; }
+}
+
+/* ── 31. Admin / Super-admin: Listing Table ──────────────── */
+@media (max-width: 900px) {
+  .listings-table-wrap { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+  .listings-table      { min-width: 700px; }
+}
+
+/* ── 32. Global touch target minimum ────────────────────── */
+@media (max-width: 768px) {
+  button, a, [role="button"] { min-height: 40px; }
+  .btn-sm { min-height: 32px !important; }
 }

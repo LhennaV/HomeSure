@@ -65,8 +65,13 @@
       transform: translateY(-2px);
     }
 
+    .saved-img-wrap {
+      width: 155px; min-width: 155px;
+      align-self: stretch; flex-shrink: 0;
+      overflow: hidden;
+    }
     .saved-img {
-      width: 155px; min-width: 155px; height: 120px;
+      width: 100%; height: 100%;
       object-fit: cover; display: block;
     }
 

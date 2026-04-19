@@ -229,10 +229,14 @@ blockquote {
 /* ── RESPONSIVE ── */
 @media (max-width: 768px) {
   .auth-right  { display: none; }
-  .auth-left   { padding: 0 24px; }
+  .auth-left   { flex: 1; width: 100%; padding: 0 28px; }
   .auth-header, .auth-form-wrap, .auth-page-footer { max-width: 100%; }
 }
 @media (max-width: 480px) {
-  .auth-card  { padding: 24px 18px !important; border-radius: 16px !important; }
-  .auth-title { font-size: 20px !important; }
+  .auth-left   { padding: 0 20px; }
+  .auth-title  { font-size: 22px; }
+  .auth-sub    { font-size: 13px; margin-bottom: 22px; }
+  .name-row    { flex-wrap: wrap; }
+  .name-row .field-input.mi { flex: 0 0 72px; }
+  .role-btn    { font-size: 12px; padding: 8px 10px; }
 }

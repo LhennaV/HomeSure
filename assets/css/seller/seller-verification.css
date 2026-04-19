@@ -135,6 +135,7 @@
     }
     .btn-primary:hover:not(:disabled) { opacity: 0.88; }
     .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+    .required-star { color: #f87171; font-weight: 700; margin-left: 2px; }
 
     /* ── Toast ── */
     .toast {
