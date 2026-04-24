@@ -139,6 +139,8 @@
       clearInterval(resendInterval);
       document.getElementById('verifyAction').innerHTML =
         `<div class="verified-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Verified</div>`;
+      user.phoneVerified = true;
+      saveSession(user);
       showToast('Phone number verified!');
     } else {
       document.getElementById('otpError').classList.add('show');

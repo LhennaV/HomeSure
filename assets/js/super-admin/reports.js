@@ -37,46 +37,57 @@
     </div>`).join('');
 
   // ── User Growth Line Chart ────────────────────────────────────────────────
-  const months   = ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr'];
-  const growth   = [3, 5, 6, 8, 11, 14, 18]; // cumulative registrations
-  const W = 500, H = 160, padL = 32, padR = 16, padT = 16, padB = 32;
-  const maxVal = Math.max(...growth);
-  const xs = growth.map((_, i) => padL + i * ((W - padL - padR) / (growth.length - 1)));
-  const ys = growth.map(v => padT + (1 - v / maxVal) * (H - padT - padB));
+  const growthData = {
+    monthly: { labels: ['Oct','Nov','Dec','Jan','Feb','Mar','Apr'], values: [3,5,6,8,11,14,18], sub: 'Monthly new accounts — last 7 months' },
+    weekly:  { labels: ['Wk1','Wk2','Wk3','Wk4','Wk5','Wk6','Wk7'], values: [2,3,2,4,3,5,4], sub: 'Weekly new accounts — last 7 weeks' },
+    daily:   { labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], values: [1,2,1,3,2,1,2], sub: 'Daily new accounts — last 7 days' },
+  };
 
-  const linePath  = xs.map((x, i) => (i === 0 ? `M${x},${ys[i]}` : `L${x},${ys[i]}`)).join(' ');
-  const areaPath  = `${linePath} L${xs[xs.length-1]},${H-padB} L${xs[0]},${H-padB} Z`;
-  const yGrids    = [0, 0.25, 0.5, 0.75, 1].map(p => padT + (1-p)*(H-padT-padB));
-
-  const gridLines = yGrids.map(y =>
-    `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`
-  ).join('');
-  const xLabels = months.map((m, i) =>
-    `<text x="${xs[i]}" y="${H-4}" text-anchor="middle" fill="rgba(255,255,255,0.38)" font-size="10" font-family="Plus Jakarta Sans">${m}</text>`
-  ).join('');
-  const dots = xs.map((x, i) =>
-    `<circle cx="${x}" cy="${ys[i]}" r="4" fill="#00c9a7" stroke="var(--card)" stroke-width="2"/>
-     <title>${months[i]}: ${growth[i]} users</title>`
-  ).join('');
-
-  document.getElementById('userGrowthChart').setAttribute('viewBox', `0 0 ${W} ${H}`);
-  document.getElementById('userGrowthChart').innerHTML = `
-    <defs>
-      <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+  function renderUserGrowthChart(period) {
+    const { labels, values, sub } = growthData[period];
+    document.getElementById('userGrowthSub').textContent = sub;
+    const W = 500, H = 160, padL = 32, padR = 16, padT = 16, padB = 32;
+    const maxVal = Math.max(...values);
+    const xs = values.map((_, i) => padL + i * ((W - padL - padR) / (values.length - 1)));
+    const ys = values.map(v => padT + (1 - v / maxVal) * (H - padT - padB));
+    const linePath = xs.map((x, i) => (i === 0 ? `M${x},${ys[i]}` : `L${x},${ys[i]}`)).join(' ');
+    const areaPath = `${linePath} L${xs[xs.length-1]},${H-padB} L${xs[0]},${H-padB} Z`;
+    const yGrids   = [0,0.25,0.5,0.75,1].map(p => padT + (1-p)*(H-padT-padB));
+    const gridLines = yGrids.map(y => `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`).join('');
+    const xLabels   = labels.map((m, i) => `<text x="${xs[i]}" y="${H-4}" text-anchor="middle" fill="rgba(255,255,255,0.38)" font-size="10" font-family="Plus Jakarta Sans">${m}</text>`).join('');
+    const dots      = xs.map((x, i) => `<circle cx="${x}" cy="${ys[i]}" r="4" fill="#00c9a7" stroke="var(--card)" stroke-width="2"/><title>${labels[i]}: ${values[i]} users</title>`).join('');
+    document.getElementById('userGrowthChart').setAttribute('viewBox', `0 0 ${W} ${H}`);
+    document.getElementById('userGrowthChart').innerHTML = `
+      <defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0%" stop-color="#00c9a7" stop-opacity="0.25"/>
         <stop offset="100%" stop-color="#00c9a7" stop-opacity="0"/>
-      </linearGradient>
-    </defs>
-    ${gridLines}
-    <path d="${areaPath}" fill="url(#areaGrad)"/>
-    <path d="${linePath}" fill="none" stroke="#00c9a7" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
-    ${dots}
-    ${xLabels}`;
+      </linearGradient></defs>
+      ${gridLines}
+      <path d="${areaPath}" fill="url(#areaGrad)"/>
+      <path d="${linePath}" fill="none" stroke="#00c9a7" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+      ${dots}${xLabels}`;
+  }
+
+  renderUserGrowthChart('monthly');
+
+  window.setUserGrowthPeriod = function(period, el) {
+    document.querySelectorAll('#userGrowthDropdown .period-option').forEach(o => o.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('userGrowthPeriodLabel').textContent = el.textContent;
+    document.getElementById('userGrowthDropdown').classList.remove('open');
+    renderUserGrowthChart(period);
+  };
 
   // ── Listing Breakdown Donut ───────────────────────────────────────────────
-  const approved = FAKE_LISTINGS.filter(l => l.status === 'approved').length;
-  const pending  = FAKE_LISTINGS.filter(l => l.status === 'pending').length;
-  const rejected = FAKE_LISTINGS.filter(l => l.status === 'rejected').length;
+  const listingPeriodData = {
+    monthly: { approved: FAKE_LISTINGS.filter(l => l.status === 'approved').length, pending: FAKE_LISTINGS.filter(l => l.status === 'pending').length, rejected: FAKE_LISTINGS.filter(l => l.status === 'rejected').length, sub: 'All listings by current status' },
+    weekly:  { approved: 8, pending: 3, rejected: 1, sub: 'Listings submitted this week' },
+    daily:   { approved: 2, pending: 1, rejected: 0, sub: 'Listings submitted today' },
+  };
+
+  const approved = listingPeriodData.monthly.approved;
+  const pending  = listingPeriodData.monthly.pending;
+  const rejected = listingPeriodData.monthly.rejected;
   const total    = totalListings;
 
   const segments = [
@@ -120,17 +131,56 @@
       </div>`;
   }).join('');
 
-  document.getElementById('listingBreakdown').innerHTML = `
-    <div class="breakdown-wrap">
-      <div class="donut-wrap">
-        ${donut(segments, total)}
-        <div class="donut-center">
-          <div class="donut-total">${total}</div>
-          <div class="donut-label">Total</div>
+  function renderListingBreakdown(period) {
+    const d    = listingPeriodData[period];
+    const segs = [
+      { label: 'Approved', count: d.approved, color: '#00c9a7' },
+      { label: 'Pending',  count: d.pending,  color: '#f59e0b' },
+      { label: 'Rejected', count: d.rejected, color: '#ef4444' },
+    ];
+    const t = d.approved + d.pending + d.rejected;
+    document.getElementById('listingBreakdownSub').textContent = d.sub;
+    const legend = segs.map(s => {
+      const pct = t ? Math.round(s.count / t * 100) : 0;
+      return `<div class="legend-item">
+        <div class="legend-dot" style="background:${s.color}"></div>
+        <div class="legend-info"><div class="legend-name">${s.label}</div><div class="legend-count">${s.count} listings</div></div>
+        <div class="legend-pct">${pct}%</div>
+      </div>`;
+    }).join('');
+    document.getElementById('listingBreakdown').innerHTML = `
+      <div class="breakdown-wrap">
+        <div class="donut-wrap">
+          ${donut(segs, t)}
+          <div class="donut-center"><div class="donut-total">${t}</div><div class="donut-label">Total</div></div>
         </div>
-      </div>
-      <div class="breakdown-legend">${legendHtml}</div>
-    </div>`;
+        <div class="breakdown-legend">${legend}</div>
+      </div>`;
+  }
+
+  renderListingBreakdown('monthly');
+
+  window.setListingPeriod = function(period, el) {
+    document.querySelectorAll('#listingDropdown .period-option').forEach(o => o.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('listingPeriodLabel').textContent = el.textContent;
+    document.getElementById('listingDropdown').classList.remove('open');
+    renderListingBreakdown(period);
+  };
+
+
+  // ── Period dropdown helpers ───────────────────────────────────────────────
+  window.toggleDropdown = function(id) {
+    const el = document.getElementById(id);
+    const isOpen = el.classList.contains('open');
+    document.querySelectorAll('.period-dropdown.open').forEach(d => d.classList.remove('open'));
+    if (!isOpen) el.classList.add('open');
+  };
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.period-dropdown')) {
+      document.querySelectorAll('.period-dropdown.open').forEach(d => d.classList.remove('open'));
+    }
+  });
 
   // ── Reports Table ─────────────────────────────────────────────────────────
   let reportFilter = 'all';
@@ -190,6 +240,39 @@
     reportFilter = btn.dataset.status;
     renderReports();
   });
+
+  // ── Export CSV ────────────────────────────────────────────────────────────
+  window.exportReportsCSV = function () {
+    const catLabels = { suspicious: 'Suspicious', fake: 'Fake', scam: 'Scam', misleading: 'Misleading', duplicate: 'Duplicate', other: 'Other' };
+    const filtered = reportFilter === 'all' ? reports : reports.filter(r => r.status === reportFilter);
+
+    const headers = ['Listing', 'Reported By', 'Category', 'Reason', 'Reported At', 'Status', 'Resolved At'];
+    const rows = filtered.map(r => {
+      const listing  = FAKE_LISTINGS.find(l => l.id === r.listingId);
+      const reporter = FAKE_USERS.find(u => u.id === r.reportedBy);
+      return [
+        listing ? listing.title : r.listingId,
+        reporter ? reporter.firstName + ' ' + reporter.lastName : 'Unknown',
+        catLabels[r.category] || 'Other',
+        r.reason,
+        r.reportedAt,
+        r.status,
+        r.resolvedAt || '',
+      ];
+    });
+
+    downloadCSV([headers, ...rows], 'system-reports.csv');
+  };
+
+  function downloadCSV(rows, filename) {
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
 
   // ── Toast ─────────────────────────────────────────────────────────────────
   function showToast(msg, type = 'success') {

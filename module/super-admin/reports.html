@@ -23,6 +23,10 @@
           <h1 class="page-title">System Reports</h1>
           <p class="page-sub">Platform-wide overview — user growth, listing health, and reported content.</p>
         </div>
+        <button class="export-btn" onclick="exportReportsCSV()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export CSV
+        </button>
       </div>
 
       <!-- Stat Cards -->
@@ -34,7 +38,18 @@
           <div class="chart-header">
             <div>
               <div class="chart-title">User Registrations</div>
-              <div class="chart-sub">Monthly new accounts — last 7 months</div>
+              <div class="chart-sub" id="userGrowthSub">Monthly new accounts — last 7 months</div>
+            </div>
+            <div class="period-dropdown" id="userGrowthDropdown">
+              <button class="period-btn" onclick="toggleDropdown('userGrowthDropdown')">
+                <span id="userGrowthPeriodLabel">Monthly</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="period-menu">
+                <div class="period-option active" data-period="monthly" onclick="setUserGrowthPeriod('monthly',this)">Monthly</div>
+                <div class="period-option" data-period="weekly" onclick="setUserGrowthPeriod('weekly',this)">Weekly</div>
+                <div class="period-option" data-period="daily" onclick="setUserGrowthPeriod('daily',this)">Daily</div>
+              </div>
             </div>
           </div>
           <svg id="userGrowthChart" class="chart-svg"></svg>
@@ -43,7 +58,18 @@
           <div class="chart-header">
             <div>
               <div class="chart-title">Listing Status Breakdown</div>
-              <div class="chart-sub">All listings by current status</div>
+              <div class="chart-sub" id="listingBreakdownSub">All listings by current status</div>
+            </div>
+            <div class="period-dropdown" id="listingDropdown">
+              <button class="period-btn" onclick="toggleDropdown('listingDropdown')">
+                <span id="listingPeriodLabel">Monthly</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="period-menu">
+                <div class="period-option active" data-period="monthly" onclick="setListingPeriod('monthly',this)">Monthly</div>
+                <div class="period-option" data-period="weekly" onclick="setListingPeriod('weekly',this)">Weekly</div>
+                <div class="period-option" data-period="daily" onclick="setListingPeriod('daily',this)">Daily</div>
+              </div>
             </div>
           </div>
           <div id="listingBreakdown"></div>
@@ -64,20 +90,22 @@
             <button class="filter-tab" data-status="dismissed">Dismissed</button>
           </div>
         </div>
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Listing</th>
-              <th>Reported By</th>
-              <th>Category</th>
-              <th>Reason</th>
-              <th>Reported</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="reportsTable"></tbody>
-        </table>
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Listing</th>
+                <th>Reported By</th>
+                <th>Category</th>
+                <th>Reason</th>
+                <th>Reported</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="reportsTable"></tbody>
+          </table>
+        </div>
       </div>
 
     </div>

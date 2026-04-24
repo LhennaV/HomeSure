@@ -68,99 +68,107 @@
   // ── High-Demand Areas (vertical bar chart) ───────────────────────────────────
   const barangayCounts = {};
   FAKE_LISTINGS.forEach(l => { barangayCounts[l.barangay] = (barangayCounts[l.barangay] || 0) + 1; });
-  const topAreas = Object.entries(barangayCounts).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  const topAreasMonthly = Object.entries(barangayCounts).sort((a, b) => b[1] - a[1]).slice(0, 6);
 
-  (function drawVerticalBars() {
-    const items  = topAreas;
-    const max    = Math.max(...items.map(i => i[1]), 1);
-    const chartH = 150;
-    const barW   = 32;
-    const gap    = 18;
-    const padL   = 28;
-    const padB   = 30;
-    const padT   = 16;
-    const totalW = padL + items.length * (barW + gap) - gap + 10;
-    const totalH = padT + chartH + padB;
+  const demandData = {
+    monthly: topAreasMonthly,
+    weekly:  [['San Isidro',2],['Pulong',1],['Bagbaguin',2],['Balasing',1],['Poblacion',1],['Tumana',1]],
+    daily:   [['San Isidro',1],['Pulong',1],['Bagbaguin',0],['Balasing',1],['Poblacion',0],['Tumana',1]],
+  };
 
-    // Y-axis grid lines
-    const ySteps  = 4;
-    const yLabels = Array.from({ length: ySteps + 1 }, (_, i) => {
-      const val  = Math.round(max / ySteps * (ySteps - i));
-      const y    = padT + Math.round(i / ySteps * chartH);
-      return `
-        <line x1="${padL}" y1="${y}" x2="${totalW}" y2="${y}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  function drawVerticalBars(items) {
+    const rawMax = Math.max(...items.map(i => i[1]), 1);
+    const step   = Math.max(1, Math.ceil(rawMax / 4));
+    const max    = step * 4;
+    const chartH = 150, barW = 32, gap = 18, padL = 28, padT = 16, totalW = padL + items.length * (barW + gap) - gap + 10, totalH = padT + chartH + 30;
+    const yLabels = Array.from({ length: 5 }, (_, i) => {
+      const val = step * (4 - i);
+      const y   = padT + Math.round(i / 4 * chartH);
+      return `<line x1="${padL}" y1="${y}" x2="${totalW}" y2="${y}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
         <text x="${padL - 6}" y="${y + 4}" text-anchor="end" font-size="9" fill="rgba(255,255,255,0.35)" font-family="Plus Jakarta Sans">${val}</text>`;
     }).join('');
-
-    // Bars + labels
     const bars = items.map(([name, val], i) => {
       const barH = Math.max(Math.round(val / max * chartH), 4);
-      const x    = padL + i * (barW + gap);
-      const y    = padT + chartH - barH;
-      const shortName = name.split(' ')[0];
-      return `
-        <rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="6" fill="#00c9a7" opacity="0.9"/>
-        <text x="${x + barW / 2}" y="${padT + chartH + 14}" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.45)" font-family="Plus Jakarta Sans">${shortName}</text>`;
+      const x = padL + i * (barW + gap);
+      const y = padT + chartH - barH;
+      return `<rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="6" fill="#00c9a7" opacity="0.9"/>
+        <text x="${x + barW / 2}" y="${padT + chartH + 14}" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.45)" font-family="Plus Jakarta Sans">${name.split(' ')[0]}</text>`;
     }).join('');
-
     document.getElementById('demandChart').innerHTML =
       `<svg viewBox="0 0 ${totalW} ${totalH}" style="width:100%;display:block;overflow:visible">${yLabels}${bars}</svg>`;
-  })();
+  }
 
-  // ── Search Trends line chart (simulated monthly data) ────────────────────────
-  (function drawLineChart() {
-    const months = ['Aug','Sep','Oct','Nov','Dec','Jan','Feb'];
-    const values = [110, 128, 142, 158, 175, 204, 240];
+  drawVerticalBars(demandData.monthly);
 
-    const W = 420; const H = 160;
-    const pL = 36; const pR = 12; const pT = 14; const pB = 28;
-    const cW = W - pL - pR;
-    const cH = H - pT - pB;
-    const minV = 80; const maxV = 260;
+  window.setDemandPeriod = function(period, el) {
+    document.querySelectorAll('#demandDropdown .period-option').forEach(o => o.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('demandPeriodLabel').textContent = el.textContent;
+    document.getElementById('demandDropdown').classList.remove('open');
+    drawVerticalBars(demandData[period]);
+  };
 
-    const toX = i  => pL + (i / (months.length - 1)) * cW;
-    const toY = v  => pT + (1 - (v - minV) / (maxV - minV)) * cH;
+  // ── Search Trends line chart ─────────────────────────────────────────────────
+  const trendsData = {
+    monthly: { labels: ['Aug','Sep','Oct','Nov','Dec','Jan','Feb'], values: [110,128,142,158,175,204,240], title: 'Search Trends (Last 7 Months)' },
+    weekly:  { labels: ['Wk1','Wk2','Wk3','Wk4','Wk5','Wk6','Wk7'], values: [38,42,39,50,47,55,61], title: 'Search Trends (Last 7 Weeks)' },
+    daily:   { labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], values: [18,22,19,28,25,20,16], title: 'Search Trends (Last 7 Days)' },
+  };
 
-    // Grid lines
-    const ySteps  = 4;
-    const grid    = Array.from({ length: ySteps + 1 }, (_, i) => {
-      const val = Math.round(minV + (maxV - minV) * i / ySteps);
+  function drawLineChart(data) {
+    const { labels, values, title } = data;
+    document.getElementById('trendChartTitle').textContent = title;
+    const W = 420, H = 160, pL = 36, pR = 12, pT = 14, pB = 28;
+    const cW = W - pL - pR, cH = H - pT - pB;
+    const minV = Math.floor(Math.min(...values) * 0.85);
+    const maxV = Math.ceil(Math.max(...values) * 1.1);
+    const toX = i => pL + (i / (labels.length - 1)) * cW;
+    const toY = v => pT + (1 - (v - minV) / (maxV - minV)) * cH;
+    const grid = Array.from({ length: 5 }, (_, i) => {
+      const val = Math.round(minV + (maxV - minV) * i / 4);
       const y   = toY(val);
       return `<line x1="${pL}" y1="${y}" x2="${W - pR}" y2="${y}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
         <text x="${pL - 6}" y="${y + 4}" text-anchor="end" font-size="9" fill="rgba(255,255,255,0.35)" font-family="Plus Jakarta Sans">${val}</text>`;
     }).join('');
-
-    // X labels
-    const xLabels = months.map((m, i) =>
+    const xLabels = labels.map((m, i) =>
       `<text x="${toX(i)}" y="${H - 6}" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.45)" font-family="Plus Jakarta Sans">${m}</text>`
     ).join('');
-
-    // Area fill
-    const ptArr = values.map((v, i) => `${toX(i)},${toY(v)}`);
-    const areaPath = `M ${toX(0)},${pT + cH} ` +
-      values.map((v, i) => `L ${toX(i)},${toY(v)}`).join(' ') +
-      ` L ${toX(values.length - 1)},${pT + cH} Z`;
-
-    // Dots
-    const dots = values.map((v, i) =>
-      `<circle cx="${toX(i)}" cy="${toY(v)}" r="4.5" fill="#00c9a7" stroke="var(--card)" stroke-width="2.5"/>`
-    ).join('');
-
+    const ptArr    = values.map((v, i) => `${toX(i)},${toY(v)}`);
+    const areaPath = `M ${toX(0)},${pT + cH} ` + values.map((v, i) => `L ${toX(i)},${toY(v)}`).join(' ') + ` L ${toX(values.length - 1)},${pT + cH} Z`;
+    const dots     = values.map((v, i) => `<circle cx="${toX(i)}" cy="${toY(v)}" r="4.5" fill="#00c9a7" stroke="var(--card)" stroke-width="2.5"/>`).join('');
     document.getElementById('trendsChart').innerHTML = `
       <svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block">
-        <defs>
-          <linearGradient id="lineAreaGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#00c9a7" stop-opacity="0.18"/>
-            <stop offset="100%" stop-color="#00c9a7" stop-opacity="0"/>
-          </linearGradient>
-        </defs>
-        ${grid}
-        ${xLabels}
+        <defs><linearGradient id="lineAreaGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#00c9a7" stop-opacity="0.18"/>
+          <stop offset="100%" stop-color="#00c9a7" stop-opacity="0"/>
+        </linearGradient></defs>
+        ${grid}${xLabels}
         <path d="${areaPath}" fill="url(#lineAreaGrad)"/>
         <polyline points="${ptArr.join(' ')}" fill="none" stroke="#00c9a7" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
         ${dots}
       </svg>`;
-  })();
+  }
+
+  drawLineChart(trendsData.monthly);
+
+  window.setTrendsPeriod = function(period, el) {
+    document.querySelectorAll('#trendsDropdown .period-option').forEach(o => o.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('trendsPeriodLabel').textContent = el.textContent;
+    document.getElementById('trendsDropdown').classList.remove('open');
+    drawLineChart(trendsData[period]);
+  };
+
+  window.togglePeriodDropdown = function(id) {
+    const el = document.getElementById(id);
+    const isOpen = el.classList.contains('open');
+    document.querySelectorAll('.period-dropdown.open').forEach(d => d.classList.remove('open'));
+    if (!isOpen) el.classList.add('open');
+  };
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.period-dropdown'))
+      document.querySelectorAll('.period-dropdown.open').forEach(d => d.classList.remove('open'));
+  });
 
   // ── Key Insights ─────────────────────────────────────────────────────────────
   const avgRentDays = 12; // simulated

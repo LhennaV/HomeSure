@@ -11,6 +11,7 @@ const FAKE_USERS = [
     email: 'buyer@homesure.com', password: 'buyer1234',
     phone: '09171234567', avatar: null, verified: true,
     isVerified: true, verifiedAt: '2025-11-20', verificationExpiry: '2026-05-20',
+    phoneVerified: true,
     savedListings: ['prop-002', 'prop-004', 'prop-006', 'prop-007', 'prop-009'], joinedAt: '2025-11-10',
   },
   {
@@ -28,7 +29,7 @@ const FAKE_USERS = [
     phone: '09191234567', avatar: null, verified: true,
     accountStatus: 'verified', listings: ['prop-001', 'prop-002', 'prop-003', 'prop-006', 'prop-007', 'prop-008', 'prop-014', 'prop-015'],
     joinedAt: '2025-10-01',
-    verifiedAt: '2025-10-15', verificationExpiry: '2026-04-20',
+    verifiedAt: '2025-10-15', verificationExpiry: '2026-05-20',
     verificationDocs: [
       { label: 'Valid Government ID',           url: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600' },
       { label: 'Transfer Certificate of Title', url: 'https://images.unsplash.com/photo-1586339949916-3e9457bef6d3?w=600' },
@@ -373,6 +374,10 @@ function saveSession(user) {
     verified: user.verified, accountStatus: user.accountStatus || null,
     savedListings: user.savedListings || [],
     avatar: user.avatar || null,
+    isVerified: user.isVerified || false,
+    verifiedAt: user.verifiedAt || null,
+    verificationExpiry: user.verificationExpiry || null,
+    phoneVerified: user.phoneVerified || false,
   };
   sessionStorage.setItem('homesure_user', JSON.stringify(session));
 }

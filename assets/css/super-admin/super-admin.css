@@ -19,9 +19,18 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); colo
 @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
 
 /* ── Page Header ── */
-.page-header { margin-bottom: 24px; animation: fadeUp .3s ease both; }
+.page-header { margin-bottom: 24px; animation: fadeUp .3s ease both; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .page-title  { font-size: 22px; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
 .page-sub    { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.export-btn {
+  display: flex; align-items: center; gap: 7px; flex-shrink: 0;
+  padding: 9px 18px; border-radius: 9px;
+  background: var(--teal); border: none; color: #fff;
+  font-family: inherit; font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: opacity 0.18s;
+}
+.export-btn:hover { opacity: 0.85; }
+.export-btn svg { width: 15px; height: 15px; }
 
 /* ── Stat Grid ── */
 .stat-grid {

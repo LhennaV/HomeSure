@@ -198,6 +198,25 @@
     });
   });
 
+  // ── SMS toggle: requires verified phone ───────────────────────────────────
+  (function initSmsToggle() {
+    const smsInput = document.getElementById('notifSms');
+    const smsRow   = smsInput.closest('.setting-row');
+    if (!user.phoneVerified) {
+      smsInput.disabled = true;
+      smsInput.checked  = false;
+      document.getElementById('notifSms-lbl').textContent = 'Off';
+      document.getElementById('notifSms-lbl').className   = 'toggle-state';
+      let hint = smsRow.querySelector('.sms-hint');
+      if (!hint) {
+        hint = document.createElement('div');
+        hint.className = 'sms-hint';
+        hint.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Verify your phone number in <a href="profile.html">My Profile</a> to enable SMS`;
+        smsRow.querySelector('.setting-info').appendChild(hint);
+      }
+    }
+  })();
+
   // ── Notifications ─────────────────────────────────────────────────────────
   function updateToggleLabel(input, labelId) {
     const lbl = document.getElementById(labelId);

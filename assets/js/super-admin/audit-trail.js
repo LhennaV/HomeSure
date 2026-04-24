@@ -56,6 +56,43 @@
 
   renderTable();
 
+  // ── Export CSV ────────────────────────────────────────────────────────────
+  window.exportAuditCSV = function () {
+    const q = searchQuery.toLowerCase();
+    const filtered = FAKE_AUDIT_TRAIL.filter(e => {
+      const matchType   = auditFilter === 'all' || e.type === auditFilter;
+      const matchSearch = !q ||
+        e.actor.toLowerCase().includes(q) ||
+        e.action.toLowerCase().includes(q) ||
+        (e.ipAddress || '').includes(q) ||
+        e.details.toLowerCase().includes(q);
+      return matchType && matchSearch;
+    });
+
+    const headers = ['Timestamp', 'Actor', 'Role', 'Action', 'IP Address', 'Status', 'Details'];
+    const rows = filtered.map(e => [
+      e.timestamp,
+      e.actor,
+      e.actorRole === 'superadmin' ? 'Super Admin' : 'Admin',
+      e.action,
+      e.ipAddress || '',
+      e.status,
+      e.details,
+    ]);
+
+    downloadCSV([headers, ...rows], 'audit-trail.csv');
+  };
+
+  function downloadCSV(rows, filename) {
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
   // Filter tabs
   document.getElementById('auditTabs').addEventListener('click', e => {
     const btn = e.target.closest('.filter-tab');

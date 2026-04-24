@@ -95,7 +95,7 @@
       background: #00c9a7; display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
     }
-    .form-card-icon svg { width: 15px; height: 15px; color: var(--teal); }
+    .form-card-icon svg { width: 15px; height: 15px; color: #fff; }
     .form-card-title { font-size: 13.5px; font-weight: 700; color: var(--text); }
     .form-card-sub   { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
     .form-card-body  { padding: 20px 22px; display: flex; flex-direction: column; gap: 16px; }
