@@ -155,6 +155,117 @@ const testimonials = [
   },
 ];
 
+// GeoJSON polygons for all 24 barangays of Sta. Maria, Bulacan (approximate boundaries)
+const barangayGeoJSON = {
+  type: 'FeatureCollection',
+  features: [
+    { type:'Feature', properties:{ name:'Silangan',        count:4  }, geometry:{ type:'Polygon', coordinates:[[ [120.9510,14.8475],[120.9640,14.8475],[120.9660,14.8550],[120.9595,14.8650],[120.9530,14.8620],[120.9510,14.8540],[120.9510,14.8475] ]] } },
+    { type:'Feature', properties:{ name:'Mag-asawang Sapa',count:6  }, geometry:{ type:'Polygon', coordinates:[[ [120.9400,14.8370],[120.9510,14.8370],[120.9510,14.8475],[120.9450,14.8480],[120.9400,14.8440],[120.9400,14.8370] ]] } },
+    { type:'Feature', properties:{ name:'Pulong Buhangin', count:5  }, geometry:{ type:'Polygon', coordinates:[[ [120.9640,14.8475],[120.9920,14.8475],[120.9960,14.8430],[120.9960,14.8310],[120.9800,14.8290],[120.9660,14.8350],[120.9640,14.8425],[120.9640,14.8475] ]] } },
+    { type:'Feature', properties:{ name:'Cay Pombo',       count:3  }, geometry:{ type:'Polygon', coordinates:[[ [120.9510,14.8370],[120.9570,14.8370],[120.9640,14.8425],[120.9640,14.8475],[120.9510,14.8475],[120.9510,14.8370] ]] } },
+    { type:'Feature', properties:{ name:'Balasing',        count:3  }, geometry:{ type:'Polygon', coordinates:[[ [120.9800,14.8290],[120.9960,14.8310],[120.9980,14.8180],[120.9870,14.8160],[120.9780,14.8200],[120.9800,14.8290] ]] } },
+    { type:'Feature', properties:{ name:'Bulac',           count:2  }, geometry:{ type:'Polygon', coordinates:[[ [120.9870,14.8160],[120.9980,14.8180],[121.0020,14.8100],[121.0000,14.8010],[120.9900,14.8010],[120.9870,14.8090],[120.9870,14.8160] ]] } },
+    { type:'Feature', properties:{ name:'Caysio',          count:5  }, geometry:{ type:'Polygon', coordinates:[[ [120.9400,14.8370],[120.9510,14.8370],[120.9510,14.8310],[120.9455,14.8270],[120.9390,14.8280],[120.9390,14.8370],[120.9400,14.8370] ]] } },
+    { type:'Feature', properties:{ name:'Manggahan',       count:7  }, geometry:{ type:'Polygon', coordinates:[[ [120.9280,14.8350],[120.9390,14.8370],[120.9390,14.8280],[120.9360,14.8230],[120.9280,14.8230],[120.9280,14.8350] ]] } },
+    { type:'Feature', properties:{ name:'Santa Cruz',      count:8  }, geometry:{ type:'Polygon', coordinates:[[ [120.9280,14.8230],[120.9360,14.8230],[120.9420,14.8200],[120.9420,14.8120],[120.9310,14.8110],[120.9270,14.8140],[120.9270,14.8230],[120.9280,14.8230] ]] } },
+    { type:'Feature', properties:{ name:'Guyong',          count:9  }, geometry:{ type:'Polygon', coordinates:[[ [120.9455,14.8270],[120.9510,14.8310],[120.9570,14.8310],[120.9620,14.8270],[120.9620,14.8200],[120.9540,14.8180],[120.9455,14.8200],[120.9455,14.8270] ]] } },
+    { type:'Feature', properties:{ name:'Catmon',          count:6  }, geometry:{ type:'Polygon', coordinates:[[ [120.9620,14.8270],[120.9660,14.8350],[120.9800,14.8290],[120.9780,14.8200],[120.9660,14.8150],[120.9620,14.8200],[120.9620,14.8270] ]] } },
+    { type:'Feature', properties:{ name:'San Jose Patag',  count:4  }, geometry:{ type:'Polygon', coordinates:[[ [120.9510,14.8200],[120.9540,14.8180],[120.9620,14.8200],[120.9620,14.8130],[120.9560,14.8100],[120.9510,14.8120],[120.9490,14.8160],[120.9510,14.8200] ]] } },
+    { type:'Feature', properties:{ name:'Santa Clara',     count:5  }, geometry:{ type:'Polygon', coordinates:[[ [120.9270,14.8140],[120.9310,14.8110],[120.9420,14.8120],[120.9420,14.8060],[120.9360,14.8020],[120.9270,14.8030],[120.9260,14.8090],[120.9270,14.8140] ]] } },
+    { type:'Feature', properties:{ name:'Poblacion',       count:12 }, geometry:{ type:'Polygon', coordinates:[[ [120.9420,14.8120],[120.9490,14.8160],[120.9510,14.8120],[120.9510,14.8060],[120.9450,14.8030],[120.9420,14.8060],[120.9420,14.8120] ]] } },
+    { type:'Feature', properties:{ name:'Bagbaguin',       count:7  }, geometry:{ type:'Polygon', coordinates:[[ [120.9360,14.8020],[120.9420,14.8060],[120.9420,14.8000],[120.9390,14.7960],[120.9340,14.7960],[120.9320,14.8000],[120.9360,14.8020] ]] } },
+    { type:'Feature', properties:{ name:'Tumana',          count:6  }, geometry:{ type:'Polygon', coordinates:[[ [120.9450,14.8030],[120.9510,14.8060],[120.9560,14.8040],[120.9570,14.7980],[120.9510,14.7950],[120.9450,14.7970],[120.9450,14.8030] ]] } },
+    { type:'Feature', properties:{ name:'Parada',          count:5  }, geometry:{ type:'Polygon', coordinates:[[ [120.9560,14.8040],[120.9620,14.8130],[120.9660,14.8150],[120.9700,14.8060],[120.9660,14.7990],[120.9580,14.7960],[120.9570,14.7980],[120.9560,14.8040] ]] } },
+    { type:'Feature', properties:{ name:'San Vicente',     count:4  }, geometry:{ type:'Polygon', coordinates:[[ [120.9700,14.8060],[120.9780,14.8090],[120.9870,14.8090],[120.9900,14.8010],[120.9800,14.7940],[120.9680,14.7920],[120.9660,14.7990],[120.9700,14.8060] ]] } },
+    { type:'Feature', properties:{ name:'Lalakhan',        count:3  }, geometry:{ type:'Polygon', coordinates:[[ [120.9220,14.8030],[120.9260,14.8090],[120.9270,14.8030],[120.9260,14.7970],[120.9220,14.7960],[120.9210,14.7990],[120.9220,14.8030] ]] } },
+    { type:'Feature', properties:{ name:'San Gabriel',     count:5  }, geometry:{ type:'Polygon', coordinates:[[ [120.9320,14.8000],[120.9390,14.7960],[120.9390,14.7910],[120.9340,14.7870],[120.9290,14.7880],[120.9280,14.7930],[120.9320,14.8000] ]] } },
+    { type:'Feature', properties:{ name:'Tabing Bakod',    count:3  }, geometry:{ type:'Polygon', coordinates:[[ [120.9260,14.7970],[120.9320,14.8000],[120.9280,14.7930],[120.9230,14.7900],[120.9220,14.7960],[120.9260,14.7970] ]] } },
+    { type:'Feature', properties:{ name:'Buenavista',      count:4  }, geometry:{ type:'Polygon', coordinates:[[ [120.9510,14.7950],[120.9580,14.7960],[120.9660,14.7990],[120.9680,14.7920],[120.9600,14.7870],[120.9510,14.7880],[120.9480,14.7910],[120.9510,14.7950] ]] } },
+    { type:'Feature', properties:{ name:'Camangyanan',     count:5  }, geometry:{ type:'Polygon', coordinates:[[ [120.9390,14.7910],[120.9450,14.7970],[120.9510,14.7950],[120.9480,14.7910],[120.9450,14.7870],[120.9400,14.7870],[120.9390,14.7910] ]] } },
+    { type:'Feature', properties:{ name:'Mahabang Parang', count:2  }, geometry:{ type:'Polygon', coordinates:[[ [120.9230,14.7900],[120.9290,14.7880],[120.9340,14.7870],[120.9400,14.7870],[120.9390,14.7820],[120.9330,14.7800],[120.9240,14.7820],[120.9220,14.7860],[120.9230,14.7900] ]] } },
+  ]
+};
+
+// Exact 24 barangays of Sta. Maria, Bulacan
+const STA_MARIA_BARANGAYS = new Set([
+  'Bagbaguin','Balasing','Buenavista','Bulac','Camangyanan','Catmon',
+  'Cay Pombo','Caysio','Guyong','Lalakhan','Mag-asawang Sapa',
+  'Mahabang Parang','Manggahan','Parada','Poblacion','Pulong Buhangin',
+  'San Gabriel','San Jose Patag','San Vicente','Santa Clara','Santa Cruz',
+  'Silangan','Tabing Bakod','Tumana',
+]);
+
+// Name aliases — OSM may use these alternate spellings
+const BARANGAY_ALIAS = {
+  'Sta. Clara':'Santa Clara','Sta. Cruz':'Santa Cruz',
+  'Cay-Pombo':'Cay Pombo','Mag-Asawang Sapa':'Mag-asawang Sapa',
+  'Mahabang-Parang':'Mahabang Parang','Tabing-Bakod':'Tabing Bakod',
+  'San Jose-Patag':'San Jose Patag',
+};
+
+// Listing count per barangay — merged with Overpass API data
+const barangayListings = {
+  'Poblacion':12,'Guyong':9,'Santa Cruz':8,'Manggahan':7,'Bagbaguin':7,
+  'Mag-asawang Sapa':6,'Tumana':6,'Catmon':6,'Caysio':5,'Santa Clara':5,
+  'San Gabriel':5,'Camangyanan':5,'Parada':5,'Silangan':4,'San Jose Patag':4,
+  'San Vicente':4,'Buenavista':4,'Pulong Buhangin':3,'Cay Pombo':3,
+  'Balasing':3,'Lalakhan':3,'Tabing Bakod':3,'Bulac':2,'Mahabang Parang':2,
+};
+
+// Assemble ordered OSM way segments into a single closed ring
+function assembleRing(ways) {
+  if (!ways || !ways.length) return null;
+  if (ways.length === 1) {
+    const w = ways[0]; if (w.length < 3) return null;
+    const f = w[0], l = w[w.length-1];
+    return (f[0]===l[0]&&f[1]===l[1]) ? w : [...w, f];
+  }
+  let ring = [...ways[0]];
+  const rem = [...ways.slice(1)];
+  while (rem.length) {
+    const tail = ring[ring.length-1]; let found = false;
+    for (let i = 0; i < rem.length; i++) {
+      const w = rem[i];
+      if (Math.abs(w[0][0]-tail[0])<1e-7 && Math.abs(w[0][1]-tail[1])<1e-7)
+        { ring.push(...w.slice(1)); rem.splice(i,1); found=true; break; }
+      if (Math.abs(w[w.length-1][0]-tail[0])<1e-7 && Math.abs(w[w.length-1][1]-tail[1])<1e-7)
+        { ring.push(...[...w].reverse().slice(1)); rem.splice(i,1); found=true; break; }
+    }
+    if (!found) break;
+  }
+  if (ring.length < 4) return null;
+  const f = ring[0], l = ring[ring.length-1];
+  if (Math.abs(f[0]-l[0])>1e-7||Math.abs(f[1]-l[1])>1e-7) ring.push(f);
+  return ring;
+}
+
+// Convert Overpass API `out geom` response to GeoJSON — only Sta. Maria barangays
+function overpassToGeoJSON(osm) {
+  const features = [];
+  (osm.elements || []).forEach(el => {
+    if (el.type !== 'relation') return;
+    let name = el.tags?.name || el.tags?.['name:en'] || ''; if (!name) return;
+    name = name.replace(/^(Barangay|Brgy\.?)\s+/i, '').trim();
+    if (BARANGAY_ALIAS[name]) name = BARANGAY_ALIAS[name];
+    if (!STA_MARIA_BARANGAYS.has(name)) return;
+
+    // `out geom` puts geometry directly on each member way; skip inner rings (holes)
+    const outerWays = (el.members || [])
+      .filter(m => m.type === 'way' && m.role !== 'inner' && m.geometry && m.geometry.length > 1)
+      .map(m => m.geometry.map(g => [g.lon, g.lat]));
+    if (!outerWays.length) return;
+
+    const ring = assembleRing(outerWays);
+    if (!ring || ring.length < 4) return;
+    features.push({
+      type: 'Feature',
+      properties: { name, count: barangayListings[name] || 2 },
+      geometry: { type: 'Polygon', coordinates: [ring] },
+    });
+  });
+  return { type: 'FeatureCollection', features };
+}
+
 // ── Theme init (read localStorage, default dark) ──────────────────────────────
 (function () {
   const t = localStorage.getItem('hs-theme') || 'dark';
@@ -278,6 +389,147 @@ function HeroCards() {
   );
 }
 
+function HeroMap() {
+  const mapRef     = useRef(null);
+  const mapInstRef = useRef(null);
+  const [tooltip, setTooltip] = useState(null);
+
+  useEffect(() => {
+    if (!mapRef.current || mapInstRef.current) return;
+
+    const map = new maplibregl.Map({
+      container:          mapRef.current,
+      style:              'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+      center:             [120.963, 14.820],
+      zoom:               12.6,
+      pitch:              35,
+      bearing:            0,
+      antialias:          true,
+      attributionControl: false,
+    });
+
+
+    map.on('load', () => {
+      // Start with fallback data so all 24 barangay outlines are visible immediately
+      map.addSource('barangays', { type: 'geojson', data: barangayGeoJSON, generateId: true });
+
+      // Layer 1 — flat ground fill (establishes the outline footprint)
+      map.addLayer({
+        id:   'barangays-fill',
+        type: 'fill',
+        source: 'barangays',
+        paint: {
+          'fill-color': [
+            'interpolate', ['linear'], ['get', 'count'],
+            0, '#0a2e26', 6, '#009e83', 12, '#00c9a7',
+          ],
+          'fill-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 0.35, 0.18],
+        },
+      });
+
+      // Layer 2 — crisp teal outline for each barangay boundary
+      map.addLayer({
+        id:   'barangays-outline',
+        type: 'line',
+        source: 'barangays',
+        paint: {
+          'line-color': '#00c9a7',
+          'line-width': 1.6,
+          'line-opacity': 0.85,
+        },
+      });
+
+      // Layer 3 — 3D extrusion rising from the outline footprint
+      map.addLayer({
+        id:   'barangays-3d',
+        type: 'fill-extrusion',
+        source: 'barangays',
+        paint: {
+          'fill-extrusion-color': [
+            'interpolate', ['linear'], ['get', 'count'],
+            0, '#0a2e26', 4, '#005c49', 8, '#009e83', 12, '#00c9a7',
+          ],
+          'fill-extrusion-height':  ['*', ['get', 'count'], 50],
+          'fill-extrusion-base':    0,
+          'fill-extrusion-opacity': 0.88,
+        },
+      });
+
+      // Layer 4 — barangay name labels
+      map.addLayer({
+        id:     'barangay-labels',
+        type:   'symbol',
+        source: 'barangays',
+        layout: {
+          'text-field':     ['get', 'name'],
+          'text-size':      10,
+          'text-anchor':    'center',
+          'text-max-width': 6,
+        },
+        paint: {
+          'text-color':      '#ffffff',
+          'text-halo-color': 'rgba(0,0,0,0.7)',
+          'text-halo-width': 1.2,
+        },
+      });
+
+      // Hover — tooltip + ground fill highlight (works at any camera angle)
+      let hoveredId = null;
+      const setHover = (id) => {
+        if (hoveredId !== null) map.setFeatureState({ source: 'barangays', id: hoveredId }, { hover: false });
+        hoveredId = id;
+        if (hoveredId !== null) map.setFeatureState({ source: 'barangays', id: hoveredId }, { hover: true });
+      };
+      map.on('mousemove', 'barangays-fill', (e) => {
+        map.getCanvas().style.cursor = 'pointer';
+        const p = e.features[0].properties;
+        setTooltip({ name: p.name, count: p.count });
+        setHover(e.features[0].id);
+      });
+      map.on('mouseleave', 'barangays-fill', () => {
+        map.getCanvas().style.cursor = '';
+        setTooltip(null);
+        setHover(null);
+      });
+
+      // Fetch real OSM barangay boundaries and swap in when ready
+      const q = `[out:json][timeout:90];relation["admin_level"="10"]["boundary"="administrative"](14.773,120.912,14.876,121.015);out geom;`;
+      const body = 'data=' + encodeURIComponent(q);
+      const tryFetch = url => fetch(url, { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body });
+      tryFetch('https://overpass-api.de/api/interpreter')
+        .catch(() => tryFetch('https://overpass.kumi.systems/api/interpreter'))
+        .then(r => r.json())
+        .then(data => {
+          const gj = overpassToGeoJSON(data);
+          console.log('[HeroMap] Overpass:', data.elements?.length, 'elements,', gj.features.length, 'matched barangays');
+          if (gj.features.length > 0) map.getSource('barangays').setData(gj);
+        })
+        .catch(() => {});
+    });
+
+    mapInstRef.current = map;
+    return () => {
+      if (mapInstRef.current) { mapInstRef.current.remove(); mapInstRef.current = null; }
+    };
+  }, []);
+
+  const total = barangayGeoJSON.features.reduce((s, f) => s + f.properties.count, 0);
+
+  return React.createElement(
+    'div', { className: 'hero-map-wrap' },
+    React.createElement('div', { ref: mapRef, className: 'hero-map-el' }),
+    tooltip && React.createElement(
+      'div', { className: 'map-hover-tip' },
+      React.createElement('div', { className: 'mp-name' }, tooltip.name),
+      React.createElement('div', { className: 'mp-count' }, `${tooltip.count} listings`),
+    ),
+    React.createElement('div', { className: 'map-badge' },
+      React.createElement('span', { className: 'map-badge-dot' }),
+      `${total} listings · 24 barangays`,
+    ),
+  );
+}
+
 const sunSVG  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
 const moonSVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
 
@@ -332,8 +584,10 @@ function Hero() {
   return React.createElement(
     "section",
     { className: "hero" },
+    React.createElement(HeroMap),
+    React.createElement("div", { className: "hero-overlay" }),
 
-    // ── Left column ──
+    // ── Content ──
     React.createElement(
       "div",
       { className: "hero-left" },
@@ -394,10 +648,6 @@ function Hero() {
       ),
     ),
 
-    // ── Right column — Rotating Wheel ──
-    React.createElement("div", { className: "hero-right" },
-      React.createElement(HeroCards),
-    ),
   );
 }
 
