@@ -57,6 +57,39 @@ const properties = [
   },
 ];
 
+const bentoListings = [
+  {
+    badge:'For Sale', badgeType:'sale',
+    price:'₱4,500,000', name:'4BR Modern House', barangay:'Pulong Buhangin',
+    beds:4, baths:3,
+    img:'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=900&q=80',
+  },
+  {
+    badge:'For Rent', badgeType:'rent',
+    price:'₱15,000/mo', name:'2BR Apartment', barangay:'Poblacion',
+    beds:2, baths:1,
+    img:'https://images.unsplash.com/photo-1560185893-a55cbc8c57e8?w=600&q=80',
+  },
+  {
+    badge:'For Sale', badgeType:'sale',
+    price:'₱2,800,000', name:'3BR Townhouse', barangay:'Guyong',
+    beds:3, baths:2,
+    img:'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&q=80',
+  },
+  {
+    badge:'For Rent', badgeType:'rent',
+    price:'₱8,000/mo', name:'Studio Unit', barangay:'Bagbaguin',
+    beds:1, baths:1,
+    img:'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600&q=80',
+  },
+  {
+    badge:'New', badgeType:'new',
+    price:'₱1,900,000', name:'2BR Condo Unit', barangay:'Tumana',
+    beds:2, baths:1,
+    img:'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600&q=80',
+  },
+];
+
 const categories = [
   {
     name: "Houses",
@@ -155,34 +188,218 @@ const testimonials = [
   },
 ];
 
-// GeoJSON polygons for all 24 barangays of Sta. Maria, Bulacan (approximate boundaries)
+// GeoJSON polygons for all 24 barangays of Sta. Maria, Bulacan
+// Traced from PSA/NAMRIA reference map
+// lon = 120.910 + px * 0.000171,  lat = 14.895 - py * 0.000185
 const barangayGeoJSON = {
   type: 'FeatureCollection',
   features: [
-    { type:'Feature', properties:{ name:'Silangan',        count:4  }, geometry:{ type:'Polygon', coordinates:[[ [120.9510,14.8475],[120.9640,14.8475],[120.9660,14.8550],[120.9595,14.8650],[120.9530,14.8620],[120.9510,14.8540],[120.9510,14.8475] ]] } },
-    { type:'Feature', properties:{ name:'Mag-asawang Sapa',count:6  }, geometry:{ type:'Polygon', coordinates:[[ [120.9400,14.8370],[120.9510,14.8370],[120.9510,14.8475],[120.9450,14.8480],[120.9400,14.8440],[120.9400,14.8370] ]] } },
-    { type:'Feature', properties:{ name:'Pulong Buhangin', count:5  }, geometry:{ type:'Polygon', coordinates:[[ [120.9640,14.8475],[120.9920,14.8475],[120.9960,14.8430],[120.9960,14.8310],[120.9800,14.8290],[120.9660,14.8350],[120.9640,14.8425],[120.9640,14.8475] ]] } },
-    { type:'Feature', properties:{ name:'Cay Pombo',       count:3  }, geometry:{ type:'Polygon', coordinates:[[ [120.9510,14.8370],[120.9570,14.8370],[120.9640,14.8425],[120.9640,14.8475],[120.9510,14.8475],[120.9510,14.8370] ]] } },
-    { type:'Feature', properties:{ name:'Balasing',        count:3  }, geometry:{ type:'Polygon', coordinates:[[ [120.9800,14.8290],[120.9960,14.8310],[120.9980,14.8180],[120.9870,14.8160],[120.9780,14.8200],[120.9800,14.8290] ]] } },
-    { type:'Feature', properties:{ name:'Bulac',           count:2  }, geometry:{ type:'Polygon', coordinates:[[ [120.9870,14.8160],[120.9980,14.8180],[121.0020,14.8100],[121.0000,14.8010],[120.9900,14.8010],[120.9870,14.8090],[120.9870,14.8160] ]] } },
-    { type:'Feature', properties:{ name:'Caysio',          count:5  }, geometry:{ type:'Polygon', coordinates:[[ [120.9400,14.8370],[120.9510,14.8370],[120.9510,14.8310],[120.9455,14.8270],[120.9390,14.8280],[120.9390,14.8370],[120.9400,14.8370] ]] } },
-    { type:'Feature', properties:{ name:'Manggahan',       count:7  }, geometry:{ type:'Polygon', coordinates:[[ [120.9280,14.8350],[120.9390,14.8370],[120.9390,14.8280],[120.9360,14.8230],[120.9280,14.8230],[120.9280,14.8350] ]] } },
-    { type:'Feature', properties:{ name:'Santa Cruz',      count:8  }, geometry:{ type:'Polygon', coordinates:[[ [120.9280,14.8230],[120.9360,14.8230],[120.9420,14.8200],[120.9420,14.8120],[120.9310,14.8110],[120.9270,14.8140],[120.9270,14.8230],[120.9280,14.8230] ]] } },
-    { type:'Feature', properties:{ name:'Guyong',          count:9  }, geometry:{ type:'Polygon', coordinates:[[ [120.9455,14.8270],[120.9510,14.8310],[120.9570,14.8310],[120.9620,14.8270],[120.9620,14.8200],[120.9540,14.8180],[120.9455,14.8200],[120.9455,14.8270] ]] } },
-    { type:'Feature', properties:{ name:'Catmon',          count:6  }, geometry:{ type:'Polygon', coordinates:[[ [120.9620,14.8270],[120.9660,14.8350],[120.9800,14.8290],[120.9780,14.8200],[120.9660,14.8150],[120.9620,14.8200],[120.9620,14.8270] ]] } },
-    { type:'Feature', properties:{ name:'San Jose Patag',  count:4  }, geometry:{ type:'Polygon', coordinates:[[ [120.9510,14.8200],[120.9540,14.8180],[120.9620,14.8200],[120.9620,14.8130],[120.9560,14.8100],[120.9510,14.8120],[120.9490,14.8160],[120.9510,14.8200] ]] } },
-    { type:'Feature', properties:{ name:'Santa Clara',     count:5  }, geometry:{ type:'Polygon', coordinates:[[ [120.9270,14.8140],[120.9310,14.8110],[120.9420,14.8120],[120.9420,14.8060],[120.9360,14.8020],[120.9270,14.8030],[120.9260,14.8090],[120.9270,14.8140] ]] } },
-    { type:'Feature', properties:{ name:'Poblacion',       count:12 }, geometry:{ type:'Polygon', coordinates:[[ [120.9420,14.8120],[120.9490,14.8160],[120.9510,14.8120],[120.9510,14.8060],[120.9450,14.8030],[120.9420,14.8060],[120.9420,14.8120] ]] } },
-    { type:'Feature', properties:{ name:'Bagbaguin',       count:7  }, geometry:{ type:'Polygon', coordinates:[[ [120.9360,14.8020],[120.9420,14.8060],[120.9420,14.8000],[120.9390,14.7960],[120.9340,14.7960],[120.9320,14.8000],[120.9360,14.8020] ]] } },
-    { type:'Feature', properties:{ name:'Tumana',          count:6  }, geometry:{ type:'Polygon', coordinates:[[ [120.9450,14.8030],[120.9510,14.8060],[120.9560,14.8040],[120.9570,14.7980],[120.9510,14.7950],[120.9450,14.7970],[120.9450,14.8030] ]] } },
-    { type:'Feature', properties:{ name:'Parada',          count:5  }, geometry:{ type:'Polygon', coordinates:[[ [120.9560,14.8040],[120.9620,14.8130],[120.9660,14.8150],[120.9700,14.8060],[120.9660,14.7990],[120.9580,14.7960],[120.9570,14.7980],[120.9560,14.8040] ]] } },
-    { type:'Feature', properties:{ name:'San Vicente',     count:4  }, geometry:{ type:'Polygon', coordinates:[[ [120.9700,14.8060],[120.9780,14.8090],[120.9870,14.8090],[120.9900,14.8010],[120.9800,14.7940],[120.9680,14.7920],[120.9660,14.7990],[120.9700,14.8060] ]] } },
-    { type:'Feature', properties:{ name:'Lalakhan',        count:3  }, geometry:{ type:'Polygon', coordinates:[[ [120.9220,14.8030],[120.9260,14.8090],[120.9270,14.8030],[120.9260,14.7970],[120.9220,14.7960],[120.9210,14.7990],[120.9220,14.8030] ]] } },
-    { type:'Feature', properties:{ name:'San Gabriel',     count:5  }, geometry:{ type:'Polygon', coordinates:[[ [120.9320,14.8000],[120.9390,14.7960],[120.9390,14.7910],[120.9340,14.7870],[120.9290,14.7880],[120.9280,14.7930],[120.9320,14.8000] ]] } },
-    { type:'Feature', properties:{ name:'Tabing Bakod',    count:3  }, geometry:{ type:'Polygon', coordinates:[[ [120.9260,14.7970],[120.9320,14.8000],[120.9280,14.7930],[120.9230,14.7900],[120.9220,14.7960],[120.9260,14.7970] ]] } },
-    { type:'Feature', properties:{ name:'Buenavista',      count:4  }, geometry:{ type:'Polygon', coordinates:[[ [120.9510,14.7950],[120.9580,14.7960],[120.9660,14.7990],[120.9680,14.7920],[120.9600,14.7870],[120.9510,14.7880],[120.9480,14.7910],[120.9510,14.7950] ]] } },
-    { type:'Feature', properties:{ name:'Camangyanan',     count:5  }, geometry:{ type:'Polygon', coordinates:[[ [120.9390,14.7910],[120.9450,14.7970],[120.9510,14.7950],[120.9480,14.7910],[120.9450,14.7870],[120.9400,14.7870],[120.9390,14.7910] ]] } },
-    { type:'Feature', properties:{ name:'Mahabang Parang', count:2  }, geometry:{ type:'Polygon', coordinates:[[ [120.9230,14.7900],[120.9290,14.7880],[120.9340,14.7870],[120.9400,14.7870],[120.9390,14.7820],[120.9330,14.7800],[120.9240,14.7820],[120.9220,14.7860],[120.9230,14.7900] ]] } },
+    // ── SILANGAN – northernmost, oval tip ─────────────────────────────────────
+    { type:'Feature', properties:{ name:'Silangan', count:4 }, geometry:{ type:'Polygon', coordinates:[[
+      [120.9582,14.8905],[120.9618,14.8918],[120.9656,14.8924],[120.9695,14.8920],
+      [120.9732,14.8906],[120.9760,14.8884],[120.9776,14.8856],[120.9770,14.8826],
+      [120.9748,14.8800],[120.9716,14.8784],[120.9678,14.8778],[120.9638,14.8782],
+      [120.9602,14.8796],[120.9574,14.8820],[120.9562,14.8850],[120.9568,14.8880],
+      [120.9582,14.8905]
+    ]] } },
+    // ── MAG-ASAWANG SAPA – broad central-west ─────────────────────────────────
+    { type:'Feature', properties:{ name:'Mag-asawang Sapa', count:6 }, geometry:{ type:'Polygon', coordinates:[[
+      [120.9228,14.8862],[120.9264,14.8876],[120.9312,14.8882],[120.9365,14.8878],
+      [120.9415,14.8866],[120.9462,14.8848],[120.9508,14.8828],[120.9544,14.8804],
+      [120.9566,14.8774],[120.9568,14.8738],[120.9550,14.8704],[120.9520,14.8676],
+      [120.9480,14.8656],[120.9432,14.8644],[120.9380,14.8640],[120.9328,14.8648],
+      [120.9280,14.8664],[120.9240,14.8688],[120.9214,14.8718],[120.9205,14.8752],
+      [120.9210,14.8786],[120.9228,14.8814],[120.9228,14.8862]
+    ]] } },
+    // ── PULONG BUHANGIN – large northeast ─────────────────────────────────────
+    { type:'Feature', properties:{ name:'Pulong Buhangin', count:5 }, geometry:{ type:'Polygon', coordinates:[[
+      [120.9778,14.8906],[120.9820,14.8916],[120.9868,14.8920],[120.9920,14.8916],
+      [120.9970,14.8902],[121.0016,14.8878],[121.0054,14.8846],[121.0080,14.8808],
+      [121.0094,14.8764],[121.0094,14.8718],[121.0076,14.8672],[121.0046,14.8632],
+      [121.0006,14.8600],[120.9960,14.8578],[120.9910,14.8566],[120.9860,14.8568],
+      [120.9814,14.8582],[120.9774,14.8606],[120.9744,14.8638],[120.9726,14.8676],
+      [120.9722,14.8716],[120.9730,14.8758],[120.9752,14.8796],[120.9768,14.8838],
+      [120.9778,14.8882],[120.9778,14.8906]
+    ]] } },
+    // ── CAY POMBO – center ─────────────────────────────────────────────────────
+    { type:'Feature', properties:{ name:'Cay Pombo', count:3 }, geometry:{ type:'Polygon', coordinates:[[
+      [120.9550,14.8700],[120.9584,14.8716],[120.9624,14.8722],[120.9664,14.8718],
+      [120.9700,14.8702],[120.9726,14.8676],[120.9738,14.8642],[120.9732,14.8606],
+      [120.9712,14.8576],[120.9682,14.8556],[120.9644,14.8546],[120.9604,14.8548],
+      [120.9566,14.8562],[120.9540,14.8588],[120.9526,14.8620],[120.9528,14.8656],
+      [120.9544,14.8684],[120.9550,14.8700]
+    ]] } },
+    // ── CAYSIO – left of Cay Pombo ────────────────────────────────────────────
+    { type:'Feature', properties:{ name:'Caysio', count:5 }, geometry:{ type:'Polygon', coordinates:[[
+      [120.9210,14.8790],[120.9250,14.8800],[120.9298,14.8800],[120.9352,14.8790],
+      [120.9406,14.8772],[120.9454,14.8748],[120.9494,14.8720],[120.9524,14.8688],
+      [120.9538,14.8650],[120.9538,14.8610],[120.9524,14.8574],[120.9500,14.8546],
+      [120.9466,14.8528],[120.9424,14.8518],[120.9378,14.8516],[120.9332,14.8524],
+      [120.9288,14.8542],[120.9252,14.8566],[120.9224,14.8598],[120.9206,14.8634],
+      [120.9200,14.8674],[120.9206,14.8714],[120.9214,14.8752],[120.9210,14.8790]
+    ]] } },
+    // ── MANGGAHAN – far west, small ───────────────────────────────────────────
+    { type:'Feature', properties:{ name:'Manggahan', count:7 }, geometry:{ type:'Polygon', coordinates:[[
+      [120.9122,14.8528],[120.9148,14.8542],[120.9180,14.8548],[120.9212,14.8542],
+      [120.9238,14.8524],[120.9254,14.8498],[120.9258,14.8468],[120.9248,14.8440],
+      [120.9226,14.8418],[120.9196,14.8406],[120.9163,14.8406],[120.9134,14.8418],
+      [120.9114,14.8438],[120.9106,14.8464],[120.9110,14.8494],[120.9122,14.8528]
+    ]] } },
+    // ── BALASING – right side ─────────────────────────────────────────────────
+    { type:'Feature', properties:{ name:'Balasing', count:3 }, geometry:{ type:'Polygon', coordinates:[[
+      [120.9726,14.8640],[120.9762,14.8648],[120.9802,14.8646],[120.9842,14.8636],
+      [120.9880,14.8616],[120.9912,14.8590],[120.9934,14.8556],[120.9944,14.8516],
+      [120.9940,14.8474],[120.9922,14.8436],[120.9892,14.8404],[120.9852,14.8380],
+      [120.9806,14.8366],[120.9758,14.8362],[120.9710,14.8368],[120.9666,14.8384],
+      [120.9630,14.8408],[120.9608,14.8440],[120.9600,14.8478],[120.9608,14.8516],
+      [120.9628,14.8550],[120.9658,14.8578],[120.9694,14.8614],[120.9726,14.8640]
+    ]] } },
+    // ── BULAC – far east ──────────────────────────────────────────────────────
+    { type:'Feature', properties:{ name:'Bulac', count:2 }, geometry:{ type:'Polygon', coordinates:[[
+      [120.9946,14.8558],[120.9980,14.8566],[121.0016,14.8564],[121.0048,14.8550],
+      [121.0074,14.8526],[121.0090,14.8494],[121.0092,14.8458],[121.0080,14.8424],
+      [121.0054,14.8396],[121.0020,14.8376],[120.9982,14.8368],[120.9944,14.8372],
+      [120.9910,14.8388],[120.9884,14.8412],[120.9870,14.8444],[120.9870,14.8480],
+      [120.9882,14.8514],[120.9906,14.8542],[120.9946,14.8558]
+    ]] } },
+    // ── GUYONG – large central ─────────────────────────────────────────────────
+    { type:'Feature', properties:{ name:'Guyong', count:9 }, geometry:{ type:'Polygon', coordinates:[[
+      [120.9380,14.8518],[120.9416,14.8530],[120.9460,14.8536],[120.9506,14.8534],
+      [120.9550,14.8524],[120.9590,14.8506],[120.9622,14.8480],[120.9642,14.8448],
+      [120.9648,14.8412],[120.9638,14.8376],[120.9614,14.8346],[120.9580,14.8322],
+      [120.9538,14.8308],[120.9491,14.8302],[120.9443,14.8306],[120.9400,14.8320],
+      [120.9363,14.8342],[120.9338,14.8372],[120.9327,14.8406],[120.9330,14.8442],
+      [120.9346,14.8476],[120.9366,14.8502],[120.9380,14.8518]
+    ]] } },
+    // ── SANTA CRUZ – left of Guyong ───────────────────────────────────────────
+    { type:'Feature', properties:{ name:'Santa Cruz', count:8 }, geometry:{ type:'Polygon', coordinates:[[
+      [120.9200,14.8668],[120.9232,14.8682],[120.9270,14.8686],[120.9310,14.8680],
+      [120.9350,14.8664],[120.9384,14.8640],[120.9406,14.8608],[120.9412,14.8572],
+      [120.9400,14.8536],[120.9376,14.8508],[120.9340,14.8488],[120.9295,14.8476],
+      [120.9248,14.8474],[120.9202,14.8482],[120.9163,14.8500],[120.9135,14.8526],
+      [120.9119,14.8558],[120.9116,14.8594],[120.9126,14.8628],[120.9148,14.8654],
+      [120.9174,14.8666],[120.9200,14.8668]
+    ]] } },
+    // ── CATMON – large east ────────────────────────────────────────────────────
+    { type:'Feature', properties:{ name:'Catmon', count:6 }, geometry:{ type:'Polygon', coordinates:[[
+      [120.9650,14.8578],[120.9686,14.8586],[120.9726,14.8588],[120.9768,14.8578],
+      [120.9806,14.8558],[120.9836,14.8530],[120.9854,14.8494],[120.9858,14.8454],
+      [120.9848,14.8414],[120.9826,14.8380],[120.9794,14.8352],[120.9754,14.8332],
+      [120.9708,14.8320],[120.9658,14.8316],[120.9610,14.8322],[120.9568,14.8336],
+      [120.9535,14.8358],[120.9515,14.8388],[120.9510,14.8422],[120.9520,14.8456],
+      [120.9542,14.8486],[120.9574,14.8512],[120.9614,14.8552],[120.9650,14.8578]
+    ]] } },
+    // ── SANTA CLARA – far west ────────────────────────────────────────────────
+    { type:'Feature', properties:{ name:'Santa Clara', count:5 }, geometry:{ type:'Polygon', coordinates:[[
+      [120.9112,14.8398],[120.9142,14.8412],[120.9178,14.8420],[120.9216,14.8416],
+      [120.9250,14.8400],[120.9272,14.8374],[120.9280,14.8342],[120.9271,14.8308],
+      [120.9249,14.8280],[120.9218,14.8260],[120.9181,14.8252],[120.9143,14.8256],
+      [120.9110,14.8272],[120.9088,14.8298],[120.9080,14.8330],[120.9086,14.8362],
+      [120.9100,14.8386],[120.9112,14.8398]
+    ]] } },
+    // ── SAN JOSE PATAG – center ───────────────────────────────────────────────
+    { type:'Feature', properties:{ name:'San Jose Patag', count:4 }, geometry:{ type:'Polygon', coordinates:[[
+      [120.9336,14.8340],[120.9368,14.8350],[120.9406,14.8354],[120.9446,14.8350],
+      [120.9484,14.8338],[120.9516,14.8318],[120.9538,14.8292],[120.9547,14.8260],
+      [120.9542,14.8228],[120.9524,14.8200],[120.9496,14.8178],[120.9461,14.8164],
+      [120.9421,14.8158],[120.9380,14.8162],[120.9342,14.8174],[120.9311,14.8196],
+      [120.9292,14.8224],[120.9286,14.8256],[120.9294,14.8288],[120.9314,14.8316],
+      [120.9336,14.8340]
+    ]] } },
+    // ── POBLACION – center (town center) ──────────────────────────────────────
+    { type:'Feature', properties:{ name:'Poblacion', count:12 }, geometry:{ type:'Polygon', coordinates:[[
+      [120.9292,14.8222],[120.9316,14.8240],[120.9346,14.8250],[120.9380,14.8254],
+      [120.9416,14.8250],[120.9448,14.8238],[120.9474,14.8218],[120.9490,14.8192],
+      [120.9494,14.8162],[120.9484,14.8134],[120.9462,14.8110],[120.9432,14.8094],
+      [120.9396,14.8086],[120.9358,14.8088],[120.9322,14.8100],[120.9293,14.8122],
+      [120.9275,14.8150],[120.9270,14.8182],[120.9278,14.8210],[120.9292,14.8222]
+    ]] } },
+    // ── BAGBAGUIN ─────────────────────────────────────────────────────────────
+    { type:'Feature', properties:{ name:'Bagbaguin', count:7 }, geometry:{ type:'Polygon', coordinates:[[
+      [120.9192,14.8160],[120.9224,14.8176],[120.9262,14.8184],[120.9304,14.8184],
+      [120.9346,14.8176],[120.9384,14.8158],[120.9412,14.8132],[120.9428,14.8100],
+      [120.9430,14.8066],[120.9420,14.8034],[120.9398,14.8006],[120.9366,14.7986],
+      [120.9329,14.7976],[120.9288,14.7976],[120.9248,14.7988],[120.9214,14.8008],
+      [120.9188,14.8036],[120.9174,14.8070],[120.9172,14.8106],[120.9182,14.8138],
+      [120.9192,14.8160]
+    ]] } },
+    // ── TUMANA ────────────────────────────────────────────────────────────────
+    { type:'Feature', properties:{ name:'Tumana', count:6 }, geometry:{ type:'Polygon', coordinates:[[
+      [120.9494,14.8160],[120.9524,14.8168],[120.9558,14.8170],[120.9594,14.8164],
+      [120.9628,14.8148],[120.9654,14.8124],[120.9669,14.8093],[120.9671,14.8059],
+      [120.9660,14.8027],[120.9638,14.8000],[120.9608,14.7980],[120.9572,14.7970],
+      [120.9532,14.7968],[120.9493,14.7976],[120.9458,14.7993],[120.9432,14.8018],
+      [120.9420,14.8050],[120.9422,14.8084],[120.9436,14.8116],[120.9459,14.8142],
+      [120.9494,14.8160]
+    ]] } },
+    // ── PARADA ────────────────────────────────────────────────────────────────
+    { type:'Feature', properties:{ name:'Parada', count:5 }, geometry:{ type:'Polygon', coordinates:[[
+      [120.9672,14.8216],[120.9704,14.8224],[120.9740,14.8224],[120.9776,14.8214],
+      [120.9806,14.8196],[120.9828,14.8170],[120.9838,14.8138],[120.9834,14.8104],
+      [120.9817,14.8074],[120.9789,14.8050],[120.9754,14.8034],[120.9714,14.8026],
+      [120.9673,14.8028],[120.9635,14.8040],[120.9606,14.8061],[120.9588,14.8089],
+      [120.9582,14.8121],[120.9588,14.8153],[120.9605,14.8181],[120.9634,14.8202],
+      [120.9672,14.8216]
+    ]] } },
+    // ── SAN VICENTE – large southeast ─────────────────────────────────────────
+    { type:'Feature', properties:{ name:'San Vicente', count:4 }, geometry:{ type:'Polygon', coordinates:[[
+      [120.9842,14.8360],[120.9878,14.8370],[120.9918,14.8372],[120.9958,14.8366],
+      [120.9994,14.8350],[121.0024,14.8326],[121.0044,14.8294],[121.0050,14.8258],
+      [121.0044,14.8220],[121.0026,14.8186],[120.9998,14.8158],[120.9962,14.8138],
+      [120.9924,14.8126],[120.9882,14.8122],[120.9840,14.8126],[120.9802,14.8138],
+      [120.9770,14.8158],[120.9748,14.8185],[120.9736,14.8218],[120.9736,14.8254],
+      [120.9748,14.8288],[120.9770,14.8318],[120.9800,14.8342],[120.9842,14.8360]
+    ]] } },
+    // ── LALAKHAN – far west, small ────────────────────────────────────────────
+    { type:'Feature', properties:{ name:'Lalakhan', count:3 }, geometry:{ type:'Polygon', coordinates:[[
+      [120.9086,14.8260],[120.9112,14.8274],[120.9142,14.8280],[120.9175,14.8276],
+      [120.9204,14.8260],[120.9224,14.8234],[120.9230,14.8204],[120.9222,14.8174],
+      [120.9202,14.8150],[120.9174,14.8135],[120.9142,14.8130],[120.9110,14.8138],
+      [120.9085,14.8156],[120.9070,14.8182],[120.9068,14.8212],[120.9078,14.8240],
+      [120.9086,14.8260]
+    ]] } },
+    // ── TABING BAKOD ──────────────────────────────────────────────────────────
+    { type:'Feature', properties:{ name:'Tabing Bakod', count:3 }, geometry:{ type:'Polygon', coordinates:[[
+      [120.9174,14.8128],[120.9202,14.8140],[120.9234,14.8146],[120.9268,14.8142],
+      [120.9298,14.8126],[120.9320,14.8100],[120.9330,14.8068],[120.9326,14.8034],
+      [120.9310,14.8004],[120.9283,14.7980],[120.9250,14.7964],[120.9213,14.7958],
+      [120.9174,14.7962],[120.9140,14.7976],[120.9114,14.7998],[120.9100,14.8028],
+      [120.9097,14.8061],[120.9108,14.8093],[120.9130,14.8118],[120.9174,14.8128]
+    ]] } },
+    // ── SAN GABRIEL ───────────────────────────────────────────────────────────
+    { type:'Feature', properties:{ name:'San Gabriel', count:5 }, geometry:{ type:'Polygon', coordinates:[[
+      [120.9330,14.7974],[120.9362,14.7982],[120.9398,14.7984],[120.9434,14.7980],
+      [120.9468,14.7966],[120.9494,14.7944],[120.9508,14.7916],[120.9508,14.7885],
+      [120.9495,14.7856],[120.9472,14.7832],[120.9440,14.7816],[120.9402,14.7808],
+      [120.9362,14.7810],[120.9324,14.7822],[120.9293,14.7843],[120.9272,14.7872],
+      [120.9264,14.7905],[120.9270,14.7938],[120.9290,14.7964],[120.9330,14.7974]
+    ]] } },
+    // ── BUENAVISTA ────────────────────────────────────────────────────────────
+    { type:'Feature', properties:{ name:'Buenavista', count:4 }, geometry:{ type:'Polygon', coordinates:[[
+      [120.9434,14.7976],[120.9466,14.7984],[120.9502,14.7988],[120.9540,14.7986],
+      [120.9576,14.7976],[120.9608,14.7956],[120.9630,14.7930],[120.9640,14.7899],
+      [120.9636,14.7866],[120.9619,14.7836],[120.9592,14.7812],[120.9558,14.7796],
+      [120.9519,14.7790],[120.9480,14.7793],[120.9444,14.7806],[120.9414,14.7827],
+      [120.9395,14.7856],[120.9389,14.7888],[120.9397,14.7920],[120.9417,14.7952],
+      [120.9434,14.7976]
+    ]] } },
+    // ── CAMANGYANAN ───────────────────────────────────────────────────────────
+    { type:'Feature', properties:{ name:'Camangyanan', count:5 }, geometry:{ type:'Polygon', coordinates:[[
+      [120.9638,14.8118],[120.9668,14.8124],[120.9700,14.8122],[120.9730,14.8112],
+      [120.9756,14.8092],[120.9774,14.8064],[120.9780,14.8032],[120.9774,14.7998],
+      [120.9754,14.7968],[120.9725,14.7944],[120.9689,14.7928],[120.9649,14.7920],
+      [120.9609,14.7920],[120.9571,14.7930],[120.9540,14.7949],[120.9520,14.7974],
+      [120.9512,14.8004],[120.9518,14.8034],[120.9535,14.8062],[120.9562,14.8084],
+      [120.9598,14.8100],[120.9638,14.8118]
+    ]] } },
+    // ── MAHABANG PARANG – far southwest ───────────────────────────────────────
+    { type:'Feature', properties:{ name:'Mahabang Parang', count:2 }, geometry:{ type:'Polygon', coordinates:[[
+      [120.9108,14.7958],[120.9140,14.7970],[120.9178,14.7978],[120.9218,14.7978],
+      [120.9256,14.7966],[120.9286,14.7944],[120.9305,14.7914],[120.9310,14.7880],
+      [120.9301,14.7846],[120.9279,14.7816],[120.9248,14.7794],[120.9210,14.7781],
+      [120.9170,14.7778],[120.9130,14.7784],[120.9097,14.7800],[120.9074,14.7826],
+      [120.9064,14.7856],[120.9068,14.7888],[120.9084,14.7918],[120.9108,14.7958]
+    ]] } },
   ]
 };
 
@@ -237,6 +454,22 @@ function assembleRing(ways) {
   const f = ring[0], l = ring[ring.length-1];
   if (Math.abs(f[0]-l[0])>1e-7||Math.abs(f[1]-l[1])>1e-7) ring.push(f);
   return ring;
+}
+
+// Convert any Overpass relation to GeoJSON (no name filter — used for municipality boundary)
+function relationToGeoJSON(osm) {
+  const features = [];
+  (osm.elements || []).forEach(el => {
+    if (el.type !== 'relation') return;
+    const outerWays = (el.members || [])
+      .filter(m => m.type === 'way' && m.role !== 'inner' && m.geometry && m.geometry.length > 1)
+      .map(m => m.geometry.map(g => [g.lon, g.lat]));
+    if (!outerWays.length) return;
+    const ring = assembleRing(outerWays);
+    if (!ring || ring.length < 4) return;
+    features.push({ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [ring] } });
+  });
+  return { type: 'FeatureCollection', features };
 }
 
 // Convert Overpass API `out geom` response to GeoJSON — only Sta. Maria barangays
@@ -392,7 +625,6 @@ function HeroCards() {
 function HeroMap() {
   const mapRef     = useRef(null);
   const mapInstRef = useRef(null);
-  const [tooltip, setTooltip] = useState(null);
 
   useEffect(() => {
     if (!mapRef.current || mapInstRef.current) return;
@@ -402,109 +634,46 @@ function HeroMap() {
       style:              'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
       center:             [120.963, 14.820],
       zoom:               12.6,
-      pitch:              35,
+      pitch:              0,
       bearing:            0,
       antialias:          true,
       attributionControl: false,
+      interactive:        true,
     });
 
-
     map.on('load', () => {
-      // Start with fallback data so all 24 barangay outlines are visible immediately
-      map.addSource('barangays', { type: 'geojson', data: barangayGeoJSON, generateId: true });
+      // Sta. Maria, Bulacan boundary — tightened to actual municipality limits
+      const staMaria = { type:'FeatureCollection', features:[{ type:'Feature', properties:{}, geometry:{ type:'Polygon', coordinates:[[
+        // North — Silangan tip
+        [120.9620,14.8918],[120.9730,14.8906],[120.9790,14.8900],
+        // Pulong Buhangin northeast
+        [120.9870,14.8918],[120.9960,14.8900],[121.0050,14.8868],
+        [121.0094,14.8836],[121.0100,14.8748],[121.0092,14.8636],[121.0054,14.8594],
+        // Balasing / Bulac east
+        [121.0090,14.8458],[121.0042,14.8362],
+        // San Vicente east coast
+        [121.0170,14.8258],[121.0168,14.7958],
+        // San Vicente / Camangyanan south
+        [121.0060,14.7870],[120.9920,14.7870],[120.9820,14.7905],
+        [120.9660,14.7838],[120.9510,14.7842],
+        // San Gabriel / Tabing Bakod / Mahabang Parang south
+        [120.9360,14.7858],[120.9310,14.7808],
+        // Mahabang Parang — western edge (tightened east)
+        [120.9240,14.7790],[120.9175,14.7808],
+        // Up the western boundary — stays east of Bocaue/Balagtas/Pandi
+        [120.9172,14.8028],[120.9178,14.8220],[120.9196,14.8408],[120.9210,14.8526],
+        [120.9258,14.8552],[120.9260,14.8758],[120.9272,14.8872],
+        // Back to Silangan
+        [120.9620,14.8918],
+      ]] } }] };
 
-      // Layer 1 — flat ground fill (establishes the outline footprint)
-      map.addLayer({
-        id:   'barangays-fill',
-        type: 'fill',
-        source: 'barangays',
-        paint: {
-          'fill-color': [
-            'interpolate', ['linear'], ['get', 'count'],
-            0, '#0a2e26', 6, '#009e83', 12, '#00c9a7',
-          ],
-          'fill-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 0.35, 0.18],
-        },
-      });
-
-      // Layer 2 — crisp teal outline for each barangay boundary
-      map.addLayer({
-        id:   'barangays-outline',
-        type: 'line',
-        source: 'barangays',
-        paint: {
-          'line-color': '#00c9a7',
-          'line-width': 1.6,
-          'line-opacity': 0.85,
-        },
-      });
-
-      // Layer 3 — 3D extrusion rising from the outline footprint
-      map.addLayer({
-        id:   'barangays-3d',
-        type: 'fill-extrusion',
-        source: 'barangays',
-        paint: {
-          'fill-extrusion-color': [
-            'interpolate', ['linear'], ['get', 'count'],
-            0, '#0a2e26', 4, '#005c49', 8, '#009e83', 12, '#00c9a7',
-          ],
-          'fill-extrusion-height':  ['*', ['get', 'count'], 50],
-          'fill-extrusion-base':    0,
-          'fill-extrusion-opacity': 0.88,
-        },
-      });
-
-      // Layer 4 — barangay name labels
-      map.addLayer({
-        id:     'barangay-labels',
-        type:   'symbol',
-        source: 'barangays',
-        layout: {
-          'text-field':     ['get', 'name'],
-          'text-size':      10,
-          'text-anchor':    'center',
-          'text-max-width': 6,
-        },
-        paint: {
-          'text-color':      '#ffffff',
-          'text-halo-color': 'rgba(0,0,0,0.7)',
-          'text-halo-width': 1.2,
-        },
-      });
-
-      // Hover — tooltip + ground fill highlight (works at any camera angle)
-      let hoveredId = null;
-      const setHover = (id) => {
-        if (hoveredId !== null) map.setFeatureState({ source: 'barangays', id: hoveredId }, { hover: false });
-        hoveredId = id;
-        if (hoveredId !== null) map.setFeatureState({ source: 'barangays', id: hoveredId }, { hover: true });
-      };
-      map.on('mousemove', 'barangays-fill', (e) => {
-        map.getCanvas().style.cursor = 'pointer';
-        const p = e.features[0].properties;
-        setTooltip({ name: p.name, count: p.count });
-        setHover(e.features[0].id);
-      });
-      map.on('mouseleave', 'barangays-fill', () => {
-        map.getCanvas().style.cursor = '';
-        setTooltip(null);
-        setHover(null);
-      });
-
-      // Fetch real OSM barangay boundaries and swap in when ready
-      const q = `[out:json][timeout:90];relation["admin_level"="10"]["boundary"="administrative"](14.773,120.912,14.876,121.015);out geom;`;
-      const body = 'data=' + encodeURIComponent(q);
-      const tryFetch = url => fetch(url, { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body });
-      tryFetch('https://overpass-api.de/api/interpreter')
-        .catch(() => tryFetch('https://overpass.kumi.systems/api/interpreter'))
-        .then(r => r.json())
-        .then(data => {
-          const gj = overpassToGeoJSON(data);
-          console.log('[HeroMap] Overpass:', data.elements?.length, 'elements,', gj.features.length, 'matched barangays');
-          if (gj.features.length > 0) map.getSource('barangays').setData(gj);
-        })
-        .catch(() => {});
+      map.addSource('muni', { type:'geojson', data: staMaria });
+      map.addLayer({ id:'muni-fill', type:'fill', source:'muni',
+        paint:{ 'fill-color':'#00c9a7', 'fill-opacity':0.18 } });
+      map.addLayer({ id:'muni-glow', type:'line', source:'muni',
+        paint:{ 'line-color':'#00c9a7', 'line-width':16, 'line-opacity':0.20, 'line-blur':12 } });
+      map.addLayer({ id:'muni-border', type:'line', source:'muni',
+        paint:{ 'line-color':'#00e5c8', 'line-width':2.2, 'line-opacity':1 } });
     });
 
     mapInstRef.current = map;
@@ -513,20 +682,9 @@ function HeroMap() {
     };
   }, []);
 
-  const total = barangayGeoJSON.features.reduce((s, f) => s + f.properties.count, 0);
-
   return React.createElement(
     'div', { className: 'hero-map-wrap' },
     React.createElement('div', { ref: mapRef, className: 'hero-map-el' }),
-    tooltip && React.createElement(
-      'div', { className: 'map-hover-tip' },
-      React.createElement('div', { className: 'mp-name' }, tooltip.name),
-      React.createElement('div', { className: 'mp-count' }, `${tooltip.count} listings`),
-    ),
-    React.createElement('div', { className: 'map-badge' },
-      React.createElement('span', { className: 'map-badge-dot' }),
-      `${total} listings · 24 barangays`,
-    ),
   );
 }
 
@@ -578,16 +736,57 @@ function Navbar() {
   );
 }
 
+const bedSVG  = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9V4a1 1 0 0 1 1-1h18a1 1 0 0 1 1 1v5"/><path d="M2 9h20v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/><line x1="6" y1="9" x2="6" y2="20"/></svg>`;
+const bathSVG = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6L9 2"/><path d="M4 6h16v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M4 6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/><line x1="4" y1="14" x2="20" y2="14"/></svg>`;
+
+function HeroBento() {
+  return React.createElement('div', { className:'hero-bento-wrap' },
+    // ── Live ping badge ──
+    React.createElement('div', { className:'bento-ping' },
+      React.createElement('span', { className:'bento-ping-dot' }),
+      '3 new listings today',
+    ),
+    // ── Bento grid ──
+    React.createElement('div', { className:'hero-bento' },
+      bentoListings.map((l, i) =>
+        React.createElement('div', {
+          key: i,
+          className: `bento-tile${i === 0 ? ' bento-featured' : ''}`,
+          style: { backgroundImage:`url(${l.img})` },
+        },
+          React.createElement('div', { className:'bento-grad' }),
+          React.createElement('div', { className:'bento-content' },
+            React.createElement('span', { className:`bento-badge bento-badge-${l.badgeType}` }, l.badge),
+            React.createElement('div', { className:'bento-info' },
+              React.createElement('div', { className:'bento-price' }, l.price),
+              React.createElement('div', { className:'bento-name' }, l.name),
+              React.createElement('div', { className:'bento-loc' }, l.barangay),
+              React.createElement('div', { className:'bento-meta' },
+                React.createElement('span', { className:'bento-pill' },
+                  React.createElement('span', { dangerouslySetInnerHTML:{ __html: bedSVG } }),
+                  `${l.beds} bed`,
+                ),
+                React.createElement('span', { className:'bento-pill' },
+                  React.createElement('span', { dangerouslySetInnerHTML:{ __html: bathSVG } }),
+                  `${l.baths} bath`,
+                ),
+              ),
+            ),
+          ),
+        )
+      ),
+    ),
+  );
+}
+
 // Hero
 function Hero() {
 
   return React.createElement(
     "section",
     { className: "hero" },
-    React.createElement(HeroMap),
-    React.createElement("div", { className: "hero-overlay" }),
 
-    // ── Content ──
+    // ── Left: text ──
     React.createElement(
       "div",
       { className: "hero-left" },
@@ -648,6 +847,8 @@ function Hero() {
       ),
     ),
 
+    // ── Right: bento grid ──
+    React.createElement(HeroBento),
   );
 }
 

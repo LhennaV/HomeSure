@@ -44,6 +44,106 @@
   </div>
 </div>
 
+<!-- ── Inline Pay Now Modal (2-step: method → proof upload) ── -->
+<div id="chatPayModal" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)closeChatPayModal()">
+  <div style="background:#253347;border:1px solid rgba(255,255,255,0.08);border-radius:18px;width:100%;max-width:480px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;animation:fadeUp .22s ease both;">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:20px 22px 16px;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;">
+      <div>
+        <div style="font-size:16px;font-weight:800;color:#f1f5f9;">Pay Rent</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:3px;">
+          <span id="chatPayProperty"></span> &nbsp;·&nbsp; <span id="chatPayPeriod"></span> &nbsp;·&nbsp; <strong style="color:#00c9a7" id="chatPayAmount"></strong>
+        </div>
+      </div>
+      <button onclick="closeChatPayModal()" style="background:rgba(255,255,255,0.06);border:none;border-radius:8px;width:30px;height:30px;cursor:pointer;color:rgba(255,255,255,0.5);display:flex;align-items:center;justify-content:center;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div style="padding:20px 22px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:14px;">
+
+      <!-- Step 1: Method selection -->
+      <div id="chatPayStep1">
+        <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.38);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">E-Wallets</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <button class="chat-method-card" id="cmc-gcash" onclick="selectChatMethod('gcash')">
+            <div style="width:36px;height:36px;margin-bottom:6px;"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="20" fill="#00aff0"/><text x="20" y="26" text-anchor="middle" font-size="16" font-weight="800" fill="#fff" font-family="sans-serif">G</text></svg></div>
+            <div style="font-size:13px;font-weight:800;">GCash</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.4;">Send to landlord's GCash</div>
+          </button>
+          <button class="chat-method-card" id="cmc-maya" onclick="selectChatMethod('maya')">
+            <div style="width:36px;height:36px;margin-bottom:6px;"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="20" fill="#1a8f5d"/><text x="20" y="26" text-anchor="middle" font-size="13" font-weight="800" fill="#fff" font-family="sans-serif">Maya</text></svg></div>
+            <div style="font-size:13px;font-weight:800;">Maya</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.4;">Send to landlord's Maya</div>
+          </button>
+        </div>
+        <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.38);text-transform:uppercase;letter-spacing:.07em;margin:14px 0 10px;">Bank / Other</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <button class="chat-method-card" id="cmc-bpi" onclick="selectChatMethod('bpi')">
+            <div style="width:36px;height:36px;margin-bottom:6px;"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="20" fill="#cc0000"/><text x="20" y="26" text-anchor="middle" font-size="12" font-weight="800" fill="#fff" font-family="sans-serif">BPI</text></svg></div>
+            <div style="font-size:13px;font-weight:800;">BPI</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.4;">Bank transfer</div>
+          </button>
+          <button class="chat-method-card" id="cmc-cash" onclick="selectChatMethod('cash')">
+            <div style="width:36px;height:36px;margin-bottom:6px;"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="20" fill="#374151"/><text x="20" y="26" text-anchor="middle" font-size="10" font-weight="800" fill="#fff" font-family="sans-serif">CASH</text></svg></div>
+            <div style="font-size:13px;font-weight:800;">Cash</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.4;">Paid in person</div>
+          </button>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;padding-top:18px;border-top:1px solid rgba(255,255,255,0.07);margin-top:16px;">
+          <button onclick="closeChatPayModal()" style="background:transparent;border:1.5px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px 20px;color:rgba(255,255,255,0.6);font-family:inherit;font-size:13.5px;font-weight:700;cursor:pointer;">Cancel</button>
+          <button id="chatNextBtn" onclick="chatGoToProof()" disabled style="background:#00c9a7;border:none;border-radius:10px;padding:10px 22px;color:#fff;font-family:inherit;font-size:13.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;opacity:0.5;transition:opacity .18s;">
+            Next — Upload Proof
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: Upload proof -->
+      <div id="chatPayStep2" style="display:none;">
+        <div style="display:inline-flex;align-items:center;gap:7px;background:rgba(0,201,167,0.1);border:1px solid rgba(0,201,167,0.25);border-radius:100px;padding:5px 14px;font-size:12px;font-weight:700;color:#00c9a7;margin-bottom:14px;">
+          Paying via <span id="chatChosenMethod" style="margin-left:3px;"></span>
+        </div>
+        <p style="font-size:12.5px;color:rgba(251,191,36,0.8);background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:10px 14px;line-height:1.55;margin-bottom:16px;">
+          Complete the transfer first, then upload your screenshot or receipt. It will be sent to the seller in this conversation.
+        </p>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <label style="font-size:11.5px;font-weight:700;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:.05em;">Screenshot / Receipt <span style="color:#f87171">*</span></label>
+          <div onclick="document.getElementById('chatProofFile').click()" style="background:#2c3d55;border:1.5px dashed rgba(255,255,255,0.12);border-radius:10px;padding:20px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:rgba(255,255,255,0.5);transition:border-color .18s,background .18s;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span id="chatProofLabel">Tap to attach screenshot or photo</span>
+          </div>
+          <input type="file" id="chatProofFile" accept="image/*,.pdf" style="display:none" onchange="chatProofSelected(event)" />
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;padding-top:18px;border-top:1px solid rgba(255,255,255,0.07);margin-top:16px;">
+          <button onclick="document.getElementById('chatPayStep1').style.display='';document.getElementById('chatPayStep2').style.display='none';" style="background:transparent;border:1.5px solid rgba(255,255,255,0.12);border-radius:10px;padding:10px 20px;color:rgba(255,255,255,0.6);font-family:inherit;font-size:13.5px;font-weight:700;cursor:pointer;">← Back</button>
+          <button id="chatSubmitBtn" onclick="submitChatPayment()" disabled style="background:#00c9a7;border:none;border-radius:10px;padding:10px 22px;color:#fff;font-family:inherit;font-size:13.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;opacity:0.5;transition:opacity .18s;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            Send Proof to Seller
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+  .chat-method-card {
+    background: #2c3d55; border: 2px solid rgba(255,255,255,0.07);
+    border-radius: 12px; padding: 14px 12px; cursor: pointer;
+    text-align: left; display: flex; flex-direction: column;
+    font-family: inherit; color: #f1f5f9;
+    transition: border-color .18s, background .18s, transform .14s;
+  }
+  .chat-method-card:hover { border-color: rgba(255,255,255,0.18); transform: translateY(-2px); }
+  .chat-method-card.selected { border-color: #00c9a7; background: rgba(0,201,167,0.08); }
+  #chatNextBtn:not([disabled]) { opacity: 1; }
+  #chatSubmitBtn:not([disabled]) { opacity: 1; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+</style>
+
 <script src="../../assets/js/fake-data.js"></script>
 <script src="../../components/sidebar.js"></script>
 <script src="../../components/topbar.js"></script>

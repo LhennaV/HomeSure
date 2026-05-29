@@ -214,4 +214,90 @@
     [data-theme="light"] .conv-search { background: rgba(0,0,0,0.04); }
     [data-theme="light"] .chat-input  { background: rgba(0,0,0,0.04); }
     [data-theme="light"] .msg-row.buyer .msg-bubble { color: #fff; }
-  
+
+    /* ── Send Payment Request button (seller chat toolbar) ── */
+    .chat-pay-req-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 11px; border-radius: 8px;
+      font-size: 11.5px; font-weight: 700;
+      color: var(--teal); background: rgba(0,201,167,0.1);
+      border: 1px solid rgba(0,201,167,0.25);
+      cursor: pointer; font-family: inherit;
+      transition: background .18s; white-space: nowrap; flex-shrink: 0;
+    }
+    .chat-pay-req-btn:hover { background: rgba(0,201,167,0.18); }
+
+    /* ── Payment Request Card (in chat) ── */
+    .payment-request-card {
+      background: var(--card); border: 1.5px solid rgba(0,201,167,0.3);
+      border-radius: 16px; padding: 16px 18px; max-width: 320px; width: 100%;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .pr-header {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 11.5px; font-weight: 700; color: var(--teal);
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .pr-header svg { flex-shrink: 0; }
+    .pr-status {
+      margin-left: auto; font-size: 10.5px; font-weight: 700;
+      padding: 2px 9px; border-radius: 100px; text-transform: none; letter-spacing: 0;
+    }
+    .pr-status-pending { background: rgba(251,191,36,0.15); color: #fbbf24; }
+    .pr-status-paid    { background: rgba(0,201,167,0.12); color: var(--teal); }
+    .pr-status-done    { background: rgba(34,197,94,0.15); color: #22c55e; }
+
+    .pr-property { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.4; }
+    .pr-period   { font-size: 11.5px; color: var(--muted); }
+    .pr-amount   { font-size: 22px; font-weight: 900; color: var(--text); }
+
+    .pr-methods  { display: flex; gap: 6px; flex-wrap: wrap; }
+    .pr-method-pill {
+      font-size: 11px; font-weight: 600;
+      background: rgba(255,255,255,0.07); border: 1px solid var(--border);
+      border-radius: 100px; padding: 3px 9px; color: var(--muted2);
+    }
+
+    .pr-action { margin-top: 4px; }
+    .pr-pay-btn {
+      width: 100%; background: var(--teal); color: #fff; border: none;
+      border-radius: 10px; padding: 10px 16px; font-size: 13px; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+      transition: opacity .18s, transform .15s;
+    }
+    .pr-pay-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+    .pr-waiting {
+      font-size: 12px; color: rgba(251,191,36,0.85); font-weight: 600;
+      text-align: center; padding: 8px 0;
+    }
+    .pr-done {
+      font-size: 12px; color: #22c55e; font-weight: 700;
+      text-align: center; padding: 8px 0;
+    }
+
+    /* ── Proof card extras ── */
+    .proof-card { border-color: rgba(0,201,167,0.22); }
+    .pr-status-rej { background: rgba(248,113,113,0.15); color: #f87171; }
+    .proof-detail-row {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 12px; gap: 8px;
+    }
+    .proof-detail-label { color: rgba(255,255,255,0.4); font-weight: 600; }
+    .proof-detail-val   { color: rgba(255,255,255,0.85); font-weight: 600; }
+    .proof-file-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px; padding: 5px 10px;
+      font-size: 11.5px; color: rgba(255,255,255,0.6);
+      font-weight: 600; margin-top: 2px;
+    }
+    .proof-actions { display: flex; gap: 8px; margin-top: 10px; }
+    .proof-btn {
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px;
+      border: none; border-radius: 9px; padding: 9px 12px;
+      font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: inherit;
+      transition: opacity .18s, transform .14s;
+    }
+    .proof-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+    .proof-btn-confirm { background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
+    .proof-btn-reject  { background: rgba(248,113,113,0.1); color: #f87171; border: 1px solid rgba(248,113,113,0.25); }

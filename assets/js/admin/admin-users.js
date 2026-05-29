@@ -32,7 +32,7 @@
 
     const tbody = document.getElementById('usersBody');
     if (!filtered.length) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--muted)">No users found.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted)">No users found.</td></tr>`;
       return;
     }
 
@@ -57,6 +57,12 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
            </button>`;
 
+      const moaCell = u.role === 'seller'
+        ? (u.moaSignedAt
+            ? `<span class="badge approved" title="Signed on ${u.moaSignedAt}">Signed</span>`
+            : `<span class="badge pending">Unsigned</span>`)
+        : `<span style="color:var(--muted);font-size:12px">—</span>`;
+
       return `
         <tr>
           <td>
@@ -71,6 +77,7 @@
           <td style="color:var(--muted2)">${u.email}</td>
           <td>${roleBadge}</td>
           <td>${statusBadge}</td>
+          <td>${moaCell}</td>
           <td style="color:var(--muted);font-size:12px">${u.joinedAt || '—'}</td>
           <td><div class="action-btns">${actionBtns}</div></td>
         </tr>`;

@@ -403,7 +403,7 @@
     .hs-hamburger:hover { background: rgba(255,255,255,0.14); }
     .hs-hamburger svg { width: 17px; height: 17px; color: rgba(255,255,255,0.8); display: block; }
     @media (max-width: 768px) {
-      .hs-hamburger { display: flex; }
+      .hs-hamburger { display: none; }
       .hs-topbar-search { max-width: 200px; }
     }
     @media (max-width: 400px) {

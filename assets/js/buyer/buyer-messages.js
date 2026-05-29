@@ -14,6 +14,16 @@
         { from: 'seller', text: 'Hello! Thank you for your interest. Yes, the unit is still available.', time: '9:45 AM' },
         { from: 'buyer',  text: 'Great! Can I schedule a viewing this weekend?', time: '10:00 AM', read: true },
         { from: 'seller', text: 'Sure! Saturday or Sunday works for me. What time do you prefer?', time: '10:05 AM' },
+        { from: 'seller', text: 'We have agreed on ₱15,000/month. Here is your payment request for June:', time: '10:08 AM' },
+        {
+          from: 'seller', type: 'payment_request', time: '10:08 AM',
+          payment: {
+            id: 'PR-001', property: '1-Bedroom Apartment for Rent near Town Proper',
+            period: 'June 2026', amount: 15000,
+            methods: ['GCash', 'Bank Transfer', 'Cash'],
+            status: 'pending', // pending | paid | confirmed
+          },
+        },
       ],
     },
     {
@@ -83,6 +93,187 @@
     renderConvList(document.getElementById('convSearch').value);
   }
 
+  // ── Payment Request Card (rendered inside chat) ───────────────────────────
+  function renderPaymentRequestCard(m, convId) {
+    const p = m.payment;
+    const statusMap = {
+      pending:   { label: 'Awaiting Payment',    cls: 'pr-status-pending' },
+      paid:      { label: 'Proof Submitted',      cls: 'pr-status-paid'    },
+      confirmed: { label: 'Confirmed — Paid ✓',   cls: 'pr-status-done'    },
+    };
+    const s = statusMap[p.status] || statusMap.pending;
+
+    const methodIcons = { GCash: '💙', 'Bank Transfer': '🏦', Cash: '💵' };
+    const methodPills = p.methods.map(me =>
+      `<span class="pr-method-pill">${methodIcons[me] || ''} ${me}</span>`
+    ).join('');
+
+    const action = p.status === 'pending'
+      ? `<button class="pr-pay-btn" onclick="payFromChat('${convId}','${p.id}')">Pay Now →</button>`
+      : p.status === 'paid'
+      ? `<div class="pr-waiting">Proof submitted — waiting for seller confirmation</div>`
+      : `<div class="pr-done">Payment confirmed by seller</div>`;
+
+    return `
+      <div class="msg-row seller">
+        <div class="payment-request-card">
+          <div class="pr-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            Payment Request
+            <span class="pr-status ${s.cls}">${s.label}</span>
+          </div>
+          <div class="pr-property">${p.property}</div>
+          <div class="pr-period">Period: ${p.period}</div>
+          <div class="pr-amount">₱${p.amount.toLocaleString('en-PH')}</div>
+          <div class="pr-methods">${methodPills}</div>
+          <div class="pr-action">${action}</div>
+        </div>
+        <div class="msg-time">${m.time}</div>
+      </div>`;
+  }
+
+  // ── Pay from chat → opens inline payment modal ────────────────────────────
+  let chatPayConvId    = null;
+  let chatPayReqId     = null;
+  let chatPayMethod    = null;
+  let chatPayProofName = null;
+
+  window.payFromChat = function (convId, paymentReqId) {
+    chatPayConvId    = convId;
+    chatPayReqId     = paymentReqId;
+    chatPayMethod    = null;
+    chatPayProofName = null;
+
+    // Get amount from the payment request message
+    const c   = CONVS.find(x => x.id === convId);
+    const msg = c?.messages.find(m => m.payment?.id === paymentReqId);
+    if (msg) {
+      document.getElementById('chatPayAmount').textContent =
+        '₱' + msg.payment.amount.toLocaleString('en-PH');
+      document.getElementById('chatPayPeriod').textContent = msg.payment.period;
+      document.getElementById('chatPayProperty').textContent = msg.payment.property;
+    }
+
+    // Reset modal state
+    document.querySelectorAll('.chat-method-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('chatPayStep1').style.display = '';
+    document.getElementById('chatPayStep2').style.display = 'none';
+    document.getElementById('chatNextBtn').disabled = true;
+    document.getElementById('chatProofLabel').textContent = 'Tap to attach screenshot or photo';
+    document.getElementById('chatSubmitBtn').disabled = true;
+    document.getElementById('chatPayModal').style.display = 'flex';
+  };
+
+  window.closeChatPayModal = function () {
+    document.getElementById('chatPayModal').style.display = 'none';
+  };
+
+  window.selectChatMethod = function (method) {
+    chatPayMethod = method;
+    document.querySelectorAll('.chat-method-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('cmc-' + method).classList.add('selected');
+    document.getElementById('chatNextBtn').disabled = false;
+  };
+
+  window.chatGoToProof = function () {
+    if (!chatPayMethod) return;
+    const labels = { gcash: 'GCash', maya: 'Maya', bpi: 'BPI Bank Transfer', cash: 'Cash' };
+    document.getElementById('chatChosenMethod').textContent = labels[chatPayMethod] || chatPayMethod;
+    document.getElementById('chatPayStep1').style.display = 'none';
+    document.getElementById('chatPayStep2').style.display = '';
+  };
+
+  window.chatProofSelected = function (e) {
+    chatPayProofName = e.target.files[0]?.name || null;
+    document.getElementById('chatProofLabel').textContent =
+      chatPayProofName || 'Tap to attach screenshot or photo';
+    document.getElementById('chatSubmitBtn').disabled = !chatPayProofName;
+  };
+
+  window.submitChatPayment = function () {
+    if (!chatPayMethod || !chatPayProofName || !chatPayConvId) return;
+
+    const labels = { gcash: 'GCash', maya: 'Maya', bpi: 'BPI Bank Transfer', cash: 'Cash' };
+    const methodLabel = labels[chatPayMethod];
+    const now  = new Date();
+    const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    const ref  = 'REF-' + Math.random().toString(36).slice(2, 9).toUpperCase();
+
+    const c   = CONVS.find(x => x.id === chatPayConvId);
+    const req = c?.messages.find(m => m.payment?.id === chatPayReqId);
+
+    // Mark the original request as paid
+    if (req) req.payment.status = 'paid';
+
+    // Push a payment_proof message into the conversation
+    const proofMsg = {
+      from: 'buyer', type: 'payment_proof', time,
+      proof: {
+        id:       'PROOF-' + Date.now(),
+        reqId:    chatPayReqId,
+        method:   methodLabel,
+        amount:   req?.payment?.amount || 0,
+        period:   req?.payment?.period || '',
+        property: req?.payment?.property || '',
+        fileName: chatPayProofName,
+        ref,
+        status:   'pending', // pending | confirmed | rejected
+      },
+    };
+    c.messages.push(proofMsg);
+
+    closeChatPayModal();
+
+    // Append the proof card to the live chat messages
+    const msgs = document.getElementById('chatMessages');
+    if (msgs) {
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = renderProofCard(proofMsg);
+      msgs.appendChild(wrapper.firstElementChild);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    // Re-render conv list so last message updates
+    renderConvList(document.getElementById('convSearch').value);
+  };
+
+  // ── Render proof card (buyer side — read-only, shows status) ─────────────
+  function renderProofCard(m) {
+    const p = m.proof;
+    const statusMap = {
+      pending:   { cls: 'pr-status-pending', label: 'Awaiting Seller Confirmation' },
+      confirmed: { cls: 'pr-status-done',    label: 'Confirmed — Paid ✓'           },
+      rejected:  { cls: 'pr-status-rej',     label: 'Rejected — Resubmit'          },
+    };
+    const s = statusMap[p.status] || statusMap.pending;
+    return `
+      <div class="msg-row buyer">
+        <div class="payment-request-card proof-card">
+          <div class="pr-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Proof of Payment
+            <span class="pr-status ${s.cls}">${s.label}</span>
+          </div>
+          <div class="pr-property">${p.property}</div>
+          <div class="pr-period">Period: ${p.period}</div>
+          <div class="pr-amount">₱${p.amount.toLocaleString('en-PH')}</div>
+          <div class="proof-detail-row">
+            <span class="proof-detail-label">Method</span>
+            <span class="proof-detail-val">${p.method}</span>
+          </div>
+          <div class="proof-detail-row">
+            <span class="proof-detail-label">Reference</span>
+            <span class="proof-detail-val" style="font-family:monospace;font-size:12px;">${p.ref}</span>
+          </div>
+          <div class="proof-file-chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            ${p.fileName}
+          </div>
+        </div>
+        <div class="msg-time">${m.time}</div>
+      </div>`;
+  }
+
   // ── Open a conversation ────────────────────────────────────────────────────
   function openConv(id) {
     activeConvId = id;
@@ -99,14 +290,17 @@
 
     const messagesHtml = `
       <div class="msg-date-divider">${c.dateLabel}</div>` +
-      c.messages.map(m => `
-        <div class="msg-row ${m.from}">
-          <div class="msg-bubble">${m.text}</div>
-          <div class="msg-time">
-            ${m.time}
-            ${m.from === 'buyer' && m.read ? iconCheck2 : ''}
-          </div>
-        </div>`).join('');
+      c.messages.map(m => {
+        if (m.type === 'payment_request') return renderPaymentRequestCard(m, id);
+        return `
+          <div class="msg-row ${m.from}">
+            <div class="msg-bubble">${m.text}</div>
+            <div class="msg-time">
+              ${m.time}
+              ${m.from === 'buyer' && m.read ? iconCheck2 : ''}
+            </div>
+          </div>`;
+      }).join('');
 
     const iconBack = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
 

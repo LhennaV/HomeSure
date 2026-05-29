@@ -22,10 +22,12 @@
     flag: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>`,
     shield: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
     chart: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,
+    wallet: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>`,
     sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`,
     moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
     logout: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`,
     bell: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`,
+    doc: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
   };
 
   // ── Nav configs per role ─────────────────────────────────────────────────────
@@ -34,11 +36,14 @@
       { id: 'dashboard', label: 'Dashboard',      icon: 'grid'    },
       { id: 'saved',     label: 'Saved Listings', icon: 'heart'   },
       { id: 'messages',  label: 'Messages',       icon: 'message' },
+      { id: 'payments',  label: 'Payments',       icon: 'wallet'  },
     ],
     seller: [
       { id: 'dashboard', label: 'Dashboard',      icon: 'grid'    },
       { id: 'listings',  label: 'My Listings',    icon: 'home'    },
       { id: 'messages',  label: 'Messages',       icon: 'message' },
+      { id: 'moa',       label: 'MOA',            icon: 'doc'     },
+      { id: 'payments',  label: 'Payments',       icon: 'wallet'  },
     ],
     admin: [
       { id: 'dashboard', label: 'Dashboard',          icon: 'grid'    },
@@ -46,6 +51,7 @@
       { id: 'users',     label: 'Users',              icon: 'users'   },
       { id: 'reports',   label: 'Reports',            icon: 'flag'    },
       { id: 'analytics', label: 'Analytics',          icon: 'chart'   },
+      { id: 'payments',  label: 'Payments',           icon: 'wallet'  },
     ],
     superadmin: [
       { id: 'dashboard',   label: 'Dashboard',        icon: 'grid'   },
@@ -268,22 +274,50 @@
     }
     .hs-sidebar-overlay.active { display: block; }
 
+    /* ── Bottom Nav (mobile only) ── */
+    .hs-bottom-nav {
+      display: none;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 500;
+      background: #0F766E;
+      border-top: 1px solid rgba(0,0,0,0.18);
+      height: 62px;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .hs-bn-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      cursor: pointer;
+      color: rgba(255,255,255,0.58);
+      background: none;
+      border: none;
+      padding: 8px 0 6px;
+      font-family: inherit;
+      position: relative;
+      transition: color 0.18s;
+    }
+    .hs-bn-item svg { width: 20px; height: 20px; stroke: currentColor; fill: none; flex-shrink: 0; }
+    .hs-bn-item span { font-size: 10px; font-weight: 600; letter-spacing: 0.02em; line-height: 1; }
+    .hs-bn-item.active { color: #fff; }
+    .hs-bn-item.active::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 22%; right: 22%;
+      height: 2px;
+      background: rgba(255,255,255,0.9);
+      border-radius: 0 0 3px 3px;
+    }
+    .hs-bn-item:hover { color: rgba(255,255,255,0.88); }
+
     @media (max-width: 768px) {
-      .hs-sidebar {
-        position: fixed !important;
-        left: -224px; top: 0; bottom: 0;
-        width: 220px !important; min-width: 220px !important;
-        height: 100vh !important;
-        z-index: 500;
-        overflow-y: auto;
-        transition: left 0.28s cubic-bezier(0.4,0,0.2,1) !important;
-        animation: none !important;
-        box-shadow: none;
-      }
-      .hs-sidebar.mobile-open {
-        left: 0 !important;
-        box-shadow: 4px 0 40px rgba(0,0,0,0.55) !important;
-      }
+      .hs-sidebar { display: none !important; }
+      .hs-sidebar-overlay { display: none !important; }
+      .hs-bottom-nav { display: flex; }
     }
   `;
 
@@ -374,9 +408,9 @@
 
     // Nav routing
     const NAV_ROUTES = {
-      buyer:      { dashboard: 'buyer.html', saved: 'saved.html', messages: 'messages.html' },
-      seller:     { dashboard: 'seller.html', listings: 'listings.html', messages: 'messages.html' },
-      admin:      { dashboard: 'admin.html', listings: 'listings.html', users: 'users.html', reports: 'reports.html', analytics: 'analytics.html' },
+      buyer:      { dashboard: 'buyer.html', saved: 'saved.html', messages: 'messages.html', payments: 'payments.html' },
+      seller:     { dashboard: 'seller.html', listings: 'listings.html', messages: 'messages.html', moa: 'moa.html', payments: 'payments.html' },
+      admin:      { dashboard: 'admin.html', listings: 'listings.html', users: 'users.html', reports: 'reports.html', analytics: 'analytics.html', payments: 'payments.html' },
       superadmin: { dashboard: 'super-admin.html', admins: 'admins.html', 'audit-trail': 'audit-trail.html', reports: 'reports.html' },
     };
     const sessionUser = typeof getSession === 'function' ? getSession() : null;
@@ -431,6 +465,39 @@
       const isOpen = el.classList.toggle('mobile-open');
       overlay.classList.toggle('active', isOpen);
     };
+
+    // ── Bottom Nav (mobile) ────────────────────────────────────────────────────
+    const bnId = 'hs-bottom-nav';
+    let bn = document.getElementById(bnId);
+    if (!bn) {
+      bn = document.createElement('nav');
+      bn.id = bnId;
+      bn.className = 'hs-bottom-nav';
+      document.body.appendChild(bn);
+    }
+
+    const BN_ROUTES = {
+      buyer:      { dashboard: 'buyer.html',       saved: 'saved.html',       messages: 'messages.html',  payments: 'payments.html' },
+      seller:     { dashboard: 'seller.html',       listings: 'listings.html', messages: 'messages.html', moa: 'moa.html', payments: 'payments.html' },
+      admin:      { dashboard: 'admin.html',        listings: 'listings.html', users: 'users.html',       reports: 'reports.html', analytics: 'analytics.html', payments: 'payments.html' },
+      superadmin: { dashboard: 'super-admin.html',  admins: 'admins.html',     'audit-trail': 'audit-trail.html', reports: 'reports.html' },
+    };
+    const bnRoutes = BN_ROUTES[role] || {};
+
+    bn.innerHTML = items.map(item => `
+      <button class="hs-bn-item ${item.id === activePage ? 'active' : ''}" data-page="${item.id}">
+        ${IC[item.icon] || IC.grid}
+        <span>${item.label}</span>
+      </button>
+    `).join('');
+
+    bn.querySelectorAll('.hs-bn-item').forEach(btn => {
+      const page = btn.dataset.page;
+      if (bnRoutes[page]) btn.addEventListener('click', () => {
+        if (window.location.href.includes(bnRoutes[page])) return;
+        window.location.href = bnRoutes[page];
+      });
+    });
   }
 
   global.HomeSureSidebar = { init };

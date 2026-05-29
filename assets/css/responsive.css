@@ -250,6 +250,30 @@
   .features-grid { grid-template-columns: 1fr !important; }
   .steps-grid    { grid-template-columns: 1fr !important; }
   .cta-actions   { flex-direction: column !important; align-items: center; }
+
+  /* Mobile hero — hide bento, stack text only */
+  .hero-bento-wrap { display: none !important; }
+  .hero {
+    background: linear-gradient(160deg, #071924 0%, #0b3530 55%, #0d2a22 100%) !important;
+    flex-direction: column !important;
+  }
+  .hero-left {
+    flex: unset !important;
+    max-width: 100% !important;
+    padding: 60px 24px 44px !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+  .hero-badge, .hero-content, .hero-actions, .hero-stats {
+    align-items: center !important;
+    text-align: center !important;
+  }
+}
+
+/* ── Bottom nav spacing — push content up on mobile ─────── */
+@media (max-width: 768px) {
+  .content { padding-bottom: 78px !important; }
+  .toast   { bottom: 76px !important; }
 }
 
 /* ── 21. About Page ──────────────────────────────────────── */

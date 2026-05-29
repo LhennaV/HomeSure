@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="../../assets/img/image.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HomeSure – Payment Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../assets/css/seller/seller-payments.css" />
+  <link rel="stylesheet" href="../../assets/css/responsive.css" />
+</head>
+<body>
+<div class="layout">
+  <div id="hs-sidebar"></div>
+  <div class="main">
+    <div id="hs-topbar"></div>
+    <div class="content">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <div>
+          <div class="page-title">Payment Management</div>
+          <div class="page-sub">Manage rent collections and security deposits</div>
+        </div>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="stat-row" id="statRow">
+        <!-- injected by JS -->
+      </div>
+
+      <!-- Tab Bar -->
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="pending" onclick="switchTab('pending')">
+          Pending Confirmation
+          <span class="tab-badge" id="pendingBadge"></span>
+        </button>
+        <button class="tab-btn" data-tab="all" onclick="switchTab('all')">All Payments</button>
+        <button class="tab-btn" data-tab="deposits" onclick="switchTab('deposits')">Deposits &amp; Damage</button>
+      </div>
+
+      <!-- Tab: Pending -->
+      <div class="tab-content" id="tab-pending">
+        <div id="pendingContainer"></div>
+      </div>
+
+      <!-- Tab: All Payments -->
+      <div class="tab-content" id="tab-all" style="display:none">
+        <div class="tenant-filter">
+          <select class="form-select filter-select" id="tenantFilter" onchange="renderAllPayments()">
+            <option value="">All Tenants</option>
+            <option value="Maria Santos">Maria Santos</option>
+            <option value="Juan Cruz">Juan Cruz</option>
+            <option value="Ana Lim">Ana Lim</option>
+          </select>
+          <input class="search-input" type="text" id="allSearch" placeholder="Search by reference, period…" oninput="renderAllPayments()" />
+        </div>
+        <div class="table-wrap">
+          <table class="pay-table">
+            <thead>
+              <tr>
+                <th>Tenant</th>
+                <th>Property</th>
+                <th>Period</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="allPaymentsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab: Deposits & Damage -->
+      <div class="tab-content" id="tab-deposits" style="display:none">
+        <div class="table-wrap" style="margin-bottom: 28px;">
+          <table class="pay-table">
+            <thead>
+              <tr>
+                <th>Tenant</th>
+                <th>Property</th>
+                <th>Deposit</th>
+                <th>Deductions</th>
+                <th>Refundable</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="depositsBody"></tbody>
+          </table>
+        </div>
+        <div class="damage-section">
+          <div class="damage-section-title">Damage Reports</div>
+          <div id="damageReportsList"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Damage Report Modal -->
+<div class="modal-backdrop" id="damageModal" style="display:none" onclick="handleDamageBackdrop(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">File Damage Report</div>
+        <div class="modal-sub" id="damageModalSub">Report a deduction against security deposit</div>
+      </div>
+      <button class="modal-close-btn" onclick="closeDamageModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="damageForm" onsubmit="submitDamage(event)">
+        <div class="form-group">
+          <label class="form-label">Tenant</label>
+          <input class="form-input" type="text" id="dTenant" readonly />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description of Damage</label>
+          <textarea class="form-input" id="dDescription" rows="3" placeholder="e.g. Cracked bathroom tile, broken window…" required style="resize:vertical; min-height:70px;"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Estimated Cost (₱)</label>
+          <input class="form-input" type="number" id="dCost" min="1" placeholder="e.g. 3500" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input class="form-input" type="date" id="dDate" required />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-ghost" onclick="closeDamageModal()">Cancel</button>
+          <button type="submit" class="btn-primary">Submit Report</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span class="toast-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  </span>
+  <span id="toastMsg"></span>
+</div>
+
+<script src="../../assets/js/fake-data.js"></script>
+<script src="../../components/sidebar.js"></script>
+<script src="../../components/topbar.js"></script>
+<script src="../../assets/js/seller/seller-payments.js"></script>
+</body>
+</html>
