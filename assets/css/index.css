@@ -346,25 +346,6 @@ nav {
   opacity: 1;
 }
 
-/* Stats Overlay */
-.hero-map-wrap::after {
-  content: '250+ Properties Available in Santa Maria';
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  background: rgba(0,0,0,0.8);
-  backdrop-filter: blur(10px);
-  color: #00e5c8;
-  padding: 12px 20px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 700;
-  border: 1px solid rgba(0,201,167,0.3);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-  z-index: 20;
-  letter-spacing: 0.5px;
-}
-
 .hero-map-label {
   position: absolute;
   top: 20px;
