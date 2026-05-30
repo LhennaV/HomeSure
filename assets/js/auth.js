@@ -116,6 +116,16 @@ function validateSignup() {
   return valid;
 }
 
+// ── Agree checkbox → enable/disable sign up button ───────────────────────────
+function toggleSignupBtn() {
+  const checked = document.getElementById('agreeCheck')?.checked;
+  const btn     = document.getElementById('signupBtn');
+  if (!btn) return;
+  btn.disabled       = !checked;
+  btn.style.opacity  = checked ? '1'            : '0.45';
+  btn.style.cursor   = checked ? 'pointer'      : 'not-allowed';
+}
+
 // ── Verify Email Modal ────────────────────────────────────────────────────────
 
 let _resendTimer = null;

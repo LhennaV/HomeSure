@@ -84,7 +84,18 @@
           </div>
         </div>
 
-        <button class="btn-primary full" onclick="openVerifyModal()">Sign up</button>
+        <label class="agree-check">
+          <input type="checkbox" id="agreeCheck" onchange="toggleSignupBtn()" />
+          <span class="agree-box"></span>
+          <span class="agree-text">
+            I have read and agree to HomeSure's
+            <a href="../terms.html" target="_blank">Terms of Service</a>
+            and
+            <a href="../privacy-policy.html" target="_blank">Privacy Policy</a>.
+          </span>
+        </label>
+
+        <button class="btn-primary full" id="signupBtn" onclick="openVerifyModal()" disabled style="opacity:0.45;cursor:not-allowed;">Create Account</button>
 
         <div class="divider"><span>or</span></div>
 
