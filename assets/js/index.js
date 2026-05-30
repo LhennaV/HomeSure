@@ -639,7 +639,9 @@ function HeroMap() {
       pin.style.animationDelay = `${i * 0.3}s`;
       pin.innerHTML = `
         <div class="marker-pulse"></div>
-        <div class="marker-icon">🏠</div>
+        <div class="marker-icon">
+          <img src="assets/img/House Icon.svg" alt="Property" />
+        </div>
         <div class="marker-tooltip">${marker.count} properties in ${marker.barangay}</div>
       `;
       containerRef.current.appendChild(pin);
