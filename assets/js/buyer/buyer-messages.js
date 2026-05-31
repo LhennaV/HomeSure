@@ -1,6 +1,21 @@
-
-  const user = getSession();
-  if (!user || user.role !== 'buyer') window.location.href = '../../auth/signin.html';
+(function() {
+  // DEMO MODE: Create test buyer session if not logged in
+  let user = getSession();
+  if (!user || user.role !== 'buyer') {
+    // Create demo buyer session
+    const demoUser = {
+      id: 'usr-001',
+      role: 'buyer',
+      firstName: 'Maria',
+      lastName: 'Cruz',
+      email: 'maria.cruz@example.com',
+      phone: '09171234567',
+      verified: true,
+      accountStatus: 'verified'
+    };
+    sessionStorage.setItem('homesure_user', JSON.stringify(demoUser));
+    user = demoUser;
+  }
 
   HomeSureSidebar.init({ activePage: 'messages' });
   HomeSureTopbar.init({ placeholder: 'Search messages...' });
@@ -41,6 +56,66 @@
         { from: 'buyer',  text: 'Is there a possibility of negotiating the price?', time: '11:00 AM', read: true },
         { from: 'seller', text: 'The price is fixed for now but I can include some appliances.', time: '11:20 AM' },
         { from: 'buyer',  text: 'Thank you for the information!', time: '11:35 AM', read: true },
+      ],
+    },
+    {
+      id: 'c4', listingId: 'prop-001', sellerId: 'usr-003', unread: 1, dateLabel: 'Today',
+      messages: [
+        { from: 'buyer',  text: "Good morning! I'd like to rent the studio unit.", time: '8:00 AM', read: true },
+        { from: 'seller', text: "Perfect timing! It just became available. Rent is ₱8,000/month.", time: '8:15 AM' },
+        { from: 'buyer',  text: 'Great! I can move in next week.', time: '8:20 AM', read: true },
+        { from: 'seller', text: 'Excellent! Here is the payment request for your first month:', time: '8:25 AM' },
+        {
+          from: 'seller', type: 'payment_request', time: '8:25 AM',
+          payment: {
+            id: 'PR-002', property: 'Cozy Studio Apartment',
+            period: 'June 2026', amount: 8000,
+            methods: ['GCash', 'Bank Transfer', 'Cash'],
+            status: 'paid',
+          },
+        },
+        {
+          from: 'buyer', type: 'payment_proof', time: '8:40 AM',
+          proof: {
+            id: 'PROOF-002', reqId: 'PR-002',
+            method: 'GCash', amount: 8000,
+            period: 'June 2026',
+            property: 'Cozy Studio Apartment',
+            fileName: 'gcash_payment_8000.jpg',
+            ref: 'REF-GC8X2K',
+            status: 'pending',
+          },
+        },
+        { from: 'seller', text: 'Thanks! Let me verify the payment.', time: '8:45 AM' },
+      ],
+    },
+    {
+      id: 'c5', listingId: 'prop-006', sellerId: 'usr-003', unread: 0, dateLabel: 'Yesterday',
+      messages: [
+        { from: 'seller', text: 'Hi Maria! Your May rent has been confirmed. Here is the request for June:', time: '3:00 PM' },
+        {
+          from: 'seller', type: 'payment_request', time: '3:00 PM',
+          payment: {
+            id: 'PR-003', property: 'Modern 2BR Apartment',
+            period: 'June 2026', amount: 12000,
+            methods: ['GCash', 'Bank Transfer', 'Cash'],
+            status: 'confirmed',
+          },
+        },
+        {
+          from: 'buyer', type: 'payment_proof', time: '3:30 PM',
+          proof: {
+            id: 'PROOF-003', reqId: 'PR-003',
+            method: 'Maya', amount: 12000,
+            period: 'June 2026',
+            property: 'Modern 2BR Apartment',
+            fileName: 'maya_receipt_june.jpg',
+            ref: 'REF-MY5A9P',
+            status: 'confirmed',
+          },
+        },
+        { from: 'seller', text: 'Payment confirmed! Thank you Maria. See you next month!', time: '3:45 PM' },
+        { from: 'buyer',  text: 'Thank you po!', time: '3:46 PM', read: true },
       ],
     },
   ];
@@ -154,16 +229,22 @@
       document.getElementById('chatPayProperty').textContent = msg.payment.property;
     }
 
-    // Reset modal state
+    // Reset modal state (now using QR/Gateway flow)
     document.querySelectorAll('.chat-method-card').forEach(c => c.classList.remove('selected'));
     document.getElementById('chatPayStep1').style.display = '';
-    document.getElementById('chatPayStep2').style.display = 'none';
+    const qrStep = document.getElementById('chatPayStep2QR');
+    const gatewayStep = document.getElementById('chatPayStep2Gateway');
+    if (qrStep) qrStep.style.display = 'none';
+    if (gatewayStep) gatewayStep.style.display = 'none';
     document.getElementById('chatNextBtn').disabled = true;
-    document.getElementById('chatProofLabel').textContent = 'Tap to attach screenshot or photo';
-    document.getElementById('chatSubmitBtn').disabled = true;
     document.getElementById('chatPayModal').style.display = 'flex';
   };
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // OLD PROOF UPLOAD FLOW (COMMENTED OUT)
+  // Now using QR Code / Gateway flow defined in messages.html inline script
+  // ═══════════════════════════════════════════════════════════════════════════
+  /*
   window.closeChatPayModal = function () {
     document.getElementById('chatPayModal').style.display = 'none';
   };
@@ -236,6 +317,7 @@
     // Re-render conv list so last message updates
     renderConvList(document.getElementById('convSearch').value);
   };
+  */
 
   // ── Render proof card (buyer side — read-only, shows status) ─────────────
   function renderProofCard(m) {
@@ -363,3 +445,4 @@
 
   // ── Init ───────────────────────────────────────────────────────────────────
   renderConvList();
+})();

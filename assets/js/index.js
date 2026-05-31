@@ -156,9 +156,10 @@ const features = [
 ];
 
 const statsData = [
+  { end: 24, suffix: "", label: "Barangays Covered" },
   { end: 1200, suffix: "+", label: "Verified Sellers" },
-  { end: 3450, suffix: "+", label: "Active Listings" },
-  { end: 8750, suffix: "+", label: "Successful Connections" },
+  { end: 0, suffix: "", label: "Unverified Listings" },
+  { end: 100, suffix: "%", label: "Secure Messaging" },
 ];
 
 const testimonials = [
@@ -815,7 +816,143 @@ function HeroBento() {
   );
 }
 
-// Hero
+// Feature Highlights Section
+function FeatureHighlights() {
+  const features = [
+    {
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+      title: 'Admin-Verified Listings',
+      desc: 'Every listing reviewed before publishing',
+      color: '#00c9a7',
+      badge: 'VERIFIED'
+    },
+    {
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3v-8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>`,
+      title: 'Secure In-Chat Payments',
+      desc: 'Agree on price and send payment requests within the chat',
+      color: '#3b82f6',
+      badge: 'SECURE'
+    },
+    {
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>`,
+      title: 'Anti-Fraud Protection',
+      desc: 'Government ID verification for all sellers',
+      color: '#f59e0b',
+      badge: 'PROTECTED'
+    },
+  ];
+
+  return React.createElement(
+    'section',
+    { className: 'feature-highlights' },
+    React.createElement(
+      'div',
+      { className: 'feature-grid' },
+      ...features.map((feat, i) =>
+        React.createElement(
+          'div',
+          { key: i, className: 'feature-card', style: { '--feature-color': feat.color } },
+          React.createElement('div', {
+            className: 'feature-card-icon',
+            dangerouslySetInnerHTML: { __html: feat.icon }
+          }),
+          React.createElement('div', { className: 'feature-card-badge' }, feat.badge),
+          React.createElement('h3', { className: 'feature-card-title' }, feat.title),
+          React.createElement('p', { className: 'feature-card-desc' }, feat.desc)
+        )
+      )
+    )
+  );
+}
+
+// Trust Banner Component
+function TrustBanner() {
+  return React.createElement(
+    'section',
+    { className: 'trust-banner' },
+    React.createElement(
+      'div',
+      { className: 'trust-content' },
+      React.createElement('div', {
+        className: 'trust-icon',
+        dangerouslySetInnerHTML: {
+          __html: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>`
+        }
+      }),
+      React.createElement(
+        'h3',
+        { className: 'trust-text' },
+        'Every listing is reviewed. Every seller is verified. ',
+        React.createElement('span', { className: 'trust-highlight' }, 'No exceptions.')
+      ),
+      React.createElement(
+        'p',
+        { className: 'trust-subtext' },
+        'Your safety is our priority. All sellers undergo government ID verification before posting.'
+      )
+    )
+  );
+}
+
+// Platform Features Section
+function PlatformFeatures() {
+  const features = [
+    {
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3v-8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>`,
+      title: 'In-Chat Payment Requests',
+      desc: 'Request and track payments directly in conversations'
+    },
+    {
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>`,
+      title: 'Security Deposit Management',
+      desc: 'Automated deposit tracking and refund processing'
+    },
+    {
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`,
+      title: 'Damage Reporting System',
+      desc: 'Photo uploads and dispute resolution tools'
+    },
+    {
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>`,
+      title: 'Barangay-Level Search',
+      desc: 'Find properties in all 24 barangays of Sta. Maria'
+    },
+    {
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>`,
+      title: 'Verified Seller Badges',
+      desc: 'Government ID verification for all property owners'
+    },
+    {
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>`,
+      title: 'Real-Time Messaging',
+      desc: 'Instant chat with sellers, no phone numbers required'
+    }
+  ];
+
+  return React.createElement(
+    'section',
+    { className: 'platform-features' },
+    React.createElement('h2', { className: 'section-title' }, 'Platform Features'),
+    React.createElement('p', { className: 'section-subtitle' }, 'Everything you need for safe and secure property rentals'),
+    React.createElement(
+      'div',
+      { className: 'platform-grid' },
+      ...features.map((feat, i) =>
+        React.createElement(
+          'div',
+          { key: i, className: 'platform-item' },
+          React.createElement('div', {
+            className: 'platform-icon',
+            dangerouslySetInnerHTML: { __html: feat.icon }
+          }),
+          React.createElement('h3', { className: 'platform-title' }, feat.title),
+          React.createElement('p', { className: 'platform-desc' }, feat.desc)
+        )
+      )
+    )
+  );
+}
+
 function Hero() {
 
   return React.createElement(
@@ -1461,6 +1598,9 @@ function App() {
     null,
     React.createElement(Navbar),
     React.createElement(Hero),
+    React.createElement(FeatureHighlights),
+    React.createElement(TrustBanner),
+    React.createElement(PlatformFeatures),
     React.createElement(HowItWorks),
     React.createElement(Features),
     React.createElement(Stats),

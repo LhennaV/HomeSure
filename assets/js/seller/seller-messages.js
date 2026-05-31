@@ -1,6 +1,21 @@
-
-  const user = getSession();
-  if (!user || user.role !== 'seller') window.location.href = '../../auth/signin.html';
+(function() {
+  // DEMO MODE: Create test seller session if not logged in
+  let user = getSession();
+  if (!user || user.role !== 'seller') {
+    // Create demo seller session
+    const demoUser = {
+      id: 'usr-003',
+      role: 'seller',
+      firstName: 'Juan',
+      lastName: 'Santos',
+      email: 'juan.santos@example.com',
+      phone: '09187654321',
+      verified: true,
+      accountStatus: 'verified'
+    };
+    sessionStorage.setItem('homesure_user', JSON.stringify(demoUser));
+    user = demoUser;
+  }
 
   HomeSureSidebar.init({ activePage: 'messages' });
   HomeSureTopbar.init({ placeholder: 'Search messages...' });
@@ -54,6 +69,56 @@
         { from: 'buyer',  text: "Good day, I'd like to inquire about the studio in Sonoma.", time: 'Yesterday 3:10 PM', read: true },
         { from: 'seller', text: "Hello! It's fully furnished and available immediately.", time: 'Yesterday 3:22 PM' },
         { from: 'buyer',  text: 'Can I schedule a viewing?', time: 'Yesterday 3:45 PM', read: false },
+      ],
+    },
+    {
+      id: 'c4', listingId: 'prop-003', buyerName: 'Anna Reyes', unread: 0, dateLabel: 'Feb 24',
+      messages: [
+        { from: 'buyer',  text: 'Hello po! Interested ako sa 2BR apartment.', time: '10:00 AM', read: true },
+        { from: 'seller', text: 'Hi Anna! Yes available pa. ₱12,000/month with parking.', time: '10:15 AM' },
+        { from: 'buyer',  text: 'Perfect! When can I move in?', time: '10:20 AM', read: true },
+        { from: 'seller', text: 'Anytime this week. Here is your payment request:', time: '10:25 AM' },
+        {
+          from: 'seller', type: 'payment_request', time: '10:25 AM',
+          payment: {
+            id: 'PR-004', property: 'Modern 2BR Apartment',
+            period: 'June 2026', amount: 12000,
+            methods: ['GCash', 'Bank Transfer', 'Cash'],
+            status: 'confirmed',
+          },
+        },
+        {
+          from: 'buyer', type: 'payment_proof', time: '11:00 AM',
+          proof: {
+            id: 'PROOF-004', reqId: 'PR-004',
+            method: 'GCash', amount: 12000,
+            period: 'June 2026',
+            property: 'Modern 2BR Apartment',
+            fileName: 'gcash_12k_june.jpg',
+            ref: 'REF-GC7M4P',
+            status: 'confirmed',
+          },
+        },
+        { from: 'seller', text: 'Received and confirmed! Welcome to the building Anna!', time: '11:10 AM' },
+        { from: 'buyer',  text: 'Salamat po! See you this weekend.', time: '11:15 AM', read: true },
+      ],
+    },
+    {
+      id: 'c5', listingId: 'prop-009', buyerName: 'David Cruz', unread: 0, dateLabel: 'Feb 23',
+      messages: [
+        { from: 'buyer',  text: 'Available pa ba yung house and lot?', time: '2:00 PM', read: true },
+        { from: 'seller', text: 'Yes po! ₱25,000/month. 3BR, 2 bath, with garage.', time: '2:10 PM' },
+        { from: 'seller', text: 'Sending payment request for first month + deposit:', time: '2:15 PM' },
+        {
+          from: 'seller', type: 'payment_request', time: '2:15 PM',
+          payment: {
+            id: 'PR-005', property: 'Spacious Family Home',
+            period: 'June 2026 + Deposit', amount: 50000,
+            methods: ['GCash', 'Bank Transfer', 'Cash'],
+            status: 'pending',
+          },
+        },
+        { from: 'buyer',  text: 'Ok po, let me check my budget first.', time: '2:30 PM', read: true },
       ],
     },
   ];
@@ -433,3 +498,4 @@
 
   // ── Init ───────────────────────────────────────────────────────────────────
   renderConvList();
+})();
