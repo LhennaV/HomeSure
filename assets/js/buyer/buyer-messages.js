@@ -154,7 +154,7 @@
               ${l.title.length > 22 ? l.title.slice(0, 22) + '…' : l.title}
               <span class="conv-verified">${iconVerify}</span>
             </div>
-            <div class="conv-preview">${sellerName} · ${last.text.slice(0, 32)}${last.text.length > 32 ? '…' : ''}</div>
+            <div class="conv-preview">${sellerName} · ${(last.text || 'Payment activity').slice(0, 32)}${(last.text || 'Payment activity').length > 32 ? '…' : ''}</div>
           </div>
           <div class="conv-meta">
             <span class="conv-time">${c.dateLabel}</span>
@@ -357,7 +357,7 @@
   }
 
   // ── Open a conversation ────────────────────────────────────────────────────
-  function openConv(id) {
+  window.openConv = function(id) {
     activeConvId = id;
     const c = CONVS.find(x => x.id === id);
     const l = FAKE_LISTINGS.find(x => x.id === c.listingId);
@@ -417,14 +417,14 @@
     if (msgs) msgs.scrollTop = msgs.scrollHeight;
   }
 
-  function closeMobileChat() {
+  window.closeMobileChat = function() {
     document.querySelector('.messages-layout').classList.remove('chat-open');
     activeConvId = null;
     renderConvList(document.getElementById('convSearch').value);
-  }
+  };
 
   // ── Send a message ─────────────────────────────────────────────────────────
-  function sendMessage(convId) {
+  window.sendMessage = function(convId) {
     const input = document.getElementById('chatInput');
     const text  = input.value.trim();
     if (!text) return;

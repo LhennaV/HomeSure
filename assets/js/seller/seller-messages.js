@@ -21,7 +21,7 @@
   HomeSureTopbar.init({ placeholder: 'Search messages...' });
 
   const sellerData = FAKE_USERS.find(u => u.id === user.id) || {};
-  const isVerified = sellerData.accountStatus === 'verified';
+  const isVerified = user.accountStatus === 'verified' || sellerData.accountStatus === 'verified';
 
   // ── Fake conversations ─────────────────────────────────────────────────────
   const CONVS = [
@@ -152,6 +152,7 @@
       const l = FAKE_LISTINGS.find(x => x.id === c.listingId);
       if (!l) return '';
       const last = c.messages[c.messages.length - 1];
+      const previewText = last.text || 'Payment activity';
       return `
         <div class="conv-item ${c.id === activeConvId ? 'active' : ''}"
              onclick="openConv('${c.id}')">
@@ -161,7 +162,7 @@
               ${c.buyerName}
               <span class="conv-verified">${iconVerify}</span>
             </div>
-            <div class="conv-preview">${l.title.length > 20 ? l.title.slice(0, 20) + '…' : l.title} · ${last.text.slice(0, 28)}${last.text.length > 28 ? '…' : ''}</div>
+            <div class="conv-preview">${l.title.length > 20 ? l.title.slice(0, 20) + '…' : l.title} · ${previewText.slice(0, 28)}${previewText.length > 28 ? '…' : ''}</div>
           </div>
           <div class="conv-meta">
             <span class="conv-time">${c.dateLabel}</span>
@@ -216,7 +217,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg>
           Confirm Receipt
         </button>
-        <button class="proof-btn proof-btn-reject" onclick="rejectProof('${convId}','${p.id}')">
+        <button class="proof-btn proof-btn-reject" onclick="openRejectModal('${convId}','${p.id}')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           Reject
         </button>
@@ -282,7 +283,30 @@
     }
   };
 
-  window.rejectProof = function (convId, proofId) {
+  // Store pending rejection
+  let pendingRejectConvId = null;
+  let pendingRejectProofId = null;
+
+  window.openRejectModal = function(convId, proofId) {
+    pendingRejectConvId = convId;
+    pendingRejectProofId = proofId;
+    document.getElementById('rejectConfirmModal').style.display = 'flex';
+  };
+
+  window.closeRejectModal = function() {
+    document.getElementById('rejectConfirmModal').style.display = 'none';
+    pendingRejectConvId = null;
+    pendingRejectProofId = null;
+  };
+
+  window.proceedReject = function() {
+    if (pendingRejectConvId && pendingRejectProofId) {
+      rejectProof(pendingRejectConvId, pendingRejectProofId);
+    }
+    closeRejectModal();
+  };
+
+  function rejectProof(convId, proofId) {
     const c   = CONVS.find(x => x.id === convId);
     const msg = c?.messages.find(m => m.proof?.id === proofId);
     if (!msg) return;
@@ -307,10 +331,19 @@
   };
 
   // ── Open a conversation ────────────────────────────────────────────────────
-  function openConv(id) {
+  window.openConv = function(id) {
+    console.log('openConv called with id:', id);
     activeConvId = id;
     const c = CONVS.find(x => x.id === id);
+    if (!c) {
+      console.error('Conversation not found:', id);
+      return;
+    }
     const l = FAKE_LISTINGS.find(x => x.id === c.listingId);
+    if (!l) {
+      console.error('Listing not found:', c.listingId);
+      return;
+    }
     c.unread = 0;
 
     renderConvList(document.getElementById('convSearch').value);
@@ -370,12 +403,12 @@
     if (msgs) msgs.scrollTop = msgs.scrollHeight;
   }
 
-  function closeMobileChat() {
+  window.closeMobileChat = function() {
     document.querySelector('.messages-layout').classList.remove('chat-open');
-  }
+  };
 
   // ── Send a message ─────────────────────────────────────────────────────────
-  function sendMessage(convId) {
+  window.sendMessage = function(convId) {
     const input = document.getElementById('chatInput');
     const text  = input.value.trim();
     if (!text) return;

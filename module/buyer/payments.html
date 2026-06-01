@@ -50,21 +50,7 @@
         <div class="table-toolbar">
           <input class="search-input" id="historySearch" type="text" placeholder="Search by reference, period, or method…" oninput="renderHistory()" />
         </div>
-        <div class="table-wrap">
-          <table class="pay-table">
-            <thead>
-              <tr>
-                <th>Period</th>
-                <th>Amount</th>
-                <th>Method</th>
-                <th>Reference</th>
-                <th>Status</th>
-                <th>Date Paid</th>
-              </tr>
-            </thead>
-            <tbody id="historyBody"></tbody>
-          </table>
-        </div>
+        <div id="historyContainer"></div>
       </div>
 
       <!-- Tab: Deposit -->
@@ -91,17 +77,154 @@
 
     <div class="modal-body">
 
-      <!-- ── Step 1: Method Selection ── -->
-      <div id="payStep1">
+      <!-- ── Step 0: Payment Type Selection ── -->
+      <div id="payStep0">
+        <div class="payment-type-grid">
+          <!-- Platform Payment (Recommended) -->
+          <button class="payment-type-card recommended" onclick="selectPaymentType('platform')">
+            <div class="payment-type-badge">✅ RECOMMENDED</div>
+            <div class="payment-type-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="payment-type-title">Pay with Card/E-wallet</div>
+            <div class="payment-type-desc">Secure payment through platform</div>
+            <div class="payment-type-features">
+              <div class="payment-type-feature">✓ Escrow protected</div>
+              <div class="payment-type-feature">✓ Auto-refund if rejected</div>
+              <div class="payment-type-feature">✓ Zero fraud risk</div>
+            </div>
+            <div class="payment-type-fee">
+              <span class="fee-label">Fee:</span>
+              <span class="fee-amount">₱15 + 2.5%</span>
+            </div>
+          </button>
+
+          <!-- Manual Payment (Warning) -->
+          <button class="payment-type-card manual" onclick="selectPaymentType('manual')">
+            <div class="payment-type-badge warning">⚠️ MANUAL</div>
+            <div class="payment-type-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            </div>
+            <div class="payment-type-title">Bank Transfer / Cash</div>
+            <div class="payment-type-desc">Pay outside platform, upload proof</div>
+            <div class="payment-type-features">
+              <div class="payment-type-feature warning">⚠️ No escrow protection</div>
+              <div class="payment-type-feature warning">⚠️ Manual verification</div>
+              <div class="payment-type-feature warning">⚠️ Fraud risk exists</div>
+            </div>
+            <div class="payment-type-fee">
+              <span class="fee-label">Fee:</span>
+              <span class="fee-amount">Free</span>
+            </div>
+          </button>
+        </div>
+
+        <div class="modal-footer" style="margin-top:24px">
+          <button type="button" class="btn-ghost" onclick="closePayModal()">Cancel</button>
+        </div>
+      </div>
+
+      <!-- ── Step 1a: Platform Payment (PayMongo Simulation) ── -->
+      <div id="payStep1a" style="display:none">
+        <div class="platform-payment-container">
+          <div class="platform-payment-header">
+            <div class="platform-logo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div>
+              <div class="platform-title">Secure Platform Payment</div>
+              <div class="platform-subtitle">Powered by PayMongo</div>
+            </div>
+          </div>
+
+          <div class="payment-summary">
+            <div class="summary-row">
+              <span>Rent Payment</span>
+              <span>₱15,000.00</span>
+            </div>
+            <div class="summary-row">
+              <span>Platform Fee (2.5% + ₱15)</span>
+              <span>₱390.00</span>
+            </div>
+            <div class="summary-divider"></div>
+            <div class="summary-row total">
+              <span>Total Amount</span>
+              <span>₱15,390.00</span>
+            </div>
+          </div>
+
+          <div class="payment-info-box">
+            <div class="info-icon">💡</div>
+            <div class="info-text">
+              <strong>Money held in escrow:</strong> Your payment is held securely until the landlord confirms receipt. If rejected, you get an automatic refund.
+            </div>
+          </div>
+
+          <div class="payment-methods-platform">
+            <div class="method-section-label">Choose Payment Method</div>
+            <div class="platform-method-list">
+              <button class="platform-method-btn" onclick="selectPlatformMethod('card')">
+                <div class="platform-method-icon">💳</div>
+                <div class="platform-method-info">
+                  <div class="platform-method-name">Card</div>
+                  <div class="platform-method-desc">Visa, Mastercard, JCB</div>
+                </div>
+                <div class="platform-method-arrow">→</div>
+              </button>
+              <button class="platform-method-btn" onclick="selectPlatformMethod('gcash')">
+                <div class="platform-method-icon">📱</div>
+                <div class="platform-method-info">
+                  <div class="platform-method-name">GCash</div>
+                  <div class="platform-method-desc">Pay with GCash app</div>
+                </div>
+                <div class="platform-method-arrow">→</div>
+              </button>
+              <button class="platform-method-btn" onclick="selectPlatformMethod('paymaya')">
+                <div class="platform-method-icon">💰</div>
+                <div class="platform-method-info">
+                  <div class="platform-method-name">Maya</div>
+                  <div class="platform-method-desc">Pay with Maya app</div>
+                </div>
+                <div class="platform-method-arrow">→</div>
+              </button>
+              <button class="platform-method-btn" onclick="selectPlatformMethod('bank')">
+                <div class="platform-method-icon">🏦</div>
+                <div class="platform-method-info">
+                  <div class="platform-method-name">Online Banking</div>
+                  <div class="platform-method-desc">BPI, BDO, UnionBank, etc.</div>
+                </div>
+                <div class="platform-method-arrow">→</div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="margin-top:20px">
+          <button type="button" class="btn-ghost" onclick="goToStep(0)">← Back</button>
+        </div>
+      </div>
+
+      <!-- ── Step 1b: Manual Payment Method Selection ── -->
+      <div id="payStep1b" style="display:none">
+        <div class="manual-warning-banner">
+          <div class="warning-icon">⚠️</div>
+          <div class="warning-text">
+            <strong>Manual Payment Selected</strong><br>
+            No escrow protection. Verify payment carefully before confirming.
+          </div>
+        </div>
+
         <div class="method-section-label">E-Wallets</div>
         <div class="method-grid">
-          <button class="method-card gcash" onclick="selectMethod('gcash')" id="card-gcash">
+        <div class="method-section-label" style="margin-top:16px">E-Wallets</div>
+        <div class="method-grid">
+          <button class="method-card gcash" onclick="selectManualMethod('gcash')" id="card-gcash">
             <div class="method-logo"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="20" fill="#00aff0"/><text x="20" y="26" text-anchor="middle" font-size="16" font-weight="800" fill="#fff" font-family="sans-serif">G</text></svg></div>
             <div class="method-name">GCash</div>
             <div class="method-desc">Send to landlord's GCash number</div>
             <div class="method-check" id="check-gcash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
           </button>
-          <button class="method-card maya" onclick="selectMethod('maya')" id="card-maya">
+          <button class="method-card maya" onclick="selectManualMethod('maya')" id="card-maya">
             <div class="method-logo"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="20" fill="#1a8f5d"/><text x="20" y="26" text-anchor="middle" font-size="13" font-weight="800" fill="#fff" font-family="sans-serif">Maya</text></svg></div>
             <div class="method-name">Maya</div>
             <div class="method-desc">Send to landlord's Maya account</div>
@@ -111,13 +234,13 @@
 
         <div class="method-section-label" style="margin-top:16px">Bank Transfer</div>
         <div class="method-grid">
-          <button class="method-card bpi" onclick="selectMethod('bpi')" id="card-bpi">
+          <button class="method-card bpi" onclick="selectManualMethod('bpi')" id="card-bpi">
             <div class="method-logo"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="20" fill="#cc0000"/><text x="20" y="26" text-anchor="middle" font-size="12" font-weight="800" fill="#fff" font-family="sans-serif">BPI</text></svg></div>
             <div class="method-name">BPI</div>
             <div class="method-desc">Bank of the Philippine Islands</div>
             <div class="method-check" id="check-bpi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
           </button>
-          <button class="method-card cash" onclick="selectMethod('cash')" id="card-cash">
+          <button class="method-card cash" onclick="selectManualMethod('cash')" id="card-cash">
             <div class="method-logo"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="20" fill="#374151"/><text x="20" y="26" text-anchor="middle" font-size="10" font-weight="800" fill="#fff" font-family="sans-serif">CASH</text></svg></div>
             <div class="method-name">Cash</div>
             <div class="method-desc">Paid in person to landlord</div>
@@ -126,8 +249,8 @@
         </div>
 
         <div class="modal-footer" style="margin-top:24px">
-          <button type="button" class="btn-ghost" onclick="closePayModal()">Cancel</button>
-          <button type="button" class="btn-primary" id="proceedBtn" onclick="goToProofStep()" disabled>
+          <button type="button" class="btn-ghost" onclick="goToStep(0)">← Back</button>
+          <button type="button" class="btn-primary" id="proceedManualBtn" onclick="goToProofStep()" disabled>
             Next — Upload Proof
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
@@ -136,6 +259,14 @@
 
       <!-- ── Step 2: Upload Proof of Payment ── -->
       <div id="payStep2" style="display:none">
+        <div class="proof-fraud-warning">
+          <div class="fraud-warning-icon">⚠️</div>
+          <div class="fraud-warning-content">
+            <div class="fraud-warning-title">IMPORTANT: Fraud Prevention</div>
+            <div class="fraud-warning-text">Only submit REAL payment receipts. Fake receipts are illegal and will result in account suspension. The seller will verify your payment with their bank/e-wallet before confirming.</div>
+          </div>
+        </div>
+
         <div class="proof-method-chip">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
           Paying via <strong id="chosenMethodLabel"></strong>
@@ -174,7 +305,7 @@
           </div>
 
           <div class="modal-footer" style="margin-top:20px">
-            <button type="button" class="btn-ghost" onclick="goToStep(1)">← Back</button>
+            <button type="button" class="btn-ghost" onclick="goToStep('1b')">← Back</button>
             <button type="submit" class="btn-primary" id="submitPayBtn" disabled>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               Submit Proof

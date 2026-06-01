@@ -733,12 +733,32 @@
     const seeAllBtn = el.querySelector('#hsNotifSeeAll');
     if (seeAllBtn) seeAllBtn.addEventListener('click', goToNotifPage);
 
-    // Toggle notification panel
+    // Toggle notification panel (desktop) or navigate to page (mobile)
     const notifBtn   = el.querySelector('#hsNotifBtn');
     const notifPanel = el.querySelector('#hsNotifPanel');
     if (notifBtn && notifPanel) {
       notifBtn.addEventListener('click', e => {
         e.stopPropagation();
+
+        // On mobile (< 768px), go to notifications page instead
+        if (window.innerWidth < 768) {
+          // Determine the correct path based on current role
+          const currentPath = window.location.pathname;
+          let notifPath = 'notifications.html';
+
+          if (currentPath.includes('/buyer/')) {
+            notifPath = 'notifications.html';
+          } else if (currentPath.includes('/seller/')) {
+            notifPath = 'notifications.html';
+          } else if (currentPath.includes('/admin/')) {
+            notifPath = 'notifications.html';
+          }
+
+          window.location.href = notifPath;
+          return;
+        }
+
+        // Desktop: Toggle dropdown
         notifPanel.classList.toggle('open');
         const profileDropdown = el.querySelector('#hsProfileDropdown');
         if (profileDropdown) profileDropdown.classList.remove('open');

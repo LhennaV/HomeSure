@@ -206,13 +206,14 @@
     /* ── Submenu Container ── */
     .hs-nav-submenu-container {
       max-height: 0;
-      overflow: hidden;
+      overflow: visible;
       transition: max-height 0.3s ease, opacity 0.3s ease;
       opacity: 0;
     }
     .hs-nav-group.expanded .hs-nav-submenu-container {
-      max-height: 200px;
-      opacity: 1;
+      max-height: 500px !important;
+      opacity: 1 !important;
+      overflow: visible !important;
     }
 
     /* ── Submenu Items ── */

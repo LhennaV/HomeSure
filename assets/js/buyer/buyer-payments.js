@@ -153,21 +153,40 @@
         )
       : all;
 
-    const tbody = document.getElementById('historyBody');
+    const container = document.getElementById('historyContainer');
     if (!filtered.length) {
-      tbody.innerHTML = `<tr class="table-empty"><td colspan="6">No payment records found.</td></tr>`;
+      container.innerHTML = `<div class="pay-card-empty">No payment records found.</div>`;
       return;
     }
 
-    tbody.innerHTML = filtered.map(p => `
-      <tr>
-        <td>${p.period}</td>
-        <td class="amount-cell">${fmtMoney(p.amount)}</td>
-        <td>${p.method}</td>
-        <td style="font-family: monospace; font-size: 12.5px;">${p.reference}</td>
-        <td>${statusBadge(p.status)}</td>
-        <td>${fmtShortDate(p.paidDate)}</td>
-      </tr>
+    container.innerHTML = filtered.map(p => `
+      <div class="pay-card">
+        <div class="pay-card-left">
+          <div class="pay-card-property">${p.listingTitle}</div>
+          <div class="pay-card-meta">
+            <div class="pay-card-item">
+              <span class="pay-card-item-label">Period</span>
+              <span class="pay-card-item-value">${p.period}</span>
+            </div>
+            <div class="pay-card-item">
+              <span class="pay-card-item-label">Paid Date</span>
+              <span class="pay-card-item-value">${fmtDate(p.paidDate)}</span>
+            </div>
+            <div class="pay-card-item">
+              <span class="pay-card-item-label">Method</span>
+              <span class="pay-card-item-value">${p.method}</span>
+            </div>
+            <div class="pay-card-item">
+              <span class="pay-card-item-label">Reference</span>
+              <span class="pay-card-item-value">${p.reference}</span>
+            </div>
+          </div>
+        </div>
+        <div class="pay-card-right">
+          <div class="pay-card-amount">${fmtMoney(p.amount)}</div>
+          ${statusBadge(p.status)}
+        </div>
+      </div>
     `).join('');
   }
 
@@ -242,18 +261,16 @@
   };
 
   // ── Mock payment state machine ────────────────────────────────────────────────
-  // States: pending_confirmation → confirmed → paid
+  let selectedPaymentType = null; // 'platform' or 'manual'
   let selectedMethod = null;
   let proofFileName  = null;
 
-  // Step 1 — open method selection
+  // Open modal — show payment type selection first
   window.openPayModal = function () {
+    selectedPaymentType = null;
     selectedMethod = null;
     proofFileName  = null;
-    goToStep(1);
-    document.querySelectorAll('.method-card').forEach(c => c.classList.remove('selected'));
-    document.querySelectorAll('.method-check').forEach(c => c.style.opacity = '0');
-    document.getElementById('proceedBtn').disabled = true;
+    goToStep(0);
     document.getElementById('proofLabel').textContent = 'Click to attach screenshot or photo';
     document.getElementById('payModal').style.display = 'flex';
   };
@@ -262,27 +279,60 @@
     document.getElementById('payModal').style.display = 'none';
   };
 
-  window.selectMethod = function (method) {
+  // Step 0 → 1a or 1b based on payment type
+  window.selectPaymentType = function (type) {
+    selectedPaymentType = type;
+    if (type === 'platform') {
+      goToStep('1a');
+    } else if (type === 'manual') {
+      goToStep('1b');
+    }
+  };
+
+  // Platform payment method selected (simulate PayMongo)
+  window.selectPlatformMethod = function (method) {
+    // Simulate payment gateway redirect
+    showToast('In production, you would be redirected to secure PayMongo payment page...');
+    setTimeout(() => {
+      showToast('Payment of ₱15,390 completed successfully! (Demo)');
+      closePayModal();
+      // In real app, this would trigger after actual payment
+      renderStats();
+      renderUpcoming();
+    }, 2000);
+  };
+
+  // Manual payment method selected
+  window.selectManualMethod = function (method) {
     selectedMethod = method;
     document.querySelectorAll('.method-card').forEach(c => c.classList.remove('selected'));
     document.querySelectorAll('.method-check').forEach(c => c.style.opacity = '0');
     document.getElementById('card-' + method).classList.add('selected');
     document.getElementById('check-' + method).style.opacity = '1';
-    document.getElementById('proceedBtn').disabled = false;
+    document.getElementById('proceedManualBtn').disabled = false;
   };
 
-  // Step 2 — go to proof upload
+  // Go to proof upload step
   window.goToProofStep = function () {
     if (!selectedMethod) return;
-    const labels = { gcash:'GCash', maya:'Maya', bpi:'BPI Bank Transfer', instapay:'InstaPay' };
+    const labels = {
+      gcash:'GCash',
+      maya:'Maya',
+      bpi:'BPI Bank Transfer',
+      cash:'Cash'
+    };
     document.getElementById('chosenMethodLabel').textContent = labels[selectedMethod] || selectedMethod;
     goToStep(2);
   };
 
-  function goToStep(n) {
-    document.getElementById('payStep1').style.display = n === 1 ? '' : 'none';
-    document.getElementById('payStep2').style.display = n === 2 ? '' : 'none';
+  // Navigate between steps
+  function goToStep(step) {
+    document.getElementById('payStep0').style.display = step === 0 ? '' : 'none';
+    document.getElementById('payStep1a').style.display = step === '1a' ? '' : 'none';
+    document.getElementById('payStep1b').style.display = step === '1b' ? '' : 'none';
+    document.getElementById('payStep2').style.display = step === 2 ? '' : 'none';
   }
+  window.goToStep = goToStep; // Expose for onclick handlers
 
   window.onProofSelect = function (e) {
     proofFileName = e.target.files[0]?.name || null;

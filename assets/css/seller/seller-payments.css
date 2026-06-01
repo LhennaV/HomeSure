@@ -338,4 +338,7 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); colo
   .content { padding: 18px 16px 80px; }
   .pending-card { flex-wrap: wrap; }
   .pending-actions { flex-direction: row; margin-left: 0; width: 100%; }
+
+  /* Toast above bottom nav on mobile */
+  .toast { bottom: 80px !important; }
 }

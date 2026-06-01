@@ -194,3 +194,125 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); colo
 [data-theme="light"] .action-row:hover,
 [data-theme="light"] .seller-row:hover { background: rgba(0,0,0,0.02); }
 [data-theme="light"] .breakdown-bar-wrap { background: rgba(0,0,0,0.06); }
+
+/* ── Responsive / Mobile ── */
+@media (max-width: 1200px) {
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 900px) {
+  .dash-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .content { padding: 20px 16px 80px; }
+
+  /* Stat grid - 2 columns on mobile */
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .stat-card {
+    padding: 16px 18px;
+    gap: 12px;
+  }
+
+  .stat-icon {
+    width: 42px;
+    height: 42px;
+  }
+
+  .stat-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .stat-label {
+    font-size: 10px;
+  }
+
+  .stat-value {
+    font-size: 24px;
+  }
+
+  /* Dashboard grid - single column */
+  .dash-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .dash-card-header {
+    padding: 14px 16px;
+  }
+
+  .dash-card-title {
+    font-size: 13px;
+  }
+
+  /* Listings compact */
+  .listing-row {
+    padding: 12px 16px;
+    gap: 12px;
+  }
+
+  .listing-thumb {
+    width: 38px;
+    height: 38px;
+  }
+
+  .listing-title {
+    font-size: 12.5px;
+  }
+
+  .listing-meta {
+    font-size: 11px;
+  }
+
+  /* Actions compact */
+  .action-row {
+    padding: 12px 16px;
+    gap: 12px;
+  }
+
+  .action-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .action-icon svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .action-title {
+    font-size: 12.5px;
+  }
+
+  .action-desc {
+    font-size: 11px;
+  }
+
+  .action-badge {
+    font-size: 10px;
+    padding: 2px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small - single column stats */
+  .stat-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .content { padding: 16px 12px 80px; }
+
+  .page-title {
+    font-size: 20px;
+  }
+
+  .page-sub {
+    font-size: 11.5px;
+  }
+}

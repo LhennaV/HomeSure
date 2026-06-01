@@ -173,7 +173,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg>
             Mark Received
           </button>
-          <button class="action-btn reject" onclick="rejectPayment('${p.id}')">
+          <button class="action-btn reject" onclick="openRejectPaymentModal('${p.id}')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             Reject
           </button>
@@ -199,8 +199,27 @@
     showToast(`Payment from ${payment.tenantName} marked as received.`);
   };
 
-  // ── Reject Payment ────────────────────────────────────────────────────────────
-  window.rejectPayment = function (id) {
+  // ── Reject Payment Modal ──────────────────────────────────────────────────────
+  let pendingRejectPaymentId = null;
+
+  window.openRejectPaymentModal = function(id) {
+    pendingRejectPaymentId = id;
+    document.getElementById('rejectPaymentModal').style.display = 'flex';
+  };
+
+  window.closeRejectPaymentModal = function() {
+    document.getElementById('rejectPaymentModal').style.display = 'none';
+    pendingRejectPaymentId = null;
+  };
+
+  window.confirmRejectPayment = function() {
+    if (pendingRejectPaymentId) {
+      rejectPayment(pendingRejectPaymentId);
+    }
+    closeRejectPaymentModal();
+  };
+
+  function rejectPayment(id) {
     const idx = PENDING.findIndex(p => p.id === id);
     if (idx === -1) return;
     const [payment] = PENDING.splice(idx, 1);
@@ -212,7 +231,7 @@
     renderStats();
     renderPending();
     showToast(`Payment from ${payment.tenantName} has been rejected.`);
-  };
+  }
 
   // ── Render All Payments Tab ───────────────────────────────────────────────────
   window.renderAllPayments = function () {

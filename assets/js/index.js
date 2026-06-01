@@ -752,7 +752,7 @@ function Navbar() {
       ),
       React.createElement("span", { className: "nav-logo-divider" }),
       React.createElement("img", { src: LOGO_SRC, alt: "HomeSure", height: 30, style: { display: "block" } }),
-      "HomeSure",
+      React.createElement("span", { style: { display: "inline-block" } }, "HomeSure"),
     ),
     React.createElement(
       "div",
@@ -908,7 +908,7 @@ function PlatformFeatures() {
       desc: 'Automated deposit tracking and refund processing'
     },
     {
-      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`,
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>`,
       title: 'Damage Reporting System',
       desc: 'Photo uploads and dispute resolution tools'
     },
@@ -992,17 +992,29 @@ function Hero() {
       React.createElement(
         "div",
         { className: "hero-ctas" },
+        // Desktop: Browse Listings & List Property
         React.createElement(
           "button",
-          { className: "hero-btn-primary", onClick: () => (window.location.href = "auth/signin.html") },
+          { className: "hero-btn-primary hero-btn-browse", onClick: () => (window.location.href = "module/buyer/dashboard.html") },
           React.createElement("span", { dangerouslySetInnerHTML: { __html: searchIcon } }),
           React.createElement("span", null, "Browse Listings"),
         ),
         React.createElement(
           "button",
-          { className: "hero-btn-secondary", onClick: () => (window.location.href = "auth/signup.html") },
+          { className: "hero-btn-secondary hero-btn-list", onClick: () => (window.location.href = "auth/signup.html") },
           React.createElement("span", null, "List Your Property"),
           React.createElement("span", { dangerouslySetInnerHTML: { __html: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>` } }),
+        ),
+        // Mobile: Sign In & Sign Up
+        React.createElement(
+          "button",
+          { className: "hero-btn-mobile-signin", onClick: () => (window.location.href = "auth/signin.html") },
+          "Sign In",
+        ),
+        React.createElement(
+          "button",
+          { className: "hero-btn-mobile-signup", onClick: () => (window.location.href = "auth/signup.html") },
+          "Sign Up",
         ),
       ),
       React.createElement(

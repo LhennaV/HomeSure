@@ -29,8 +29,8 @@
             </div>
           </div>
           <div class="conv-list" id="convList">
-            <!-- Sample conversations AYAW GUMANAAAAAAAAAAAA -->
-            <div class="conv-item">
+            <!-- Sample conversations - NOW CLICKABLE! -->
+            <div class="conv-item" onclick="window.openChat(1)">
               <img class="conv-avatar" src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=400&q=80" alt="Property" />
               <div class="conv-info">
                 <div class="conv-name">
@@ -47,7 +47,7 @@
               </div>
             </div>
 
-            <div class="conv-item">
+            <div class="conv-item" onclick="window.openChat(2)">
               <img class="conv-avatar" src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&q=80" alt="Property" />
               <div class="conv-info">
                 <div class="conv-name">
@@ -63,7 +63,7 @@
               </div>
             </div>
 
-            <div class="conv-item">
+            <div class="conv-item" onclick="window.openChat(3)">
               <img class="conv-avatar" src="https://images.unsplash.com/photo-1560185893-a55cbc8c57e8?w=600&q=80" alt="Property" />
               <div class="conv-info">
                 <div class="conv-name">
@@ -85,6 +85,12 @@
         <div class="chat-panel" id="chatPanel">
           <!-- Chat Header -->
           <div class="chat-header">
+            <!-- Back button for mobile -->
+            <button class="chat-back-btn" onclick="window.closeChat()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
             <div class="chat-header-info">
               <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=400&q=80" alt="Property" class="chat-avatar" />
               <div>
@@ -467,6 +473,35 @@
   console.log('✓✓✓ Payment script loaded!');
   let selectedMethod = null;
 
+  // Open chat function (for mobile + desktop)
+  window.openChat = function(chatId) {
+    console.log('✓ Opening chat:', chatId);
+
+    // Mark conversation as active
+    document.querySelectorAll('.conv-item').forEach(item => item.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+
+    // On mobile, slide in the chat panel
+    const messagesLayout = document.querySelector('.messages-layout');
+    if (messagesLayout) {
+      messagesLayout.classList.add('chat-open');
+    }
+
+    // Remove unread badge
+    const badge = event.currentTarget.querySelector('.conv-badge');
+    if (badge) {
+      badge.style.display = 'none';
+    }
+  };
+
+  // Close chat (back button on mobile)
+  window.closeChat = function() {
+    const messagesLayout = document.querySelector('.messages-layout');
+    if (messagesLayout) {
+      messagesLayout.classList.remove('chat-open');
+    }
+  };
+
   // Custom notification function
   window.showNotif = function(message, duration = 3000) {
     const notif = document.createElement('div');
@@ -749,5 +784,38 @@
 <script src="../../components/topbar.js"></script>
 <script src="../../assets/js/buyer/buyer-messages.js"></script>
 <script src="../../components/review-prompt.js"></script>
+
+<!-- Mobile Navigation Fix: Show conversation list when Messages nav clicked -->
+<script>
+  // On page load, ensure conversation list is visible on mobile
+  window.addEventListener('DOMContentLoaded', () => {
+    // Close any open chat on mobile when page loads
+    if (window.innerWidth <= 768) {
+      window.closeChat();
+    }
+
+    // Listen for Messages nav item clicks (especially on mobile)
+    document.addEventListener('click', (e) => {
+      const navItem = e.target.closest('[data-page="messages"]');
+      if (navItem && window.innerWidth <= 768) {
+        // Close chat to show conversation list
+        setTimeout(() => {
+          window.closeChat();
+        }, 100);
+      }
+    });
+  });
+
+  // Handle window resize
+  window.addEventListener('resize', () => {
+    if (window.innerWidth <= 768) {
+      // If resizing to mobile, close chat
+      const messagesLayout = document.querySelector('.messages-layout');
+      if (messagesLayout && messagesLayout.classList.contains('chat-open')) {
+        window.closeChat();
+      }
+    }
+  });
+</script>
 </body>
 </html>

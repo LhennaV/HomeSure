@@ -267,6 +267,18 @@ blockquote {
   .auth-title  { font-size: 22px; }
   .auth-sub    { font-size: 13px; margin-bottom: 22px; }
   .name-row    { flex-wrap: wrap; }
+}
+
+/* ── Hide browser's default password reveal button ── */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-textfield-decoration-container {
+  visibility: hidden;
+  pointer-events: none;
+}
   .name-row .field-input.mi { flex: 0 0 72px; }
   .role-btn    { font-size: 12px; padding: 8px 10px; }
 }
