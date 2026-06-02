@@ -27,7 +27,7 @@
     .page-sub    { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
 
     /* ── Layout columns ── */
-    .profile-layout { display: grid; grid-template-columns: 260px 1fr; gap: 20px; align-items: start; }
+    .profile-layout { display: grid; grid-template-columns: 300px 1fr; gap: 20px; align-items: start; }
 
     /* ── Left: identity card ── */
     .identity-card {
@@ -70,23 +70,27 @@
 
     .identity-divider { width: 100%; height: 1px; background: var(--border); }
 
-    .identity-stats { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+    .identity-stats { width: 100%; display: flex; flex-direction: column; gap: 16px; }
     .stat-row {
       display: flex; align-items: center; justify-content: space-between;
+      padding: 4px 0;
+      gap: 20px;
     }
     .stat-label {
       color: var(--muted);
       display: flex;
       align-items: center;
       gap: 6px;
-      font-size: 14px;
-      font-weight: 600;
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
     }
     .stat-label svg { width: 14px; height: 14px; }
     .stat-value {
       color: var(--text);
-      font-weight: 600;
-      font-size: 18px;
+      font-weight: 700;
+      font-size: 15px;
+      white-space: nowrap;
     }
 
     /* ── Right: form sections ── */

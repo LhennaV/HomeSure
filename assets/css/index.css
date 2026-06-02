@@ -308,7 +308,6 @@ nav {
 .trust-highlight {
   color: var(--teal);
   display: inline-block;
-  background: linear-gradient(to bottom, transparent 60%, rgba(0,201,167,0.2) 60%);
 }
 
 .trust-subtext {
