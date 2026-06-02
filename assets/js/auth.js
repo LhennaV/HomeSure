@@ -197,90 +197,8 @@ function startFpCountdown(seconds) {
 
 function resendReset() { clearInterval(_fpTimer); startFpCountdown(32); }
 
-// ── Dodge Button Easter Egg ───────────────────────────────────────────────────
-
-let _dodgeActive = false;
-let _dodgeCount  = 0;
-let _dodgeHooked = false;
-
-const DODGE_MSG = 'Fill up the form first!';
-const DODGE_BASE_SIZE = 12.5;
-const DODGE_MAX_SIZE  = 28;
-
-function isPageEmpty() {
-  const isSignup = !!document.getElementById('pw2');
-  if (isSignup) {
-    const fields = [
-      document.querySelector('input[placeholder="Surname"]'),
-      document.querySelector('input[placeholder="First Name"]'),
-      document.querySelector('input[type="email"]'),
-      document.querySelector('input[type="tel"]'),
-      document.getElementById('pw1'),
-      document.getElementById('pw2'),
-    ];
-    return fields.some(f => !f || !f.value.trim());
-  }
-  const email = document.querySelector('input[type="email"]');
-  const pw    = document.getElementById('pw1');
-  return !email || !pw || !email.value.trim() || !pw.value;
-}
-
-function showDodgeMsg() {
-  const btn = document.querySelector('.btn-primary.full');
-  if (!btn) return;
-  let msg = document.getElementById('dodgeMsg');
-  if (!msg) {
-    msg = document.createElement('p');
-    msg.id = 'dodgeMsg';
-    msg.style.cssText = 'color:#f87171;font-weight:600;text-align:center;margin-top:10px;transition:font-size 0.2s;';
-    btn.parentElement.insertBefore(msg, btn.nextSibling);
-  }
-  const newSize = Math.min(DODGE_BASE_SIZE + (_dodgeCount - 1) * 2, DODGE_MAX_SIZE);
-  msg.style.fontSize = newSize + 'px';
-  msg.textContent = DODGE_MSG;
-  msg.style.opacity = '1';
-}
-
-function dodgeMove() {
-  const btn = document.querySelector('.btn-primary.full');
-  if (!btn || !_dodgeActive) return;
-  _dodgeCount++;
-  showDodgeMsg();
-
-  const btnW = btn.offsetWidth;
-  const btnH = btn.offsetHeight;
-  const vw   = window.innerWidth  - btnW - 32;
-  const vh   = window.innerHeight - btnH - 32;
-
-  btn.style.position   = 'fixed';
-  btn.style.zIndex     = '9999';
-  btn.style.width      = btnW + 'px';
-  btn.style.left       = Math.max(16, Math.floor(Math.random() * vw)) + 'px';
-  btn.style.top        = Math.max(16, Math.floor(Math.random() * vh)) + 'px';
-  btn.style.transition = 'left 0.22s cubic-bezier(0.34,1.56,0.64,1), top 0.22s cubic-bezier(0.34,1.56,0.64,1)';
-}
-
-function enableDodge() {
-  const btn = document.querySelector('.btn-primary.full');
-  if (!btn || _dodgeHooked) return;
-  _dodgeActive = true;
-  _dodgeHooked = true;
-  btn.addEventListener('mouseenter', dodgeMove);
-}
-
-function disableDodge() {
-  const btn = document.querySelector('.btn-primary.full');
-  _dodgeActive = false;
-  _dodgeHooked = false;
-  _dodgeCount  = 0;
-  if (btn) {
-    btn.removeEventListener('mouseenter', dodgeMove);
-    btn.style.position = btn.style.left = btn.style.top =
-    btn.style.width = btn.style.zIndex = btn.style.transition = '';
-  }
-  const msg = document.getElementById('dodgeMsg');
-  if (msg) msg.remove();
-}
+// ── Dodge Button Easter Egg REMOVED ───────────────────────────────────────────
+// QA feedback: Button moving causes bad UX. Removed all dodge functionality.
 
 // ── Google Toast ──────────────────────────────────────────────────────────────
 
@@ -322,15 +240,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const backdrop = document.getElementById('verifyModal');
   if (backdrop) backdrop.addEventListener('click', e => { if (e.target === backdrop) closeModal(); });
 
-  enableDodge();
-
   const isSignup = !!document.getElementById('pw2');
 
   document.querySelectorAll('input').forEach(el => {
-    el.addEventListener('input', () => {
-      if (!isPageEmpty()) disableDodge();
-      else if (!_dodgeHooked) enableDodge();
-    });
     el.addEventListener('keydown', e => {
       if (e.key === 'Enter') {
         if (isSignup) openVerifyModal();
