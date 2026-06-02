@@ -377,6 +377,28 @@
     toastTimer = setTimeout(() => toast.classList.remove('show'), 4500);
   }
 
+  // ══════════════════════════════════════════════════════════════════════════════
+  // NEW PAYMENT INTEGRATION (PayMongo Demo)
+  // ══════════════════════════════════════════════════════════════════════════════
+
+  window.payNowWithPayMongo = function() {
+    // Open PayMongo payment modal with payment details
+    PaymentIntegration.openPaymentModal({
+      amount: 15000,
+      listingTitle: "2BR Apartment — Poblacion",
+      listingId: "prop-001",
+      landlordId: "usr-003",
+      period: "June 2026",
+      dueDate: "2026-07-01",
+      onSuccess: function(transaction) {
+        // Refresh the page to show new payment
+        setTimeout(() => {
+          location.reload();
+        }, 2000);
+      }
+    });
+  };
+
   // ── Init ──────────────────────────────────────────────────────────────────────
   renderStats();
   renderUpcoming();

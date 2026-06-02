@@ -25,6 +25,38 @@
 
   // ── Fake conversations ─────────────────────────────────────────────────────
   const CONVS = [
+    // ★ NEW: Multi-unit apartment building - for testing adjust availability modal
+    {
+      id: 'c-multi-unit', listingId: 'prop-002', buyerName: 'John Dela Cruz', unread: 1, dateLabel: 'Today',
+      messages: [
+        { from: 'buyer',  text: "Hi! I'm interested in one of the units in your apartment building. How many units are still available?", time: '11:00 AM', read: true },
+        { from: 'seller', text: "Hello John! We currently have 3 units available out of 8 total. All units are 1-bedroom with aircon.", time: '11:10 AM' },
+        { from: 'buyer',  text: 'Perfect! I would like to rent one unit starting next month.', time: '11:15 AM', read: true },
+        { from: 'seller', text: 'Great! Here is your payment request for June 2026:', time: '11:20 AM' },
+        {
+          from: 'seller', type: 'payment_request', time: '11:20 AM',
+          payment: {
+            id: 'PR-MULTI-001', property: '1-Bedroom Apartment Building (Multi-Unit)',
+            period: 'June 2026', amount: 8000,
+            methods: ['GCash', 'PayMaya', 'Card'],
+            status: 'paid',
+          },
+        },
+        {
+          from: 'buyer', type: 'payment_proof', time: '11:45 AM',
+          proof: {
+            id: 'PROOF-MULTI-001', reqId: 'PR-MULTI-001',
+            method: 'GCash', amount: 8000,
+            period: 'June 2026',
+            property: '1-Bedroom Apartment Building (Unit 5)',
+            fileName: 'gcash_unit5_june2026.jpg',
+            ref: 'REF-GC9M2X',
+            status: 'pending', // ← Waiting for seller confirmation - will trigger adjust availability modal!
+          },
+        },
+        { from: 'buyer',  text: 'Payment sent! I rented Unit 5. 😊', time: '11:46 AM', read: false },
+      ],
+    },
     {
       id: 'c1', listingId: 'prop-002', buyerName: 'Maria Santos', unread: 1, dateLabel: 'Today',
       messages: [
@@ -281,6 +313,35 @@
       msgs.appendChild(row);
       msgs.scrollTop = msgs.scrollHeight;
     }
+
+    // ══════════════════════════════════════════════════════════════════════════════
+    // TRIGGER MODAL: Adjust Availability (multi-unit) OR Close Listing (single unit)
+    // ══════════════════════════════════════════════════════════════════════════════
+    setTimeout(() => {
+      const listing = FAKE_LISTINGS.find(l => l.id === c.listingId);
+
+      if (listing && listing.hasMultipleUnits && listing.availableUnits > 0) {
+        // Multi-unit property with available units → show adjust availability modal
+        AdjustAvailabilityModal.open({
+          listingId: listing.id,
+          listingTitle: listing.title,
+          totalUnits: listing.totalUnits,
+          availableUnits: listing.availableUnits,
+          onConfirm: (newAvailable) => {
+            console.log(`✅ Availability updated after payment: ${newAvailable} units remaining`);
+          }
+        });
+      } else {
+        // Single unit OR no units left → show close listing modal
+        CloseListingModal.openModal({
+          listingId: c.listingId,
+          listingTitle: msg.proof.property,
+          tenantName: c.buyerName,
+          period: msg.proof.period,
+          amount: msg.proof.amount
+        });
+      }
+    }, 2000); // 2 second delay so user can see the confirmation message
   };
 
   // Store pending rejection

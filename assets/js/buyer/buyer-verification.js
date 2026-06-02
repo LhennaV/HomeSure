@@ -69,34 +69,32 @@
       <div class="upload-grid">
         <div>
           <div class="upload-label">Government-Issued ID <span class="required-star">*</span></div>
-          <div class="upload-box" id="idUploadBox" onclick="document.getElementById('idFileInput').click()">
-            <div class="upload-box-icon">
+          <div class="upload-box" id="idUploadBox" onclick="takeIDPhoto()">
+            <div class="upload-box-icon" id="idIcon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="16 16 12 12 8 16"/>
-                <line x1="12" y1="12" x2="12" y2="21"/>
-                <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
               </svg>
             </div>
-            <div class="upload-filename" id="idFileName">Click to upload ID</div>
+            <img id="idPreview" style="display:none;width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;" alt="ID Preview" />
+            <div class="upload-filename" id="idFileName">Click to take ID photo</div>
             <div class="upload-filesub">PNG, JPG up to 10MB &bull; Passport, Driver's License, UMID, SSS, PhilHealth</div>
           </div>
-          <input type="file" id="idFileInput" accept="image/*" capture="environment" onchange="handleFileSelect('id', this)" />
         </div>
 
         <div>
           <div class="upload-label">Selfie Verification <span class="required-star">*</span></div>
-          <div class="upload-box" id="selfieUploadBox" onclick="document.getElementById('selfieFileInput').click()">
-            <div class="upload-box-icon">
+          <div class="upload-box" id="selfieUploadBox" onclick="takeSelfiePhoto()">
+            <div class="upload-box-icon" id="selfieIcon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="16 16 12 12 8 16"/>
-                <line x1="12" y1="12" x2="12" y2="21"/>
-                <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
               </svg>
             </div>
-            <div class="upload-filename" id="selfieFileName">Click to upload selfie</div>
+            <img id="selfiePreview" style="display:none;width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;" alt="Selfie Preview" />
+            <div class="upload-filename" id="selfieFileName">Click to take selfie</div>
             <div class="upload-filesub">PNG, JPG up to 10MB &bull; Hold your ID next to your face</div>
           </div>
-          <input type="file" id="selfieFileInput" accept="image/*" capture="user" onchange="handleFileSelect('selfie', this)" />
         </div>
       </div>
 
@@ -122,35 +120,105 @@
     </div>
   `;
 
-  function handleFileSelect(type, input) {
-    if (!input.files || !input.files[0]) return;
-    const file = input.files[0];
-    const name = file.name.length > 30 ? file.name.substring(0, 27) + '...' : file.name;
-    if (type === 'id') {
-      document.getElementById('idFileName').textContent = name;
-      document.getElementById('idUploadBox').classList.add('has-file');
-    } else {
-      document.getElementById('selfieFileName').textContent = name;
-      document.getElementById('selfieUploadBox').classList.add('has-file');
-    }
-    const bothFilled = document.getElementById('idUploadBox').classList.contains('has-file')
-                    && document.getElementById('selfieUploadBox').classList.contains('has-file');
-    document.getElementById('submitBtn').disabled = !bothFilled;
+  // ══════════════════════════════════════════════════════════════════════════════
+  // CAMERA CAPTURE
+  // ══════════════════════════════════════════════════════════════════════════════
+
+  let idPhotoData = null;
+  let selfiePhotoData = null;
+
+  window.takeIDPhoto = function() {
+    CameraCapture.open({
+      title: 'Take ID Photo',
+      instructions: [
+        'Place your ID on a flat surface with good lighting',
+        'Make sure all text is clearly readable',
+        'Avoid glare and shadows'
+      ],
+      onCapture: function(imageDataURL) {
+        idPhotoData = imageDataURL;
+
+        // Update preview
+        const preview = document.getElementById('idPreview');
+        preview.src = imageDataURL;
+        preview.style.display = 'block';
+
+        // Update text and style
+        document.getElementById('idFileName').textContent = '✓ ID Photo Captured';
+        document.getElementById('idUploadBox').classList.add('has-file');
+        document.getElementById('idIcon').style.display = 'none';
+
+        // Check if both photos captured
+        checkBothCaptured();
+        showToast('✅ ID photo captured!');
+      }
+    });
+  };
+
+  window.takeSelfiePhoto = function() {
+    CameraCapture.open({
+      title: 'Take Selfie',
+      instructions: [
+        'Hold your ID next to your face',
+        'Center your face in the frame',
+        'Ensure good lighting and clear background'
+      ],
+      onCapture: function(imageDataURL) {
+        selfiePhotoData = imageDataURL;
+
+        // Update preview
+        const preview = document.getElementById('selfiePreview');
+        preview.src = imageDataURL;
+        preview.style.display = 'block';
+
+        // Update text and style
+        document.getElementById('selfieFileName').textContent = '✓ Selfie Captured';
+        document.getElementById('selfieUploadBox').classList.add('has-file');
+        document.getElementById('selfieIcon').style.display = 'none';
+
+        // Check if both photos captured
+        checkBothCaptured();
+        showToast('✅ Selfie captured!');
+      }
+    });
+  };
+
+  function checkBothCaptured() {
+    const bothCaptured = idPhotoData && selfiePhotoData;
+    document.getElementById('submitBtn').disabled = !bothCaptured;
   }
 
   function submitVerification() {
+    if (!idPhotoData || !selfiePhotoData) {
+      showToast('⚠️ Please take both ID photo and selfie');
+      return;
+    }
+
     const btn = document.getElementById('submitBtn');
     btn.disabled = true;
+    btn.textContent = 'Submitting...';
 
+    // Save photos to localStorage (in production, upload to server)
+    const verificationData = {
+      idPhoto: idPhotoData,
+      selfiePhoto: selfiePhotoData,
+      submittedAt: new Date().toISOString(),
+      status: 'pending'
+    };
+    localStorage.setItem('homesure_verification_' + user.id, JSON.stringify(verificationData));
+
+    // Update user session
     const u = getSession();
     u.isVerified = true;
     const expiry = new Date();
     expiry.setMonth(expiry.getMonth() + 6);
     u.verificationExpiry = expiry.toISOString().split('T')[0];
+    u.verifiedAt = new Date().toISOString().split('T')[0];
     saveSession(u);
 
-    showToast("Documents submitted! You'll be able to message sellers and save listings once verified (within 24 hours).");
-    setTimeout(() => window.location.href = 'buyer.html', 4000);
+    showToast("✅ Documents submitted! You'll be able to message sellers and save listings once verified (within 24 hours).");
+
+    setTimeout(() => window.location.href = 'buyer.html', 3000);
   }
 
   let toastTimer = null;

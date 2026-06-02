@@ -12,6 +12,20 @@
 
   let activeStatus = 'all';
 
+  // ── Check if listing has confirmed payments ─────────────────────────────────
+  function checkListingHasPayment(listingId) {
+    // Check localStorage for PayMongo transactions
+    const transactions = JSON.parse(localStorage.getItem('homesure_transactions') || '[]');
+
+    // Check if any transaction for this listing is confirmed
+    const hasPayment = transactions.some(tx =>
+      tx.listingId === listingId &&
+      (tx.status === 'confirmed' || tx.status === 'paid')
+    );
+
+    return hasPayment;
+  }
+
   // ── Filter tabs ─────────────────────────────────────────────────────────────
   document.getElementById('filterTabs').addEventListener('click', e => {
     const tab = e.target.closest('.filter-tab');
@@ -45,12 +59,23 @@
         ? '₱' + l.price.toLocaleString('en-PH') + '/mo'
         : '₱' + l.price.toLocaleString('en-PH');
 
+      // Check if this listing has confirmed payments (indicates it's occupied)
+      const hasConfirmedPayment = checkListingHasPayment(l.id);
+      console.log('🔍 Listing:', l.id, l.title, '→ Has payment?', hasConfirmedPayment);
+      const paymentBadge = hasConfirmedPayment
+        ? `<span style="display:inline-block;background:rgba(251,191,36,0.15);color:#f59e0b;border:1px solid rgba(251,191,36,0.3);padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;margin-left:6px;" title="This listing has confirmed payments - likely occupied">💰 PAYMENT CONFIRMED</span>`
+        : '';
+      console.log('  Badge HTML:', paymentBadge ? 'WILL SHOW' : 'EMPTY');
+
       const approveBtn = l.status !== 'approved'
         ? `<button class="btn-sm approve" onclick="setStatus('${l.id}','approved')">Approve</button>`
         : `<button class="btn-sm approve" disabled style="opacity:0.3;cursor:not-allowed">Approve</button>`;
       const rejectBtn = l.status !== 'rejected'
         ? `<button class="btn-sm reject" onclick="openRejectModal('${l.id}')">Reject</button>`
         : `<button class="btn-sm reject" disabled style="opacity:0.3;cursor:not-allowed">Reject</button>`;
+      const closeBtn = l.status === 'approved' && l.availability !== 'Occupied'
+        ? `<button class="btn-sm" style="background:#f59e0b;border-color:#f59e0b;" onclick="openAdminCloseListing('${l.id}','${l.title.replace(/'/g, "\\'")}','${sellerName}')">Close</button>`
+        : '';
       const eyeBtn = `<button class="btn-sm btn-icon" onclick="window.location.href='listing-detail.html?id=${l.id}'" title="View">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>`;
@@ -61,7 +86,7 @@
             <div class="listing-col">
               <img class="thumb" src="${l.images[0]}" alt="${l.title}" />
               <div class="listing-col-info">
-                <div class="l-title">${l.title}</div>
+                <div class="l-title">${l.title}${paymentBadge}</div>
                 <div class="l-loc">${l.barangay}</div>
               </div>
             </div>
@@ -75,6 +100,7 @@
             <div class="action-btns">
               ${approveBtn}
               ${rejectBtn}
+              ${closeBtn}
               ${eyeBtn}
             </div>
           </td>
@@ -218,6 +244,33 @@
   document.getElementById('listingModal').addEventListener('click', e => {
     if (e.target === document.getElementById('listingModal')) closeModal();
   });
+
+  // ══════════════════════════════════════════════════════════════════════════════
+  // ADMIN: CLOSE LISTING
+  // Allows admin to close listings when sellers forget
+  // ══════════════════════════════════════════════════════════════════════════════
+
+  window.openAdminCloseListing = function(listingId, listingTitle, sellerName) {
+    CloseListingModal.openModal({
+      listingId: listingId,
+      listingTitle: listingTitle,
+      tenantName: 'Admin Action', // No specific tenant
+      period: 'N/A',
+      amount: 0,
+      isAdmin: true, // Flag to customize modal for admin
+      onClosed: function() {
+        // Update listing in FAKE_LISTINGS
+        const listing = FAKE_LISTINGS.find(l => l.id === listingId);
+        if (listing) {
+          listing.availability = 'Occupied';
+          listing.status = 'closed';
+        }
+
+        // Refresh listings table
+        renderListings();
+      }
+    });
+  };
 
   renderListings();
 })();

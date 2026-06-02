@@ -7,6 +7,7 @@
   <title>HomeSure – My Payments</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../../assets/css/buyer/buyer-payments.css" />
+  <link rel="stylesheet" href="../../assets/css/payment-modal.css" />
   <link rel="stylesheet" href="../../assets/css/responsive.css" />
 </head>
 <body>
@@ -22,7 +23,7 @@
           <div class="page-title">My Payments</div>
           <div class="page-sub">Track rent payments, view history, and manage your security deposit</div>
         </div>
-        <button class="btn-primary" onclick="openPayModal()">
+        <button class="btn-primary" onclick="payNowWithPayMongo()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
           Pay Now
         </button>
@@ -62,7 +63,10 @@
   </div>
 </div>
 
-<!-- ── Pay Now Modal (2-step: method → proof) ────────────────── -->
+<!-- ══════════════════════════════════════════════════════════════════════════════
+     OLD PAYMENT MODAL - DISABLED (Replaced with PayMongo integration)
+     Kept here for reference only - can be deleted later
+     ══════════════════════════════════════════════════════════════════════════════
 <div class="modal-backdrop" id="payModal" style="display:none" onclick="if(event.target===this)closePayModal()">
   <div class="modal modal-pay">
     <div class="modal-header">
@@ -317,6 +321,7 @@
     </div>
   </div>
 </div>
+────────────────────────────────────────────────────────────────────────────── -->
 
 <!-- Toast -->
 <div class="toast" id="toast">
@@ -329,6 +334,7 @@
 <script src="../../assets/js/fake-data.js"></script>
 <script src="../../components/sidebar.js"></script>
 <script src="../../components/topbar.js"></script>
+<script src="../../assets/js/payment-integration.js"></script>
 <script src="../../assets/js/buyer/buyer-payments.js"></script>
 </body>
 </html>

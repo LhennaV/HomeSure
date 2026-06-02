@@ -7,6 +7,8 @@
   <title>HomeSure – Messages</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../../assets/css/buyer/buyer-messages.css" />
+  <link rel="stylesheet" href="../../assets/css/close-listing-modal.css" />
+  <link rel="stylesheet" href="../../assets/css/adjust-availability-modal.css" />
   <link rel="stylesheet" href="../../assets/css/responsive.css" />
 </head>
 <style>
@@ -412,23 +414,19 @@
               style="background:#1a2739;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px 12px;color:#f1f5f9;font-family:inherit;font-size:12.5px;outline:none;width:100%;margin-top:6px;display:none;" />
           </div>
 
-          <!-- Bank Transfer -->
+          <!-- Credit/Debit Card -->
           <div style="background:#2c3d55;border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 14px;">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-              <input type="checkbox" id="enableBank">
-              <div style="width:24px;height:24px;background:#374151;border-radius:6px;display:flex;align-items:center;justify-content:center;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <input type="checkbox" id="enableCard" checked>
+              <div style="width:24px;height:24px;background:#6366F1;border-radius:6px;display:flex;align-items:center;justify-content:center;">
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="white" stroke-width="2">
-                  <path d="M3 21h18M3 10h18M5 6l7-3 7 3M6 10v11M10 10v11M14 10v11M18 10v11"/>
+                  <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                  <line x1="1" y1="10" x2="23" y2="10"/>
                 </svg>
               </div>
-              <label for="enableBank" style="font-size:13px;font-weight:700;color:#f1f5f9;cursor:pointer;flex:1;">Bank Transfer</label>
+              <label for="enableCard" style="font-size:13px;font-weight:700;color:#f1f5f9;cursor:pointer;flex:1;">Credit/Debit Card</label>
             </div>
-            <input id="bankName" type="text" placeholder="Bank Name (e.g. BPI, BDO)"
-              style="background:#1a2739;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px 12px;color:#f1f5f9;font-family:inherit;font-size:12.5px;outline:none;width:100%;display:none;" />
-            <input id="bankAccount" type="text" placeholder="Account Number"
-              style="background:#1a2739;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px 12px;color:#f1f5f9;font-family:inherit;font-size:12.5px;outline:none;width:100%;margin-top:6px;display:none;" />
-            <input id="bankAccountName" type="text" placeholder="Account Name"
-              style="background:#1a2739;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px 12px;color:#f1f5f9;font-family:inherit;font-size:12.5px;outline:none;width:100%;margin-top:6px;display:none;" />
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:6px;padding-left:32px;">Visa, Mastercard, JCB via PayMongo</div>
           </div>
         </div>
       </div>
@@ -460,10 +458,7 @@
       inputs.forEach(input => input.style.display = e.target.checked ? 'block' : 'none');
     });
 
-    document.getElementById('enableBank').addEventListener('change', (e) => {
-      const inputs = [document.getElementById('bankName'), document.getElementById('bankAccount'), document.getElementById('bankAccountName')];
-      inputs.forEach(input => input.style.display = e.target.checked ? 'block' : 'none');
-    });
+    // Card is always enabled (no additional inputs needed - handled by PayMongo)
   });
 
   // Custom notification (copy from buyer messages)
@@ -506,6 +501,19 @@
 
     // Show notification
     window.showNotif('Payment confirmed! ₱15,000 has been released to your account.');
+
+    // ══════════════════════════════════════════════════════════════════════════════
+    // TRIGGER CLOSE LISTING MODAL after 2 seconds
+    // ══════════════════════════════════════════════════════════════════════════════
+    setTimeout(() => {
+      CloseListingModal.openModal({
+        listingId: 'prop-001',
+        listingTitle: '1-Bedroom Apartment for Rent near Town Proper',
+        tenantName: 'Maria Santos',
+        period: 'June 2026',
+        amount: 15000
+      });
+    }, 2000);
   };
 
   // Open Payment Request Modal
@@ -646,6 +654,8 @@
 <script src="../../assets/js/fake-data.js"></script>
 <script src="../../components/sidebar.js"></script>
 <script src="../../components/topbar.js"></script>
+<script src="../../assets/js/close-listing.js"></script>
+<script src="../../assets/js/adjust-availability.js"></script>
 <script src="../../assets/js/seller/seller-messages.js"></script>
 </body>
 </html>

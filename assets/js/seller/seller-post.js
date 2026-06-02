@@ -75,6 +75,23 @@
     label.classList.toggle('on', checked);
   }
 
+  /* ── Multiple Units toggle ── */
+  window.onMultiUnitChange = function() {
+    const checked = document.getElementById('multiUnitToggle').checked;
+    const label   = document.getElementById('multiUnitLabel');
+    const fields  = document.getElementById('multiUnitFields');
+
+    label.textContent = checked ? 'On' : 'Off';
+    label.classList.toggle('on', checked);
+    fields.style.display = checked ? 'block' : 'none';
+
+    // Reset values when turning on (minimum 2 units)
+    if (checked) {
+      document.getElementById('totalUnits').value = '2';
+      document.getElementById('availableUnits').value = '2';
+    }
+  };
+
   /* ── Description char count ── */
   function updateCharCount() {
     const val   = document.getElementById('listingDesc').value;
@@ -230,7 +247,7 @@
     if (!floor)    missing.push('Floor Area');
     if (!desc)     missing.push('Description');
     if (uploadedPhotos.length === 0) missing.push('at least 1 photo');
-    if (!deedFile) missing.push('Deed of Sale or TCT document');
+    if (deedPhotos.length === 0) missing.push('Deed of Sale or TCT photos (at least 1 page)');
 
     if (missing.length > 0) {
       showToast('error', 'Please fill in all required fields and upload required documents.');
@@ -245,3 +262,128 @@
   function saveAsDraft() {
     showToast('success', 'Listing saved as draft. You can submit it for review from My Listings.');
   }
+
+  // ══════════════════════════════════════════════════════════════════════════════
+  // CAMERA CAPTURE - MULTI-PHOTO DOCUMENT UPLOAD
+  // ══════════════════════════════════════════════════════════════════════════════
+
+  let deedPhotos = [];
+  let supportPhotos = [];
+
+  window.takeDeedPhoto = function() {
+    CameraCapture.open({
+      title: 'Take Document Photo',
+      instructions: [
+        'Place document on flat surface',
+        'Ensure all text is clearly visible',
+        'Good lighting, no shadows or glare',
+        'Take photos of ALL pages (front & back)'
+      ],
+      onCapture: function(imageDataURL) {
+        deedPhotos.push(imageDataURL);
+        renderDeedPhotos();
+
+        const nameEl = document.getElementById('deedFileName');
+        nameEl.textContent = `${deedPhotos.length} photo${deedPhotos.length > 1 ? 's' : ''} captured`;
+
+        document.getElementById('deedUploadBox').classList.add('has-file');
+
+        showToast('success', `Photo ${deedPhotos.length} captured! Add more photos if needed.`);
+      }
+    });
+  };
+
+  window.takeSupportPhoto = function() {
+    CameraCapture.open({
+      title: 'Take Document Photo',
+      instructions: [
+        'Place document on flat surface',
+        'Ensure all text is clearly visible',
+        'Good lighting, no shadows or glare',
+        'Take photos of ALL pages (front & back)'
+      ],
+      onCapture: function(imageDataURL) {
+        supportPhotos.push(imageDataURL);
+        renderSupportPhotos();
+
+        const nameEl = document.getElementById('supportFileName');
+        nameEl.textContent = `${supportPhotos.length} photo${supportPhotos.length > 1 ? 's' : ''} captured`;
+
+        document.getElementById('supportUploadBox').classList.add('has-file');
+
+        showToast('success', `Photo ${supportPhotos.length} captured! Add more photos if needed.`);
+      }
+    });
+  };
+
+  function renderDeedPhotos() {
+    const grid = document.getElementById('deedPhotosGrid');
+    if (deedPhotos.length === 0) {
+      grid.innerHTML = '';
+      return;
+    }
+
+    grid.innerHTML = deedPhotos.map((photo, index) => `
+      <div class="doc-photo-item">
+        <img src="${photo}" alt="Document page ${index + 1}" />
+        <button class="doc-photo-remove" onclick="removeDeedPhoto(${index})" title="Remove photo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+        <div class="doc-photo-number">Page ${index + 1}</div>
+      </div>
+    `).join('');
+  }
+
+  function renderSupportPhotos() {
+    const grid = document.getElementById('supportPhotosGrid');
+    if (supportPhotos.length === 0) {
+      grid.innerHTML = '';
+      return;
+    }
+
+    grid.innerHTML = supportPhotos.map((photo, index) => `
+      <div class="doc-photo-item">
+        <img src="${photo}" alt="Document page ${index + 1}" />
+        <button class="doc-photo-remove" onclick="removeSupportPhoto(${index})" title="Remove photo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+        <div class="doc-photo-number">Page ${index + 1}</div>
+      </div>
+    `).join('');
+  }
+
+  window.removeDeedPhoto = function(index) {
+    deedPhotos.splice(index, 1);
+    renderDeedPhotos();
+
+    const nameEl = document.getElementById('deedFileName');
+    if (deedPhotos.length === 0) {
+      nameEl.textContent = 'Click to take photos';
+      document.getElementById('deedUploadBox').classList.remove('has-file');
+    } else {
+      nameEl.textContent = `${deedPhotos.length} photo${deedPhotos.length > 1 ? 's' : ''} captured`;
+    }
+
+    showToast('success', 'Photo removed');
+  };
+
+  window.removeSupportPhoto = function(index) {
+    supportPhotos.splice(index, 1);
+    renderSupportPhotos();
+
+    const nameEl = document.getElementById('supportFileName');
+    if (supportPhotos.length === 0) {
+      nameEl.textContent = 'Click to take photos';
+      document.getElementById('supportUploadBox').classList.remove('has-file');
+    } else {
+      nameEl.textContent = `${supportPhotos.length} photo${supportPhotos.length > 1 ? 's' : ''} captured`;
+    }
+
+    showToast('success', 'Photo removed');
+  };

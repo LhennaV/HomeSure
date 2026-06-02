@@ -191,9 +191,34 @@
 .prop-price { font-size: 15px; font-weight: 800; color: #f1f5f9; line-height: 1.2; }
 .prop-price-per { font-size: 10.5px; color: rgba(255,255,255,0.4); font-weight: 400; }
 
+.prop-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
 .badge-negotiable {
   padding: 2px 8px; border-radius: 20px;
   background: #00c9a7; color: #fff;
+  font-size: 9.5px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+
+.badge-units {
+  padding: 2px 8px; border-radius: 20px;
+  background: rgba(139, 92, 246, 0.15);
+  color: #a78bfa;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  font-size: 9.5px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+
+.badge-units-full {
+  padding: 2px 8px; border-radius: 20px;
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(248, 113, 113, 0.3);
   font-size: 9.5px; font-weight: 700;
   text-transform: uppercase; letter-spacing: 0.05em;
 }

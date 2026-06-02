@@ -7,6 +7,7 @@
   <title>HomeSure – Post a Property</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../../assets/css/seller/seller-post.css" />
+  <link rel="stylesheet" href="../../assets/css/camera-capture.css" />
   <link rel="stylesheet" href="../../assets/css/responsive.css" />
 </head>
 <body>
@@ -115,7 +116,7 @@
                   <input type="number" id="floorArea" placeholder="e.g. 120" min="1" />
                 </div>
                 <div class="field">
-                  <label>Lot Area (sqm) <span class="label-optional">Optional</span></label>
+                  <label>Lot Area (sqm)</label>
                   <input type="number" id="lotArea" placeholder="e.g. 200" min="1" />
                 </div>
               </div>
@@ -153,6 +154,39 @@
                     <input type="checkbox" id="negotiableToggle" onchange="onNegotiableChange()" />
                     <span class="toggle-track"></span>
                   </label>
+                </div>
+              </div>
+
+              <!-- Multiple Units toggle -->
+              <div class="toggle-row">
+                <span class="toggle-row-label">Multiple Units</span>
+                <div class="toggle-group">
+                  <span class="toggle-state" id="multiUnitLabel">Off</span>
+                  <label class="toggle">
+                    <input type="checkbox" id="multiUnitToggle" onchange="onMultiUnitChange()" />
+                    <span class="toggle-track"></span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Multiple Units Fields (hidden by default) -->
+              <div id="multiUnitFields" style="display:none;">
+                <div class="multi-unit-info">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                  </svg>
+                  <span>For apartment buildings or properties with multiple rentable or sellable units</span>
+                </div>
+                <div class="field-2col">
+                  <div class="field">
+                    <label>Total Units</label>
+                    <input type="number" id="totalUnits" placeholder="e.g. 10" min="2" value="2" />
+                  </div>
+                  <div class="field">
+                    <label>Available Units</label>
+                    <input type="number" id="availableUnits" placeholder="e.g. 8" min="0" value="2" />
+                  </div>
                 </div>
               </div>
 
@@ -238,19 +272,22 @@
                   <span style="color:var(--danger);font-size:13px;">*</span>
                 </div>
                 <div class="doc-upload-desc">Must be under the name of <strong id="sellerNameDisplay"></strong> (your verified account name)</div>
-                <div class="doc-upload-box" id="deedUploadBox" onclick="document.getElementById('deedFileInput').click()">
-                  <div class="doc-upload-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
-                  </div>
-                  <div class="doc-upload-title" id="deedFileName">Click to upload Deed of Sale or TCT</div>
-                  <div class="doc-upload-sub doc-upload-sub-default">PDF, PNG, JPG up to 20MB</div>
-                  <div class="doc-file-info" id="deedFileInfo" style="display:none"></div>
-                  <div class="doc-uploaded-badge">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    Document uploaded
-                  </div>
+                <div class="doc-upload-instructions">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                  <strong>Take photos of ALL pages</strong> — Front and back if applicable. Multiple photos required for complete documents.
                 </div>
-                <input type="file" id="deedFileInput" accept=".pdf,image/*" onchange="handleDocSelect('deed', event)" />
+                <div class="doc-upload-box" id="deedUploadBox" onclick="takeDeedPhoto()">
+                  <div class="doc-upload-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                      <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                  </div>
+                  <div class="doc-upload-title" id="deedFileName">Click to take photos</div>
+                  <div class="doc-upload-sub doc-upload-sub-default">Take multiple photos if needed</div>
+                  <div class="doc-file-info" id="deedFileInfo" style="display:none"></div>
+                </div>
+                <div class="doc-photos-grid" id="deedPhotosGrid"></div>
               </div>
 
               <!-- Upload 2: Supporting Documents -->
@@ -260,19 +297,22 @@
                   <span class="label-optional">Optional</span>
                 </div>
                 <div class="doc-upload-desc">Mayor's permit, tax declaration, or any other supporting documents</div>
-                <div class="doc-upload-box" id="supportUploadBox" onclick="document.getElementById('supportFileInput').click()">
-                  <div class="doc-upload-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                  </div>
-                  <div class="doc-upload-title" id="supportFileName">Click to upload supporting documents</div>
-                  <div class="doc-upload-sub doc-upload-sub-default">PDF, PNG, JPG up to 20MB each</div>
-                  <div class="doc-file-info" id="supportFileInfo" style="display:none"></div>
-                  <div class="doc-uploaded-badge">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    Document uploaded
-                  </div>
+                <div class="doc-upload-instructions">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                  <strong>Take photos of ALL pages</strong> — Front and back if applicable. You can add multiple documents.
                 </div>
-                <input type="file" id="supportFileInput" accept=".pdf,image/*" multiple onchange="handleDocSelect('support', event)" />
+                <div class="doc-upload-box" id="supportUploadBox" onclick="takeSupportPhoto()">
+                  <div class="doc-upload-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                      <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                  </div>
+                  <div class="doc-upload-title" id="supportFileName">Click to take photos</div>
+                  <div class="doc-upload-sub doc-upload-sub-default">Take multiple photos if needed</div>
+                  <div class="doc-file-info" id="supportFileInfo" style="display:none"></div>
+                </div>
+                <div class="doc-photos-grid" id="supportPhotosGrid"></div>
               </div>
 
             </div>
@@ -326,6 +366,7 @@
 <script src="../../assets/js/fake-data.js"></script>
 <script src="../../components/sidebar.js"></script>
 <script src="../../components/topbar.js"></script>
+<script src="../../assets/js/camera-capture.js"></script>
 <script src="../../assets/js/seller/seller-post.js"></script>
 </body>
 </html>

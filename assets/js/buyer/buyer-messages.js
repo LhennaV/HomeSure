@@ -207,37 +207,62 @@
       </div>`;
   }
 
-  // ── Pay from chat → opens inline payment modal ────────────────────────────
-  let chatPayConvId    = null;
-  let chatPayReqId     = null;
-  let chatPayMethod    = null;
-  let chatPayProofName = null;
+  // ══════════════════════════════════════════════════════════════════════════════
+  // PAYMONGO INTEGRATION - Pay from chat
+  // ══════════════════════════════════════════════════════════════════════════════
 
   window.payFromChat = function (convId, paymentReqId) {
-    chatPayConvId    = convId;
-    chatPayReqId     = paymentReqId;
-    chatPayMethod    = null;
-    chatPayProofName = null;
-
-    // Get amount from the payment request message
+    // Get payment details from the message
     const c   = CONVS.find(x => x.id === convId);
     const msg = c?.messages.find(m => m.payment?.id === paymentReqId);
-    if (msg) {
-      document.getElementById('chatPayAmount').textContent =
-        '₱' + msg.payment.amount.toLocaleString('en-PH');
-      document.getElementById('chatPayPeriod').textContent = msg.payment.period;
-      document.getElementById('chatPayProperty').textContent = msg.payment.property;
-    }
 
-    // Reset modal state (now using QR/Gateway flow)
-    document.querySelectorAll('.chat-method-card').forEach(c => c.classList.remove('selected'));
-    document.getElementById('chatPayStep1').style.display = '';
-    const qrStep = document.getElementById('chatPayStep2QR');
-    const gatewayStep = document.getElementById('chatPayStep2Gateway');
-    if (qrStep) qrStep.style.display = 'none';
-    if (gatewayStep) gatewayStep.style.display = 'none';
-    document.getElementById('chatNextBtn').disabled = true;
-    document.getElementById('chatPayModal').style.display = 'flex';
+    if (!msg || !msg.payment) return;
+
+    const payment = msg.payment;
+
+    // Open PayMongo payment modal
+    PaymentIntegration.openPaymentModal({
+      amount: payment.amount,
+      listingTitle: payment.property,
+      listingId: c.listingId,
+      landlordId: c.sellerId,
+      period: payment.period,
+      dueDate: new Date().toISOString().split('T')[0],
+      onSuccess: function(transaction) {
+        // Mark payment request as paid in the conversation
+        payment.status = 'paid';
+
+        // Add payment proof message to conversation
+        const time = new Date().toLocaleTimeString('en-PH', {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+
+        c.messages.push({
+          from: 'buyer',
+          type: 'payment_proof',
+          time: time,
+          proof: {
+            id: transaction.id,
+            reqId: paymentReqId,
+            method: transaction.method === 'gcash' ? 'GCash' :
+                    transaction.method === 'paymaya' ? 'Maya' : 'Card',
+            amount: transaction.amount,
+            period: payment.period,
+            property: payment.property,
+            fileName: 'paymongo_receipt.pdf',
+            ref: transaction.reference,
+            status: 'confirmed'
+          }
+        });
+
+        // Refresh the chat view
+        setTimeout(() => {
+          window.openChat(convId);
+        }, 2000);
+      }
+    });
+    // PayMongo modal opens automatically - no need to show old modal
   };
 
   // ═══════════════════════════════════════════════════════════════════════════

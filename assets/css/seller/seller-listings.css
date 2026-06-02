@@ -358,4 +358,45 @@
     [data-theme="light"] .modal-field select option { background: #fff; color: #1e293b; }
     [data-theme="light"] .empty-icon { background: #f1f5f9; }
     [data-theme="light"] .pill-sale { background: rgba(99,102,241,0.08); color: #6366f1; border-color: rgba(99,102,241,0.2); }
-  
+
+    /* ══════════════════════════════════════════════════════════════════════════════
+       ADJUST AVAILABILITY BUTTON
+       ══════════════════════════════════════════════════════════════════════════════ */
+
+    .btn-adjust-avail {
+      padding: 8px 14px;
+      border-radius: 7px;
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      background: rgba(139, 92, 246, 0.12);
+      color: #a78bfa;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .btn-adjust-avail:hover {
+      background: rgba(139, 92, 246, 0.2);
+      border-color: rgba(139, 92, 246, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .btn-adjust-avail svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    [data-theme="light"] .btn-adjust-avail {
+      background: rgba(139, 92, 246, 0.1);
+      border-color: rgba(139, 92, 246, 0.25);
+      color: #7c3aed;
+    }
+
+    [data-theme="light"] .btn-adjust-avail:hover {
+      background: rgba(139, 92, 246, 0.15);
+      border-color: rgba(139, 92, 246, 0.4);
+    }

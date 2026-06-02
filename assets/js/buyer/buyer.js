@@ -88,7 +88,11 @@
             </div>
             <div class="prop-footer">
               <div class="prop-price">${price}${priceSub}</div>
-              ${l.negotiable ? `<span class="badge-negotiable">Negotiable</span>` : ''}
+              <div class="prop-badges">
+                ${l.negotiable ? `<span class="badge-negotiable">Negotiable</span>` : ''}
+                ${l.hasMultipleUnits && l.availableUnits > 0 ? `<span class="badge-units">${l.availableUnits} unit${l.availableUnits !== 1 ? 's' : ''} available</span>` : ''}
+                ${l.hasMultipleUnits && l.availableUnits === 0 ? `<span class="badge-units-full">Fully occupied</span>` : ''}
+              </div>
             </div>
           </div>
         </div>`;

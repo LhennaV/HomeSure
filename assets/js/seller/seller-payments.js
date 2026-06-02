@@ -197,6 +197,37 @@
     renderStats();
     renderPending();
     showToast(`Payment from ${payment.tenantName} marked as received.`);
+
+    // ══════════════════════════════════════════════════════════════════════════════
+    // TRIGGER MODAL after 1 second: Adjust Availability OR Close Listing
+    // ══════════════════════════════════════════════════════════════════════════════
+    setTimeout(() => {
+      // Get listing ID from payment (you may need to adjust based on your data structure)
+      const listingId = 'prop-001'; // In production, get from payment data
+      const listing = FAKE_LISTINGS.find(l => l.id === listingId);
+
+      if (listing && listing.hasMultipleUnits && listing.availableUnits > 0) {
+        // Multi-unit property with available units → show adjust availability modal
+        AdjustAvailabilityModal.open({
+          listingId: listing.id,
+          listingTitle: listing.title,
+          totalUnits: listing.totalUnits,
+          availableUnits: listing.availableUnits,
+          onConfirm: (newAvailable) => {
+            console.log(`✅ Availability updated after payment: ${newAvailable} units remaining`);
+          }
+        });
+      } else {
+        // Single unit OR no units left → show close listing modal
+        CloseListingModal.openModal({
+          listingId: listingId,
+          listingTitle: payment.listingTitle,
+          tenantName: payment.tenantName,
+          period: payment.period,
+          amount: payment.amount
+        });
+      }
+    }, 1000);
   };
 
   // ── Reject Payment Modal ──────────────────────────────────────────────────────
@@ -396,6 +427,56 @@
     if (toastTimer) clearTimeout(toastTimer);
     toastTimer = setTimeout(() => toast.classList.remove('show'), 4500);
   }
+
+  // ══════════════════════════════════════════════════════════════════════════════
+  // PAYMONGO INTEGRATION - Show received payments
+  // ══════════════════════════════════════════════════════════════════════════════
+
+  function loadPayMongoTransactions() {
+    // Get transactions from PayMongo integration
+    const allTransactions = PaymentIntegration.getTransactions({
+      landlordId: user.id  // Filter by current seller
+    });
+
+    console.log('📊 PayMongo Transactions for Seller:', allTransactions);
+
+    // Add real PayMongo transactions to the display
+    if (allTransactions && allTransactions.length > 0) {
+      // Clear fake data and show real data
+      PENDING.length = 0;
+      ALL_PAYMENTS.length = 0;
+
+      allTransactions.forEach(tx => {
+        const payment = {
+          id: tx.id,
+          tenantName: tx.tenantName,
+          initials: tx.tenantName.split(' ').map(n => n[0]).join(''),
+          color: '#00c9a7',
+          listingTitle: tx.listingTitle,
+          amount: tx.amount,
+          period: tx.period,
+          paidDate: tx.paidDate,
+          method: tx.method === 'gcash' ? 'GCash' :
+                  tx.method === 'paymaya' ? 'Maya' : 'Card',
+          reference: tx.reference,
+          status: tx.status
+        };
+
+        ALL_PAYMENTS.push(payment);
+
+        if (tx.status === 'pending' || tx.status === 'pending_confirmation') {
+          PENDING.push(payment);
+        }
+      });
+
+      // Re-render with real data
+      renderStats();
+      renderPending();
+    }
+  }
+
+  // Load PayMongo transactions after short delay (ensure PaymentIntegration is ready)
+  setTimeout(loadPayMongoTransactions, 500);
 
   // ── Init ──────────────────────────────────────────────────────────────────────
   renderStats();

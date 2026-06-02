@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="../../assets/img/image.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HomeSure – Help & Support</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../assets/css/buyer/buyer.css" />
+  <link rel="stylesheet" href="../../assets/css/chatbot-widget.css" />
+  <link rel="stylesheet" href="../../assets/css/responsive.css" />
+  <style>
+    /* Override widget styles for full-page mode */
+    .chatbot-window {
+      position: static;
+      width: 100%;
+      height: calc(100vh - 80px);
+      border-radius: 0;
+      box-shadow: none;
+      display: flex;
+    }
+
+    .chatbot-bubble {
+      display: none !important;
+    }
+
+    .help-container {
+      padding: 26px 30px;
+      height: calc(100vh - 72px);
+      overflow: hidden;
+    }
+
+    .page-header {
+      margin-bottom: 20px;
+    }
+
+    .page-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .page-sub {
+      font-size: 12.5px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <div id="hs-sidebar"></div>
+  <div class="main">
+    <div id="hs-topbar"></div>
+
+    <div class="help-container">
+      <div class="page-header">
+        <div class="page-title">Help & Support</div>
+        <div class="page-sub">Get instant help from our AI assistant or connect with support</div>
+      </div>
+
+      <!-- Chat Window (Full Page) -->
+      <div class="chatbot-window open" id="chatbotWindow">
+        <div class="chatbot-header">
+          <div class="chatbot-avatar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2a4 4 0 0 1 4 4v2h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h2V6a4 4 0 0 1 4-4z"/>
+              <circle cx="12" cy="14" r="2"/>
+            </svg>
+          </div>
+          <div class="chatbot-header-info">
+            <div class="chatbot-header-title">HomeSure Assistant</div>
+            <div class="chatbot-header-status">
+              <span class="chatbot-status-dot"></span>
+              Online - Always here to help
+            </div>
+          </div>
+        </div>
+
+        <div class="chatbot-messages" id="chatbotMessages"></div>
+
+        <div class="chatbot-input-area">
+          <div class="chatbot-input-wrap">
+            <textarea
+              class="chatbot-input"
+              id="chatbotInput"
+              placeholder="Type your message..."
+              rows="1"
+              onkeydown="ChatbotWidget.handleKeyDown(event)"
+            ></textarea>
+            <button class="chatbot-send-btn" id="chatbotSendBtn" onclick="ChatbotWidget.sendMessage()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/fake-data.js"></script>
+<script src="../../components/sidebar.js"></script>
+<script src="../../components/topbar.js"></script>
+<script src="../../assets/js/chatbot-widget.js"></script>
+<script>
+  // Initialize sidebar
+  HomeSureSidebar.init({ activePage: 'help' });
+  HomeSureTopbar.init({ placeholder: 'Search help articles...' });
+
+  // Initialize chatbot (full-page mode)
+  ChatbotWidget.initFullPage();
+</script>
+</body>
+</html>
