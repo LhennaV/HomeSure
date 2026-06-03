@@ -45,6 +45,7 @@
 
     const list = FAKE_LISTINGS.filter(l => {
       if (l.status !== 'approved')                            return false;
+      if (l.lifecycleStatus === 'sold' || l.lifecycleStatus === 'rented') return false; // Hide closed listings
       if (barangay && l.barangay !== barangay)               return false;
       if (type     && l.type     !== type)                   return false;
       if (l.price < minP || l.price > maxP)                  return false;

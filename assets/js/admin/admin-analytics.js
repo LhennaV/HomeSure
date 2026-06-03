@@ -80,22 +80,22 @@
     const rawMax = Math.max(...items.map(i => i[1]), 1);
     const step   = Math.max(1, Math.ceil(rawMax / 4));
     const max    = step * 4;
-    const chartH = 150, barW = 32, gap = 18, padL = 28, padT = 16, totalW = padL + items.length * (barW + gap) - gap + 10, totalH = padT + chartH + 30;
+    const chartH = 150, barW = 32, gap = 18, padL = 36, padT = 20, totalW = padL + items.length * (barW + gap) - gap + 16, totalH = padT + chartH + 36;
     const yLabels = Array.from({ length: 5 }, (_, i) => {
       const val = step * (4 - i);
       const y   = padT + Math.round(i / 4 * chartH);
-      return `<line x1="${padL}" y1="${y}" x2="${totalW}" y2="${y}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-        <text x="${padL - 6}" y="${y + 4}" text-anchor="end" font-size="9" fill="rgba(255,255,255,0.35)" font-family="Plus Jakarta Sans">${val}</text>`;
+      return `<line x1="${padL}" y1="${y}" x2="${totalW - 8}" y2="${y}" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+        <text x="${padL - 8}" y="${y + 4}" text-anchor="end" font-size="10" fill="rgba(255,255,255,0.55)" font-weight="600" font-family="Plus Jakarta Sans">${val}</text>`;
     }).join('');
     const bars = items.map(([name, val], i) => {
       const barH = Math.max(Math.round(val / max * chartH), 4);
       const x = padL + i * (barW + gap);
       const y = padT + chartH - barH;
-      return `<rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="6" fill="#00c9a7" opacity="0.9"/>
-        <text x="${x + barW / 2}" y="${padT + chartH + 14}" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.45)" font-family="Plus Jakarta Sans">${name.split(' ')[0]}</text>`;
+      return `<rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="6" fill="#00c9a7" opacity="0.95"/>
+        <text x="${x + barW / 2}" y="${padT + chartH + 16}" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.65)" font-weight="600" font-family="Plus Jakarta Sans">${name.split(' ')[0]}</text>`;
     }).join('');
     document.getElementById('demandChart').innerHTML =
-      `<svg viewBox="0 0 ${totalW} ${totalH}" style="width:100%;display:block;overflow:visible">${yLabels}${bars}</svg>`;
+      `<svg viewBox="0 0 ${totalW} ${totalH}" style="width:100%;display:block;overflow:visible;padding:4px">${yLabels}${bars}</svg>`;
   }
 
   drawVerticalBars(demandData.monthly);
@@ -118,7 +118,7 @@
   function drawLineChart(data) {
     const { labels, values, title } = data;
     document.getElementById('trendChartTitle').textContent = title;
-    const W = 420, H = 160, pL = 36, pR = 12, pT = 14, pB = 28;
+    const W = 440, H = 172, pL = 42, pR = 16, pT = 20, pB = 32;
     const cW = W - pL - pR, cH = H - pT - pB;
     const minV = Math.floor(Math.min(...values) * 0.85);
     const maxV = Math.ceil(Math.max(...values) * 1.1);
@@ -127,24 +127,24 @@
     const grid = Array.from({ length: 5 }, (_, i) => {
       const val = Math.round(minV + (maxV - minV) * i / 4);
       const y   = toY(val);
-      return `<line x1="${pL}" y1="${y}" x2="${W - pR}" y2="${y}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-        <text x="${pL - 6}" y="${y + 4}" text-anchor="end" font-size="9" fill="rgba(255,255,255,0.35)" font-family="Plus Jakarta Sans">${val}</text>`;
+      return `<line x1="${pL}" y1="${y}" x2="${W - pR}" y2="${y}" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+        <text x="${pL - 8}" y="${y + 4}" text-anchor="end" font-size="10" fill="rgba(255,255,255,0.55)" font-weight="600" font-family="Plus Jakarta Sans">${val}</text>`;
     }).join('');
     const xLabels = labels.map((m, i) =>
-      `<text x="${toX(i)}" y="${H - 6}" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.45)" font-family="Plus Jakarta Sans">${m}</text>`
+      `<text x="${toX(i)}" y="${H - 8}" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.65)" font-weight="600" font-family="Plus Jakarta Sans">${m}</text>`
     ).join('');
     const ptArr    = values.map((v, i) => `${toX(i)},${toY(v)}`);
     const areaPath = `M ${toX(0)},${pT + cH} ` + values.map((v, i) => `L ${toX(i)},${toY(v)}`).join(' ') + ` L ${toX(values.length - 1)},${pT + cH} Z`;
     const dots     = values.map((v, i) => `<circle cx="${toX(i)}" cy="${toY(v)}" r="4.5" fill="#00c9a7" stroke="var(--card)" stroke-width="2.5"/>`).join('');
     document.getElementById('trendsChart').innerHTML = `
-      <svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block">
+      <svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block;overflow:visible;padding:4px">
         <defs><linearGradient id="lineAreaGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#00c9a7" stop-opacity="0.18"/>
+          <stop offset="0%" stop-color="#00c9a7" stop-opacity="0.22"/>
           <stop offset="100%" stop-color="#00c9a7" stop-opacity="0"/>
         </linearGradient></defs>
         ${grid}${xLabels}
         <path d="${areaPath}" fill="url(#lineAreaGrad)"/>
-        <polyline points="${ptArr.join(' ')}" fill="none" stroke="#00c9a7" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+        <polyline points="${ptArr.join(' ')}" fill="none" stroke="#00c9a7" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
         ${dots}
       </svg>`;
   }

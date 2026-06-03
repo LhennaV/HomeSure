@@ -68,12 +68,26 @@ function submitSignin() {
 
   if (!valid) return;
 
-  const user = fakeLogin(email.value.trim(), pw.value);
-  if (!user) {
-    showError(email, 'No account found with these credentials');
-    showError(pw, 'Incorrect email or password');
+  // Check if account exists first
+  const emailVal = email.value.trim();
+  const userExists = window.FAKE_USERS?.find(u => u.email.toLowerCase() === emailVal.toLowerCase());
+
+  if (!userExists) {
+    // No account with this email
+    showError(email, 'No account found with this email');
+    clearError(pw);
     return;
   }
+
+  // Account exists, now check password
+  const user = fakeLogin(emailVal, pw.value);
+  if (!user) {
+    // Wrong password
+    showError(pw, 'Incorrect password');
+    clearError(email);
+    return;
+  }
+
   saveSession(user);
   redirectToDashboard(user.role);
 }
@@ -235,7 +249,7 @@ function showGoogleToast() {
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
-  applyAuthTheme(localStorage.getItem('hs-theme') || 'dark');
+  applyAuthTheme(localStorage.getItem('hs-theme') || 'light');
 
   const backdrop = document.getElementById('verifyModal');
   if (backdrop) backdrop.addEventListener('click', e => { if (e.target === backdrop) closeModal(); });

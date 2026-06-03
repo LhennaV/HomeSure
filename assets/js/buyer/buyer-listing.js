@@ -204,7 +204,11 @@
           <div>
             <div class="seller-label">Listed by</div>
             <div class="seller-name">
-              <span class="seller-name-link" onclick="window.location.href='seller-profile.html?id=${listing.sellerId}'">${sellerName}</span>
+              <span class="seller-name-link" onclick="
+                ${user.role === 'seller' && user.id === listing.sellerId
+                  ? `window.location.href='../seller/profile.html'`
+                  : `window.location.href='seller-profile.html?id=${listing.sellerId}'`}
+              ">${sellerName}</span>
               <span class="verified-sm">${iconCheck} Verified</span>
             </div>
           </div>
@@ -212,7 +216,16 @@
             <button class="save-btn" id="saveBtn">
               ${iconHeart} Save Listing
             </button>
-            ${user.id !== listing.sellerId ? `<button class="msg-btn" onclick="handleMessageSeller()"> ${iconMsg} Message Seller </button>` : ''}
+            ${user.id !== listing.sellerId ? `
+              <button class="schedule-btn" onclick="openScheduleModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                Schedule Viewing
+              </button>
+              <button class="msg-btn" onclick="handleMessageSeller()"> ${iconMsg} Message Seller </button>
+            ` : ''}
           </div>
         </div>
 
@@ -235,3 +248,155 @@
         }
         window.location.href = 'messages.html';
       }
+
+      // ── Schedule Viewing Functions ─────────────────────────────────────────────
+      window.openScheduleModal = function() {
+        // Set minimum date to tomorrow
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const minDate = tomorrow.toISOString().split('T')[0];
+        document.getElementById('viewingDate').min = minDate;
+
+        // Clear form
+        document.getElementById('viewingDate').value = '';
+        document.getElementById('viewingTime').value = '';
+        document.getElementById('viewingNotes').value = '';
+
+        // Hide errors
+        document.getElementById('viewingDateErr').style.display = 'none';
+        document.getElementById('viewingTimeErr').style.display = 'none';
+
+        // Show modal
+        document.getElementById('scheduleModal').classList.add('active');
+      };
+
+      window.closeScheduleModal = function() {
+        document.getElementById('scheduleModal').classList.remove('active');
+      };
+
+      window.submitSchedule = function() {
+        const date = document.getElementById('viewingDate').value;
+        const time = document.getElementById('viewingTime').value;
+        const notes = document.getElementById('viewingNotes').value;
+
+        let hasError = false;
+
+        // Validate date
+        if (!date) {
+          document.getElementById('viewingDateErr').style.display = 'block';
+          hasError = true;
+        } else {
+          document.getElementById('viewingDateErr').style.display = 'none';
+        }
+
+        // Validate time
+        if (!time) {
+          document.getElementById('viewingTimeErr').style.display = 'block';
+          hasError = true;
+        } else {
+          document.getElementById('viewingTimeErr').style.display = 'none';
+        }
+
+        if (hasError) return;
+
+        // Format date for display
+        const dateObj = new Date(date + 'T00:00:00');
+        const formattedDate = dateObj.toLocaleDateString('en-PH', {
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric'
+        });
+
+        // Convert 24h time to 12h format
+        const [hours, minutes] = time.split(':');
+        const hour = parseInt(hours);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const hour12 = hour % 12 || 12;
+        const formattedTime = `${hour12}:${minutes} ${ampm}`;
+
+        // Create viewing request
+        const user = getSession();
+        const buyer = FAKE_USERS.find(u => u.id === user.id);
+        const seller = FAKE_USERS.find(u => u.id === listing.sellerId);
+
+        const newRequest = {
+          id: 'view-' + Date.now(),
+          listingId: listing.id,
+          listingTitle: listing.title,
+          buyerId: user.id,
+          buyerName: `${buyer.firstName} ${buyer.lastName}`,
+          sellerId: listing.sellerId,
+          sellerName: `${seller.firstName} ${seller.lastName}`,
+          status: 'pending',
+          requestedDate: date,
+          requestedTime: time,
+          proposedDate: null,
+          proposedTime: null,
+          buyerNotes: notes || null,
+          sellerNotes: null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+
+        // Add to fake data
+        FAKE_VIEWING_REQUESTS.push(newRequest);
+        window.FAKE_VIEWING_REQUESTS = FAKE_VIEWING_REQUESTS;
+
+        // Create message in chat
+        const conversationId = `conv-${user.id}-${listing.sellerId}`;
+        const newMessage = {
+          id: 'msg-' + Date.now(),
+          conversationId: conversationId,
+          senderId: user.id,
+          senderName: `${buyer.firstName} ${buyer.lastName}`,
+          receiverId: listing.sellerId,
+          receiverName: `${seller.firstName} ${seller.lastName}`,
+          type: 'viewing-request',
+          message: null,
+          viewingRequestId: newRequest.id,
+          viewingData: {
+            listingId: listing.id,
+            listingTitle: listing.title,
+            requestedDate: date,
+            requestedTime: time,
+            buyerNotes: notes || null
+          },
+          timestamp: new Date().toISOString(),
+          read: false,
+          status: 'pending'
+        };
+
+        // Add message to FAKE_MESSAGES
+        if (!window.FAKE_MESSAGES) window.FAKE_MESSAGES = [];
+        FAKE_MESSAGES.push(newMessage);
+        window.FAKE_MESSAGES = FAKE_MESSAGES;
+
+        // Close modal
+        closeScheduleModal();
+
+        // Reset form
+        document.getElementById('viewingDate').value = '';
+        document.getElementById('viewingTime').value = '';
+        document.getElementById('viewingNotes').value = '';
+
+        // Show success notification
+        showSuccessNotification(
+          `Your viewing request for <strong>${formattedDate} at ${formattedTime}</strong> has been sent to ${seller.firstName} ${seller.lastName}. They will review and respond soon!`
+        );
+      };
+
+
+      // ── Success Notification ────────────────────────────────────────────────
+      function showSuccessNotification(message) {
+        const notif = document.getElementById('successNotif');
+        const messageEl = document.getElementById('successMessage');
+        
+        messageEl.innerHTML = message;
+        notif.classList.add('show');
+
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+          notif.classList.remove('show');
+        }, 5000);
+      }
+

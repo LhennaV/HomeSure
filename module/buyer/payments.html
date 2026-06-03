@@ -8,7 +8,18 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../../assets/css/buyer/buyer-payments.css" />
   <link rel="stylesheet" href="../../assets/css/payment-modal.css" />
+  <link rel="stylesheet" href="../../assets/css/property-selector-modal.css" />
   <link rel="stylesheet" href="../../assets/css/responsive.css" />
+  <style>
+    /* Force hide old payment modal and any stray elements */
+    #payModal,
+    #payStep0,
+    #payStep1a,
+    #payStep1b,
+    #payStep2 {
+      display: none !important;
+    }
+  </style>
 </head>
 <body>
 <div class="layout">
@@ -63,10 +74,10 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════════════════════════
-     OLD PAYMENT MODAL - DISABLED (Replaced with PayMongo integration)
-     Kept here for reference only - can be deleted later
-     ══════════════════════════════════════════════════════════════════════════════
+<!--
+  OLD PAYMENT MODAL - DISABLED (Replaced with PayMongo integration)
+  Kept here for reference only - can be deleted later
+
 <div class="modal-backdrop" id="payModal" style="display:none" onclick="if(event.target===this)closePayModal()">
   <div class="modal modal-pay">
     <div class="modal-header">
@@ -220,8 +231,6 @@
 
         <div class="method-section-label">E-Wallets</div>
         <div class="method-grid">
-        <div class="method-section-label" style="margin-top:16px">E-Wallets</div>
-        <div class="method-grid">
           <button class="method-card gcash" onclick="selectManualMethod('gcash')" id="card-gcash">
             <div class="method-logo"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="20" fill="#00aff0"/><text x="20" y="26" text-anchor="middle" font-size="16" font-weight="800" fill="#fff" font-family="sans-serif">G</text></svg></div>
             <div class="method-name">GCash</div>
@@ -321,7 +330,7 @@
     </div>
   </div>
 </div>
-────────────────────────────────────────────────────────────────────────────── -->
+-->
 
 <!-- Toast -->
 <div class="toast" id="toast">
@@ -336,5 +345,25 @@
 <script src="../../components/topbar.js"></script>
 <script src="../../assets/js/payment-integration.js"></script>
 <script src="../../assets/js/buyer/buyer-payments.js"></script>
+
+<script>
+  // Clean up any stray modal elements on page load
+  window.addEventListener('DOMContentLoaded', function() {
+    // Remove old payment modal if it exists
+    const oldModal = document.getElementById('payModal');
+    if (oldModal) {
+      oldModal.remove();
+      console.log('✅ Removed old payment modal');
+    }
+
+    // Hide any orphaned modal backdrops
+    document.querySelectorAll('.modal-backdrop').forEach(el => {
+      if (!el.closest('#paymentModalBackdrop')) {
+        el.style.display = 'none';
+        console.log('✅ Hidden stray modal backdrop');
+      }
+    });
+  });
+</script>
 </body>
 </html>

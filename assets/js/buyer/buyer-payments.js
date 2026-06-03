@@ -15,17 +15,32 @@
   const PAYMENTS = [
     {
       id: 'PAY-001', listingTitle: '2BR Apartment — Poblacion', amount: 15000,
-      dueDate: '2026-06-01', paidDate: '2026-05-28', status: 'pending_confirmation',
+      paymentType: 'rent', dueDate: '2026-06-01', paidDate: '2026-05-28', status: 'pending_confirmation',
       method: 'GCash', reference: 'GC-78452', period: 'June 2026'
     },
     {
+      id: 'PAY-004', listingTitle: '1-Bedroom Condo Unit — BGC', amount: 25000,
+      paymentType: 'both', dueDate: '2026-07-01', paidDate: null, status: 'pending',
+      method: null, reference: null, period: 'July 2026'
+    },
+    {
+      id: 'PAY-005', listingTitle: 'Studio Apartment — Makati', amount: 12000,
+      paymentType: 'rent', dueDate: '2026-07-05', paidDate: null, status: 'pending',
+      method: null, reference: null, period: 'July 2026'
+    },
+    {
+      id: 'PAY-006', listingTitle: 'Commercial Space — Ortigas', amount: 40000,
+      paymentType: 'security', dueDate: '2026-06-15', paidDate: null, status: 'pending',
+      method: null, reference: null, period: 'June 2026'
+    },
+    {
       id: 'PAY-002', listingTitle: '2BR Apartment — Poblacion', amount: 15000,
-      dueDate: '2026-05-01', paidDate: '2026-04-29', status: 'confirmed',
+      paymentType: 'rent', dueDate: '2026-05-01', paidDate: '2026-04-29', status: 'confirmed',
       method: 'GCash', reference: 'GC-54321', period: 'May 2026'
     },
     {
       id: 'PAY-003', listingTitle: '2BR Apartment — Poblacion', amount: 15000,
-      dueDate: '2026-04-01', paidDate: '2026-03-30', status: 'confirmed',
+      paymentType: 'security', dueDate: '2026-04-01', paidDate: '2026-03-30', status: 'confirmed',
       method: 'Bank Transfer', reference: 'BT-22100', period: 'April 2026'
     },
   ];
@@ -46,6 +61,15 @@
   function fmtDate(d) {
     if (!d) return '—';
     return new Date(d + 'T00:00:00').toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
+  }
+
+  function formatPaymentType(type) {
+    const typeMap = {
+      security: 'Security Deposit',
+      rent: 'Rent Payment',
+      both: 'Security + Rent'
+    };
+    return typeMap[type] || 'Payment';
   }
 
   function fmtShortDate(d) {
@@ -116,6 +140,10 @@
           <div class="pay-card-property">${p.listingTitle}</div>
           <div class="pay-card-meta">
             <div class="pay-card-item">
+              <span class="pay-card-item-label">Type</span>
+              <span class="pay-card-item-value" style="font-weight:700;color:#00c9a7;">${formatPaymentType(p.paymentType)}</span>
+            </div>
+            <div class="pay-card-item">
               <span class="pay-card-item-label">Period</span>
               <span class="pay-card-item-value">${p.period}</span>
             </div>
@@ -164,6 +192,10 @@
         <div class="pay-card-left">
           <div class="pay-card-property">${p.listingTitle}</div>
           <div class="pay-card-meta">
+            <div class="pay-card-item">
+              <span class="pay-card-item-label">Type</span>
+              <span class="pay-card-item-value" style="font-weight:700;color:#00c9a7;">${formatPaymentType(p.paymentType)}</span>
+            </div>
             <div class="pay-card-item">
               <span class="pay-card-item-label">Period</span>
               <span class="pay-card-item-value">${p.period}</span>
@@ -378,25 +410,131 @@
   }
 
   // ══════════════════════════════════════════════════════════════════════════════
+  // PROPERTY SELECTOR MODAL
+  // ══════════════════════════════════════════════════════════════════════════════
+
+  function initPropertySelector() {
+    if (document.getElementById('propertySelectorBackdrop')) return;
+
+    const html = `
+      <div class="property-selector-backdrop" id="propertySelectorBackdrop">
+        <div class="property-selector-modal">
+          <div class="property-selector-header">
+            <div>
+              <div class="property-selector-title">Select Property to Pay</div>
+              <div class="property-selector-subtitle">Choose which payment you want to make</div>
+            </div>
+            <button class="property-selector-close" onclick="closePropertySelector()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+          <div class="property-selector-body" id="propertySelectorBody"></div>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', html);
+
+    // Close on backdrop click
+    document.getElementById('propertySelectorBackdrop').addEventListener('click', (e) => {
+      if (e.target.id === 'propertySelectorBackdrop') {
+        closePropertySelector();
+      }
+    });
+  }
+
+  window.openPropertySelector = function() {
+    initPropertySelector();
+
+    const upcoming = PAYMENTS.filter(p => p.status === 'pending' || p.status === 'pending_confirmation');
+    const container = document.getElementById('propertySelectorBody');
+
+    if (!upcoming.length) {
+      container.innerHTML = `
+        <div class="property-selector-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <div class="property-selector-empty-title">All Caught Up!</div>
+          <div class="property-selector-empty-text">You have no pending payments at this time.</div>
+        </div>
+      `;
+    } else {
+      container.innerHTML = upcoming.map((p, index) => `
+        <div class="property-selector-card" onclick="selectPropertyToPay(${index})">
+          <div class="property-card-header">
+            <div style="flex:1;">
+              <div class="property-card-title">${p.listingTitle}</div>
+              <span class="property-card-type">${formatPaymentType(p.paymentType)}</span>
+            </div>
+            <div class="property-card-amount">${fmtMoney(p.amount)}</div>
+          </div>
+          <div class="property-card-meta">
+            <div class="property-card-item">
+              <span class="property-card-item-label">Period</span>
+              <span class="property-card-item-value">${p.period}</span>
+            </div>
+            <div class="property-card-item">
+              <span class="property-card-item-label">Due Date</span>
+              <span class="property-card-item-value">${fmtDate(p.dueDate)}</span>
+            </div>
+          </div>
+          <div class="property-card-footer">
+            <div class="property-card-status">
+              ${p.status === 'pending_confirmation' ? 'Awaiting confirmation' : 'Payment pending'}
+            </div>
+            <div class="property-card-arrow">→</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('propertySelectorBackdrop').classList.add('active');
+  };
+
+  window.closePropertySelector = function() {
+    document.getElementById('propertySelectorBackdrop')?.classList.remove('active');
+  };
+
+  window.selectPropertyToPay = function(index) {
+    const upcoming = PAYMENTS.filter(p => p.status === 'pending' || p.status === 'pending_confirmation');
+    const payment = upcoming[index];
+
+    if (!payment) return;
+
+    // Close property selector
+    closePropertySelector();
+
+    // Open PayMongo payment modal with selected property details
+    setTimeout(() => {
+      PaymentIntegration.openPaymentModal({
+        amount: payment.amount,
+        listingTitle: payment.listingTitle,
+        listingId: 'prop-001', // Would be real ID in production
+        landlordId: 'usr-003', // Would be real ID in production
+        period: payment.period,
+        paymentType: payment.paymentType,
+        dueDate: payment.dueDate,
+        onSuccess: function(transaction) {
+          // Refresh the page to show new payment
+          setTimeout(() => {
+            location.reload();
+          }, 2000);
+        }
+      });
+    }, 300);
+  };
+
+  // ══════════════════════════════════════════════════════════════════════════════
   // NEW PAYMENT INTEGRATION (PayMongo Demo)
   // ══════════════════════════════════════════════════════════════════════════════
 
   window.payNowWithPayMongo = function() {
-    // Open PayMongo payment modal with payment details
-    PaymentIntegration.openPaymentModal({
-      amount: 15000,
-      listingTitle: "2BR Apartment — Poblacion",
-      listingId: "prop-001",
-      landlordId: "usr-003",
-      period: "June 2026",
-      dueDate: "2026-07-01",
-      onSuccess: function(transaction) {
-        // Refresh the page to show new payment
-        setTimeout(() => {
-          location.reload();
-        }, 2000);
-      }
-    });
+    // Open property selector first
+    openPropertySelector();
   };
 
   // ── Init ──────────────────────────────────────────────────────────────────────

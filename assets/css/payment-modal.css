@@ -111,12 +111,16 @@
 .payment-summary-label {
   color: var(--muted);
   font-size: 14px;
+  flex-shrink: 0;
+  margin-right: 16px;
 }
 
 .payment-summary-value {
   color: var(--text);
   font-weight: 600;
   font-size: 14px;
+  text-align: right;
+  word-break: break-word;
 }
 
 /* Payment Methods */
@@ -157,25 +161,43 @@
 }
 
 .payment-method-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 8px;
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 16px;
+  font-weight: 900;
   flex-shrink: 0;
   background: var(--card);
+  letter-spacing: -0.02em;
 }
 
+.payment-method-icon svg {
+  width: 24px;
+  height: 24px;
+  stroke: currentColor;
+}
+
+/* GCash Official Branding */
 .payment-method-icon.gcash {
-  background: linear-gradient(135deg, #007DFE 0%, #0066D6 100%);
+  background: #007DFE;
   color: white;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  padding: 8px 12px;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 125, 254, 0.25);
 }
 
+/* Maya Official Branding */
 .payment-method-icon.maya {
-  background: linear-gradient(135deg, #00D632 0%, #00B329 100%);
+  background: #00D632;
   color: white;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  padding: 8px 12px;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 214, 50, 0.25);
 }
 
 .payment-method-icon.card {

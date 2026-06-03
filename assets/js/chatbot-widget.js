@@ -351,11 +351,7 @@ const ChatbotWidget = (function() {
 
 })();
 
-// Auto-initialize on page load
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', ChatbotWidget.init);
-} else {
-  ChatbotWidget.init();
-}
+// Note: Auto-initialization disabled. Call ChatbotWidget.init() for floating mode
+// or ChatbotWidget.initFullPage() for dedicated help page mode.
 
 console.log('✅ Chatbot Widget loaded');

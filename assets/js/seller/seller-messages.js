@@ -25,6 +25,50 @@
 
   // ── Fake conversations ─────────────────────────────────────────────────────
   const CONVS = [
+    // ★ NEW: Viewing Request Sample
+    {
+      id: 'c-viewing', listingId: 'prop-001', buyerName: 'Maria Santos', unread: 1, dateLabel: 'Today',
+      messages: [
+        { from: 'buyer', text: 'Hi! I saw your property listing. Is it still available?', time: '9:00 AM', read: true },
+        { from: 'seller', text: 'Yes, it is! Would you like to schedule a viewing?', time: '10:30 AM' },
+        {
+          from: 'buyer', type: 'viewing_request', time: '10:35 AM',
+          viewingRequest: {
+            id: 'view-001',
+            listingId: 'prop-001',
+            listingTitle: '3-Bedroom House for Sale in Brgy. Poblacion',
+            requestedDate: '2026-06-05',
+            requestedTime: '14:00',
+            buyerNotes: 'I would like to see the property this Friday afternoon.',
+            status: 'pending' // pending, accepted, declined, counter-proposed
+          }
+        },
+      ],
+    },
+    // ★ NEW: Viewing Request with Chat Flow + Counter-Proposal
+    {
+      id: 'c-viewing-counter', listingId: 'prop-001', buyerName: 'Jose Reyes', unread: 0, dateLabel: 'Feb 26',
+      messages: [
+        { from: 'buyer', text: 'Good morning! Is this house still for sale?', time: '8:15 AM', read: true },
+        { from: 'seller', text: 'Good morning! Yes, it is. Would you like to view it?', time: '8:45 AM' },
+        { from: 'buyer', text: 'Yes please! Can I see it tomorrow morning?', time: '8:50 AM', read: true },
+        {
+          from: 'buyer', type: 'viewing_request', time: '8:52 AM',
+          viewingRequest: {
+            id: 'view-counter-001',
+            listingId: 'prop-001',
+            listingTitle: '3-Bedroom House for Sale in Brgy. Poblacion',
+            requestedDate: '2026-06-23',
+            requestedTime: '09:00',
+            buyerNotes: 'I prefer morning viewing if possible.',
+            status: 'counter-proposed'
+          }
+        },
+        { from: 'seller', text: 'I have another appointment at 9 AM. How about 11 AM instead? Same day.', time: '9:05 AM' },
+        { from: 'buyer', text: 'Perfect! 11 AM works for me. See you tomorrow!', time: '9:10 AM', read: true },
+        { from: 'seller', text: 'Great! Looking forward to it. See you at 11 AM 😊', time: '9:12 AM' },
+      ],
+    },
     // ★ NEW: Multi-unit apartment building - for testing adjust availability modal
     {
       id: 'c-multi-unit', listingId: 'prop-002', buyerName: 'John Dela Cruz', unread: 1, dateLabel: 'Today',
@@ -38,6 +82,7 @@
           payment: {
             id: 'PR-MULTI-001', property: '1-Bedroom Apartment Building (Multi-Unit)',
             period: 'June 2026', amount: 8000,
+            paymentType: 'rent',
             methods: ['GCash', 'PayMaya', 'Card'],
             status: 'paid',
           },
@@ -49,6 +94,7 @@
             method: 'GCash', amount: 8000,
             period: 'June 2026',
             property: '1-Bedroom Apartment Building (Unit 5)',
+            paymentType: 'rent',
             fileName: 'gcash_unit5_june2026.jpg',
             ref: 'REF-GC9M2X',
             status: 'pending', // ← Waiting for seller confirmation - will trigger adjust availability modal!
@@ -68,6 +114,7 @@
           payment: {
             id: 'PR-001', property: '1-Bedroom Apartment for Rent near Town Proper',
             period: 'June 2026', amount: 15000,
+            paymentType: 'rent',
             methods: ['GCash', 'Bank Transfer', 'Cash'],
             status: 'paid',
           },
@@ -80,6 +127,7 @@
             method: 'GCash', amount: 15000,
             period: 'June 2026',
             property: '1-Bedroom Apartment for Rent near Town Proper',
+            paymentType: 'rent',
             fileName: 'gcash_receipt_june2026.jpg',
             ref: 'REF-AB3X9K',
             status: 'pending',
@@ -115,6 +163,7 @@
           payment: {
             id: 'PR-004', property: 'Modern 2BR Apartment',
             period: 'June 2026', amount: 12000,
+            paymentType: 'security',
             methods: ['GCash', 'Bank Transfer', 'Cash'],
             status: 'confirmed',
           },
@@ -126,6 +175,7 @@
             method: 'GCash', amount: 12000,
             period: 'June 2026',
             property: 'Modern 2BR Apartment',
+            paymentType: 'security',
             fileName: 'gcash_12k_june.jpg',
             ref: 'REF-GC7M4P',
             status: 'confirmed',
@@ -146,6 +196,7 @@
           payment: {
             id: 'PR-005', property: 'Spacious Family Home',
             period: 'June 2026 + Deposit', amount: 50000,
+            paymentType: 'both',
             methods: ['GCash', 'Bank Transfer', 'Cash'],
             status: 'pending',
           },
@@ -208,6 +259,16 @@
     renderConvList(document.getElementById('convSearch').value);
   }
 
+  // ── Format payment type label ──────────────────────────────────────────────
+  function formatPaymentType(type) {
+    const typeMap = {
+      security: 'Security Deposit',
+      rent: 'Rent Payment',
+      both: 'Security + Rent'
+    };
+    return typeMap[type] || 'Payment';
+  }
+
   // ── Render payment request card (seller's own sent card) ──────────────────
   function renderSellerPayReqCard(m) {
     const p = m.payment;
@@ -226,6 +287,7 @@
             <span class="pr-status ${s.cls}">${s.label}</span>
           </div>
           <div class="pr-property">${p.property}</div>
+          ${p.paymentType ? `<div class="pr-type" style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px;"><strong>Type:</strong> ${formatPaymentType(p.paymentType)}</div>` : ''}
           <div class="pr-period">Period: ${p.period}</div>
           <div class="pr-amount">₱${p.amount.toLocaleString('en-PH')}</div>
         </div>
@@ -264,6 +326,7 @@
             <span class="pr-status ${s.cls}">${s.label}</span>
           </div>
           <div class="pr-property">${p.property}</div>
+          ${p.paymentType ? `<div class="pr-type" style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px;"><strong>Type:</strong> ${formatPaymentType(p.paymentType)}</div>` : ''}
           <div class="pr-period">Period: ${p.period}</div>
           <div class="pr-amount">₱${p.amount.toLocaleString('en-PH')}</div>
           <div class="proof-detail-row">
@@ -417,6 +480,7 @@
       c.messages.map(m => {
         if (m.type === 'payment_request') return renderSellerPayReqCard(m);
         if (m.type === 'payment_proof')   return renderProofCardSeller(m, id);
+        if (m.type === 'viewing_request') return renderViewingRequestCard(m, id);
         const side = m.from === 'seller' ? 'buyer' : 'seller';
         return `
           <div class="msg-row ${side}">
@@ -511,9 +575,10 @@
 
   window.sendPaymentRequest = function (e) {
     e.preventDefault();
+    const paymentType = document.getElementById('prPaymentType').value;
     const amount = parseInt(document.getElementById('prAmount').value, 10);
     const period = document.getElementById('prPeriod').value.trim();
-    if (!amount || !period || !payReqConvId) return;
+    if (!paymentType || !amount || !period || !payReqConvId) return;
 
     const c = CONVS.find(x => x.id === payReqConvId);
     const l = FAKE_LISTINGS.find(x => x.id === c?.listingId);
@@ -532,6 +597,7 @@
         property: l?.title || 'Your rental unit',
         period,
         amount,
+        paymentType,
         methods: ['GCash', 'Bank Transfer', 'Cash'],
         status: 'pending',
       },
@@ -558,6 +624,7 @@
               <span class="pr-status pr-status-pending">Awaiting Payment</span>
             </div>
             <div class="pr-property">${prMsg.payment.property}</div>
+            <div class="pr-type" style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px;"><strong>Type:</strong> ${formatPaymentType(paymentType)}</div>
             <div class="pr-period">Period: ${period}</div>
             <div class="pr-amount">₱${amount.toLocaleString('en-PH')}</div>
             <div class="pr-methods">
@@ -593,3 +660,99 @@
   // ── Init ───────────────────────────────────────────────────────────────────
   renderConvList();
 })();
+
+
+  // ── Render Viewing Request Card ─────────────────────────────────────────────
+  function renderViewingRequestCard(m, convId) {
+    const v = m.viewingRequest;
+    if (!v) return '';
+
+    const date = new Date(v.requestedDate + 'T00:00:00');
+    const formattedDate = date.toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
+    const [hours, minutes] = v.requestedTime.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    const formattedTime = `${hour12}:${minutes} ${ampm}`;
+
+    const isPending = v.status === 'pending';
+
+    return `
+      <div class="msg-row seller">
+        <div class="viewing-request-card">
+          <div class="vr-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            Viewing Request
+          </div>
+          <div class="vr-property">${v.listingTitle}</div>
+          <div class="vr-datetime">
+            <div class="vr-detail-row">
+              <span class="vr-label">📅 Date:</span>
+              <span class="vr-value">${formattedDate}</span>
+            </div>
+            <div class="vr-detail-row">
+              <span class="vr-label">🕐 Time:</span>
+              <span class="vr-value">${formattedTime}</span>
+            </div>
+          </div>
+          ${v.buyerNotes ? `
+            <div class="vr-notes">
+              <strong>Message:</strong> ${v.buyerNotes}
+            </div>
+          ` : ''}
+          ${isPending ? `
+            <div class="vr-actions">
+              <button class="vr-btn vr-decline" onclick="declineViewing('${v.id}', '${convId}')">Decline</button>
+              <button class="vr-btn vr-counter" onclick="counterViewing('${v.id}', '${convId}')">Counter-Propose</button>
+              <button class="vr-btn vr-accept" onclick="acceptViewing('${v.id}', '${convId}')">Accept</button>
+            </div>
+          ` : `
+            <div class="vr-status vr-status-${v.status}">${v.status.toUpperCase()}</div>
+          `}
+        </div>
+        <div class="msg-time">${m.time}</div>
+      </div>
+    `;
+  }
+
+
+
+  // ── Viewing Request Actions ─────────────────────────────────────────────────
+  window.acceptViewing = function(viewingId, convId) {
+    const c = CONVS.find(x => x.id === convId);
+    const msg = c?.messages.find(m => m.viewingRequest?.id === viewingId);
+    if (!msg) return;
+    
+    msg.viewingRequest.status = 'accepted';
+    
+    // Re-render
+    openConv(convId);
+    
+    // Show confirmation
+    alert('✅ Viewing confirmed! The buyer will be notified.');
+  };
+
+  window.declineViewing = function(viewingId, convId) {
+    if (!confirm('Are you sure you want to decline this viewing request?')) return;
+    
+    const c = CONVS.find(x => x.id === convId);
+    const msg = c?.messages.find(m => m.viewingRequest?.id === viewingId);
+    if (!msg) return;
+    
+    msg.viewingRequest.status = 'declined';
+    
+    // Re-render
+    openConv(convId);
+    
+    alert('❌ Viewing declined. The buyer will be notified.');
+  };
+
+  window.counterViewing = function(viewingId, convId) {
+    alert('🔄 Counter-Propose feature coming soon! You will be able to suggest a different date/time.');
+  };
+

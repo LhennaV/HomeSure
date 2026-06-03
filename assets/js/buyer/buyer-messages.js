@@ -35,6 +35,7 @@
           payment: {
             id: 'PR-001', property: '1-Bedroom Apartment for Rent near Town Proper',
             period: 'June 2026', amount: 15000,
+            paymentType: 'rent',
             methods: ['GCash', 'Bank Transfer', 'Cash'],
             status: 'pending', // pending | paid | confirmed
           },
@@ -70,6 +71,7 @@
           payment: {
             id: 'PR-002', property: 'Cozy Studio Apartment',
             period: 'June 2026', amount: 8000,
+            paymentType: 'both',
             methods: ['GCash', 'Bank Transfer', 'Cash'],
             status: 'paid',
           },
@@ -81,6 +83,7 @@
             method: 'GCash', amount: 8000,
             period: 'June 2026',
             property: 'Cozy Studio Apartment',
+            paymentType: 'both',
             fileName: 'gcash_payment_8000.jpg',
             ref: 'REF-GC8X2K',
             status: 'pending',
@@ -98,6 +101,7 @@
           payment: {
             id: 'PR-003', property: 'Modern 2BR Apartment',
             period: 'June 2026', amount: 12000,
+            paymentType: 'security',
             methods: ['GCash', 'Bank Transfer', 'Cash'],
             status: 'confirmed',
           },
@@ -109,6 +113,7 @@
             method: 'Maya', amount: 12000,
             period: 'June 2026',
             property: 'Modern 2BR Apartment',
+            paymentType: 'security',
             fileName: 'maya_receipt_june.jpg',
             ref: 'REF-MY5A9P',
             status: 'confirmed',
@@ -168,6 +173,16 @@
     renderConvList(document.getElementById('convSearch').value);
   }
 
+  // ── Format payment type label ──────────────────────────────────────────────
+  function formatPaymentType(type) {
+    const typeMap = {
+      security: 'Security Deposit',
+      rent: 'Rent Payment',
+      both: 'Security + Rent'
+    };
+    return typeMap[type] || 'Payment';
+  }
+
   // ── Payment Request Card (rendered inside chat) ───────────────────────────
   function renderPaymentRequestCard(m, convId) {
     const p = m.payment;
@@ -198,6 +213,7 @@
             <span class="pr-status ${s.cls}">${s.label}</span>
           </div>
           <div class="pr-property">${p.property}</div>
+          ${p.paymentType ? `<div class="pr-type" style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px;"><strong>Type:</strong> ${formatPaymentType(p.paymentType)}</div>` : ''}
           <div class="pr-period">Period: ${p.period}</div>
           <div class="pr-amount">₱${p.amount.toLocaleString('en-PH')}</div>
           <div class="pr-methods">${methodPills}</div>
@@ -227,6 +243,7 @@
       listingId: c.listingId,
       landlordId: c.sellerId,
       period: payment.period,
+      paymentType: payment.paymentType,
       dueDate: new Date().toISOString().split('T')[0],
       onSuccess: function(transaction) {
         // Mark payment request as paid in the conversation
@@ -250,6 +267,7 @@
             amount: transaction.amount,
             period: payment.period,
             property: payment.property,
+            paymentType: payment.paymentType,
             fileName: 'paymongo_receipt.pdf',
             ref: transaction.reference,
             status: 'confirmed'
@@ -362,6 +380,7 @@
             <span class="pr-status ${s.cls}">${s.label}</span>
           </div>
           <div class="pr-property">${p.property}</div>
+          ${p.paymentType ? `<div class="pr-type" style="font-size:12px;color:rgba(255,255,255,0.6);margin-top:2px;"><strong>Type:</strong> ${formatPaymentType(p.paymentType)}</div>` : ''}
           <div class="pr-period">Period: ${p.period}</div>
           <div class="pr-amount">₱${p.amount.toLocaleString('en-PH')}</div>
           <div class="proof-detail-row">

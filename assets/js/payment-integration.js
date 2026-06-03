@@ -122,6 +122,12 @@ const PaymentIntegration = (function() {
           <span class="payment-summary-label">Property</span>
           <span class="payment-summary-value">${currentPayment.listingTitle}</span>
         </div>
+        ${currentPayment.paymentType ? `
+        <div class="payment-summary-row">
+          <span class="payment-summary-label">Payment Type</span>
+          <span class="payment-summary-value" style="font-weight:700;color:#00c9a7;">${formatPaymentType(currentPayment.paymentType)}</span>
+        </div>
+        ` : ''}
         <div class="payment-summary-row">
           <span class="payment-summary-label">Period</span>
           <span class="payment-summary-value">${currentPayment.period}</span>
@@ -142,7 +148,7 @@ const PaymentIntegration = (function() {
 
         <!-- GCash -->
         <div class="payment-method-option" onclick="PaymentIntegration.selectMethod('gcash')">
-          <div class="payment-method-icon gcash">💙</div>
+          <div class="payment-method-icon gcash">GCash</div>
           <div class="payment-method-info">
             <div class="payment-method-name">GCash</div>
             <div class="payment-method-desc">Pay via GCash e-wallet</div>
@@ -152,7 +158,7 @@ const PaymentIntegration = (function() {
 
         <!-- Maya -->
         <div class="payment-method-option" onclick="PaymentIntegration.selectMethod('paymaya')">
-          <div class="payment-method-icon maya">💚</div>
+          <div class="payment-method-icon maya">Maya</div>
           <div class="payment-method-info">
             <div class="payment-method-name">Maya</div>
             <div class="payment-method-desc">Pay via Maya (formerly PayMaya)</div>
@@ -162,7 +168,13 @@ const PaymentIntegration = (function() {
 
         <!-- Card -->
         <div class="payment-method-option" onclick="PaymentIntegration.selectMethod('card')">
-          <div class="payment-method-icon card">💳</div>
+          <div class="payment-method-icon card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+              <line x1="1" y1="10" x2="23" y2="10"/>
+              <line x1="5" y1="15" x2="9" y2="15"/>
+            </svg>
+          </div>
           <div class="payment-method-info">
             <div class="payment-method-name">Credit/Debit Card</div>
             <div class="payment-method-desc">Visa, Mastercard, JCB</div>
@@ -490,6 +502,15 @@ const PaymentIntegration = (function() {
       day: 'numeric',
       year: 'numeric'
     });
+  }
+
+  function formatPaymentType(type) {
+    const typeMap = {
+      security: 'Security Deposit',
+      rent: 'Rent Payment',
+      both: 'Security Deposit + Rent'
+    };
+    return typeMap[type] || 'Payment';
   }
 
   function formatDateTime(dateTimeStr) {

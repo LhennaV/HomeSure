@@ -170,7 +170,7 @@
   :root {
     --bg: #f4f6f9; --card: #ffffff; --card2: #f1f5f9;
     --border: rgba(0,0,0,0.08);
-    --text: #0f172a; --muted: rgba(0,0,0,0.38); --muted2: rgba(0,0,0,0.6);
+    --text: #0f172a; --muted: rgba(0,0,0,0.38); --muted2: rgba(0,0,0,0.8);
     --shadow: 0 2px 8px rgba(0,0,0,0.08); --shadow-md: 0 8px 28px rgba(0,0,0,0.14);
   }
   .btn-sm.deactivate { background: rgba(239,68,68,0.08); }

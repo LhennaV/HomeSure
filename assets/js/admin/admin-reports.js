@@ -18,6 +18,7 @@
       description: 'The property photos do not match the actual unit. The seller is using stock photos and the listed price is significantly lower than market value to attract buyers.',
       listingId: 'prop-004', reportedBy: 'usr-001',
       status: 'pending', actionTaken: null, submittedAt: '2026-03-28',
+      comments: []
     },
     {
       id: 'rpt-002', type: 'seller', severity: 'high',
@@ -25,6 +26,9 @@
       description: 'Seller contacted me via private message asking for a reservation fee through GCash before any formal agreement was signed.',
       listingId: 'prop-005', reportedBy: 'usr-002',
       status: 'pending', actionTaken: null, submittedAt: '2026-03-27',
+      comments: [
+        { text: 'Contacted seller for clarification', by: 'Admin User', at: '2026-03-27 14:30' }
+      ]
     },
     {
       id: 'rpt-003', type: 'listing', severity: 'medium',
@@ -32,6 +36,7 @@
       description: 'The listing states 3 bedrooms but the actual unit only has 2. Floor area is also overstated by approximately 20 sqm.',
       listingId: 'prop-009', reportedBy: 'usr-001',
       status: 'pending', actionTaken: null, submittedAt: '2026-03-25',
+      comments: []
     },
     {
       id: 'rpt-004', type: 'seller', severity: 'low',
@@ -39,6 +44,10 @@
       description: 'I have sent multiple messages to the seller over the past week and have not received any response.',
       listingId: 'prop-002', reportedBy: 'usr-002',
       status: 'resolved', actionTaken: 'warning_issued', submittedAt: '2026-03-20',
+      comments: [
+        { text: 'Verified with seller - was on vacation', by: 'Admin User', at: '2026-03-21 09:15' },
+        { text: 'Issued warning for future responsiveness', by: 'Admin User', at: '2026-03-21 09:20' }
+      ]
     },
     {
       id: 'rpt-005', type: 'listing', severity: 'medium',
@@ -46,6 +55,9 @@
       description: 'This property appears to be listed twice under different prices. One listing shows ₱8,000/month and another shows ₱9,500/month for what appears to be the same unit.',
       listingId: 'prop-003', reportedBy: 'usr-001',
       status: 'rejected', actionTaken: 'report_rejected', submittedAt: '2026-03-15',
+      comments: [
+        { text: 'Checked - these are different units in the same building', by: 'Admin User', at: '2026-03-16 11:00' }
+      ]
     },
   ];
 
@@ -133,6 +145,28 @@
     if (r) { r.status = 'under_review'; renderReports(); }
   };
 
+  // ── Add comment ─────────────────────────────────────────────────────────────
+  window.addComment = function (id) {
+    const r = REPORTS.find(x => x.id === id);
+    if (!r) return;
+    const textarea = document.getElementById('commentTextarea');
+    const text = textarea.value.trim();
+    if (!text) {
+      showToast('Please enter a comment');
+      return;
+    }
+    const now = new Date();
+    const timestamp = now.toISOString().slice(0, 16).replace('T', ' ');
+    r.comments.push({
+      text: text,
+      by: 'Admin User', // Would be current logged-in admin
+      at: timestamp
+    });
+    textarea.value = '';
+    openModal(id); // Refresh modal
+    showToast('Comment added');
+  };
+
   // ── Take action (resolve) ───────────────────────────────────────────────────
   window.takeAction = function (id, action) {
     const r = REPORTS.find(x => x.id === id);
@@ -196,6 +230,30 @@
          </div>`
       : '';
 
+    const commentsSection = `
+      <div class="modal-section-label">Internal Comments</div>
+      ${r.comments.length ? `
+        <div class="comments-list">
+          ${r.comments.map(c => `
+            <div class="comment-item">
+              <div class="comment-header">
+                <strong>${c.by}</strong>
+                <span class="comment-time">${c.at}</span>
+              </div>
+              <div class="comment-text">${c.text}</div>
+            </div>
+          `).join('')}
+        </div>
+      ` : '<div class="comments-empty">No comments yet</div>'}
+      <div class="comment-input-row">
+        <textarea id="commentTextarea" class="comment-textarea" placeholder="Add internal note or comment..." rows="2"></textarea>
+        <button class="btn-add-comment" onclick="addComment('${r.id}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Add Comment
+        </button>
+      </div>
+    `;
+
     document.getElementById('reportModalContent').innerHTML = `
       <div class="modal-header ${cls}">
         <div class="modal-icon ${cls}">${svg}</div>
@@ -217,6 +275,7 @@
           <div class="modal-detail-item"><label>Status</label><span style="text-transform:capitalize">${statusLabel(r.status)}</span></div>
           <div class="modal-detail-item"><label>Submitted</label><span>${r.submittedAt}</span></div>
         </div>
+        ${commentsSection}
         ${actionPanel}
       </div>
       <div class="modal-actions">

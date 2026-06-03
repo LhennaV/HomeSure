@@ -16,17 +16,17 @@
     {
       id: 'PAY-101', tenantName: 'Maria Santos', initials: 'MS', color: '#0f766e',
       listingTitle: '2BR Apartment — Poblacion', amount: 15000, period: 'June 2026',
-      paidDate: '2026-05-28', method: 'GCash', reference: 'GC-78452'
+      paymentType: 'rent', paidDate: '2026-05-28', method: 'GCash', reference: 'GC-78452'
     },
     {
       id: 'PAY-102', tenantName: 'Juan Cruz', initials: 'JC', color: '#7c3aed',
       listingTitle: 'Studio Unit — Bagbaguin', amount: 8000, period: 'June 2026',
-      paidDate: '2026-05-30', method: 'Bank Transfer', reference: 'BT-98765'
+      paymentType: 'rent', paidDate: '2026-05-30', method: 'Bank Transfer', reference: 'BT-98765'
     },
     {
       id: 'PAY-103', tenantName: 'Ana Lim', initials: 'AL', color: '#b45309',
       listingTitle: '3BR House — Guyong', amount: 22000, period: 'June 2026',
-      paidDate: '2026-06-01', method: 'GCash', reference: 'GC-11111'
+      paymentType: 'both', paidDate: '2026-06-01', method: 'GCash', reference: 'GC-11111'
     },
   ];
 
@@ -35,12 +35,12 @@
     {
       id: 'PAY-091', tenantName: 'Maria Santos', initials: 'MS', color: '#0f766e',
       listingTitle: '2BR Apartment — Poblacion', amount: 15000, period: 'May 2026',
-      paidDate: '2026-04-29', method: 'GCash', reference: 'GC-54321', status: 'confirmed'
+      paymentType: 'rent', paidDate: '2026-04-29', method: 'GCash', reference: 'GC-54321', status: 'confirmed'
     },
     {
       id: 'PAY-092', tenantName: 'Juan Cruz', initials: 'JC', color: '#7c3aed',
       listingTitle: 'Studio Unit — Bagbaguin', amount: 8000, period: 'May 2026',
-      paidDate: '2026-04-30', method: 'Cash', reference: '—', status: 'confirmed'
+      paymentType: 'security', paidDate: '2026-04-30', method: 'Cash', reference: '—', status: 'confirmed'
     },
   ];
 
@@ -72,6 +72,15 @@
   function fmtDate(d) {
     if (!d) return '—';
     return new Date(d + 'T00:00:00').toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function formatPaymentType(type) {
+    const typeMap = {
+      security: 'Security Deposit',
+      rent: 'Rent Payment',
+      both: 'Security + Rent'
+    };
+    return typeMap[type] || 'Payment';
   }
 
   function statusBadge(status) {
@@ -149,6 +158,10 @@
           <div class="pending-name">${p.tenantName}</div>
           <div class="pending-property">${p.listingTitle}</div>
           <div class="pending-meta">
+            <div class="pending-meta-item">
+              <span class="pending-meta-label">Type</span>
+              <span class="pending-meta-value">${formatPaymentType(p.paymentType)}</span>
+            </div>
             <div class="pending-meta-item">
               <span class="pending-meta-label">Period</span>
               <span class="pending-meta-value">${p.period}</span>
@@ -292,6 +305,7 @@
           </div>
         </td>
         <td>${p.listingTitle}</td>
+        <td>${formatPaymentType(p.paymentType)}</td>
         <td>${p.period}</td>
         <td class="amount-cell">${fmtMoney(p.amount)}</td>
         <td>${p.method}</td>

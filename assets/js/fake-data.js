@@ -109,6 +109,7 @@ const FAKE_LISTINGS = [
     address: '123 Maharlika Rd, Poblacion, Sta. Maria, Bulacan',
     bedrooms: 1, bathrooms: 1, floorArea: 35, lotArea: null,
     status: 'approved', verified: true, negotiable: false,
+    lifecycleStatus: 'rented',
     hasMultipleUnits: true, totalUnits: 8, availableUnits: 3,
     images: ['https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800', 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800'],
     amenities: ['Aircon', 'Ref', 'WiFi-ready', 'Security'], postedAt: '2026-02-10', featured: true,
@@ -122,6 +123,7 @@ const FAKE_LISTINGS = [
     address: 'Blk 2 Lot 5, Villa Magsaysay, San Jose Patag, Sta. Maria, Bulacan',
     bedrooms: 4, bathrooms: 3, floorArea: 180, lotArea: 300,
     status: 'approved', verified: true, negotiable: false,
+    lifecycleStatus: 'sold',
     images: ['https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800', 'https://images.unsplash.com/photo-1576941089067-2de3c901e126?w=800'],
     amenities: ['2-Car Garage', 'Gated Village', 'Service Area', 'Balcony'], postedAt: '2026-01-28', featured: false,
   },
@@ -299,7 +301,8 @@ const FAKE_LISTINGS = [
     address: '789 Rizal Ave, Catanghalan, Sta. Maria, Bulacan',
     bedrooms: 2, bathrooms: 1, floorArea: 80, lotArea: 150,
     status: 'rejected', verified: false, negotiable: false,
-    rejectionReason: 'Incomplete property documents. Please re-upload a valid Transfer Certificate of Title (TCT).',
+    rejectionReason: 'Incomplete property documents',
+    rejectionNotes: 'The uploaded Transfer Certificate of Title (TCT) is not clear. Please upload a high-quality scan or photo showing all property details, boundaries, and the owner\'s name clearly. Also ensure the document is complete (all pages included).',
     images: ['https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=800', 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800'],
     documents: [
       { label: 'Valid Government ID', url: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600' },
@@ -415,3 +418,329 @@ function redirectToDashboard(role) {
   const path = routes[role];
   if (path) window.location.href = path;
 }
+
+// ── Reviews (Two-Way: Buyer ↔ Seller) ────────────────────────────────────────
+const FAKE_REVIEWS = [
+  // Buyers rating Sellers
+  {
+    id: 'rev-1',
+    type: 'buyer-to-seller',
+    buyerId: 'u-buyer-1',
+    sellerId: 'u-seller-1',
+    listingId: 'lst-1',
+    rating: 5,
+    comment: 'Excellent seller! Very professional and responsive. The property was exactly as described. Highly recommend!',
+    reviewDate: '2025-11-15T14:30:00Z',
+    helpful: 12,
+  },
+  {
+    id: 'rev-2',
+    type: 'buyer-to-seller',
+    buyerId: 'u-buyer-2',
+    sellerId: 'u-seller-1',
+    listingId: 'lst-2',
+    rating: 5,
+    comment: 'Great experience! The seller was very accommodating during the viewing and answered all my questions.',
+    reviewDate: '2025-10-22T09:15:00Z',
+    helpful: 8,
+  },
+  {
+    id: 'rev-3',
+    type: 'buyer-to-seller',
+    buyerId: 'u-buyer-1',
+    sellerId: 'u-seller-2',
+    listingId: 'lst-5',
+    rating: 4,
+    comment: 'Good property and fair pricing. Minor issues with documentation but seller resolved them quickly.',
+    reviewDate: '2025-09-10T16:45:00Z',
+    helpful: 5,
+  },
+  {
+    id: 'rev-4',
+    type: 'buyer-to-seller',
+    buyerId: 'u-buyer-3',
+    sellerId: 'u-seller-2',
+    listingId: 'lst-6',
+    rating: 5,
+    comment: 'Very smooth transaction! Seller provided all necessary documents and was very transparent throughout.',
+    reviewDate: '2025-11-01T11:20:00Z',
+    helpful: 15,
+  },
+  {
+    id: 'rev-5',
+    type: 'buyer-to-seller',
+    buyerId: 'u-buyer-2',
+    sellerId: 'u-seller-3',
+    listingId: 'lst-9',
+    rating: 3,
+    comment: 'Property was okay but seller was not very responsive to messages. Took longer than expected to finalize.',
+    reviewDate: '2025-08-18T13:00:00Z',
+    helpful: 3,
+  },
+
+  // Sellers rating Buyers
+  {
+    id: 'rev-6',
+    type: 'seller-to-buyer',
+    sellerId: 'u-seller-1',
+    buyerId: 'u-buyer-1',
+    listingId: 'lst-1',
+    rating: 5,
+    comment: 'Professional and serious buyer. Payment was on time and communication was excellent. Would work with again!',
+    reviewDate: '2025-11-16T10:00:00Z',
+    helpful: 7,
+  },
+  {
+    id: 'rev-7',
+    type: 'seller-to-buyer',
+    sellerId: 'u-seller-1',
+    buyerId: 'u-buyer-2',
+    listingId: 'lst-2',
+    rating: 5,
+    comment: 'Great buyer to work with. Respectful during viewings and quick to make decisions.',
+    reviewDate: '2025-10-23T14:30:00Z',
+    helpful: 4,
+  },
+  {
+    id: 'rev-8',
+    type: 'seller-to-buyer',
+    sellerId: 'u-seller-2',
+    buyerId: 'u-buyer-1',
+    listingId: 'lst-5',
+    rating: 4,
+    comment: 'Good buyer but needed extra time to process documents. Overall positive experience.',
+    reviewDate: '2025-09-11T09:15:00Z',
+    helpful: 2,
+  },
+  {
+    id: 'rev-9',
+    type: 'seller-to-buyer',
+    sellerId: 'u-seller-2',
+    buyerId: 'u-buyer-3',
+    listingId: 'lst-6',
+    rating: 5,
+    comment: 'Excellent buyer! Very organized and prepared with all requirements. Smooth transaction from start to finish.',
+    reviewDate: '2025-11-02T08:45:00Z',
+    helpful: 9,
+  },
+  {
+    id: 'rev-10',
+    type: 'seller-to-buyer',
+    sellerId: 'u-seller-3',
+    buyerId: 'u-buyer-2',
+    listingId: 'lst-9',
+    rating: 4,
+    comment: 'Buyer was pleasant but took a while to respond to messages. Transaction completed successfully though.',
+    reviewDate: '2025-08-19T15:20:00Z',
+    helpful: 1,
+  },
+];
+
+// ── Transactions (Completed Deals) ───────────────────────────────────────────
+const FAKE_TRANSACTIONS = [
+  {
+    id: 'txn-001',
+    listingId: 'prop-002',
+    listingTitle: '1-Bedroom Apartment for Rent near Town Proper',
+    buyerId: 'usr-001',
+    buyerName: 'Maria Santos',
+    sellerId: 'usr-003',
+    sellerName: 'Ramon Cruz',
+    type: 'rent',
+    status: 'completed',
+    amount: 8000,
+    paymentMethod: 'GCash',
+    transactionDate: '2025-11-20T14:30:00Z',
+    moveInDate: '2025-12-01',
+  },
+  {
+    id: 'txn-002',
+    listingId: 'prop-003',
+    listingTitle: '4-Bedroom House & Lot in San Jose Patag',
+    buyerId: 'usr-001',
+    buyerName: 'Maria Santos',
+    sellerId: 'usr-003',
+    sellerName: 'Ramon Cruz',
+    type: 'sale',
+    status: 'completed',
+    amount: 7800000,
+    paymentMethod: 'Bank Transfer',
+    transactionDate: '2025-10-15T10:00:00Z',
+    moveInDate: '2025-11-01',
+  },
+  {
+    id: 'txn-003',
+    listingId: 'prop-004',
+    listingTitle: 'Studio Unit in Bagbaguin',
+    buyerId: 'usr-002',
+    buyerName: 'Juan Dela Cruz',
+    sellerId: 'usr-003',
+    sellerName: 'Ramon Cruz',
+    type: 'rent',
+    status: 'completed',
+    amount: 8000,
+    paymentMethod: 'GCash',
+    transactionDate: '2025-09-05T16:00:00Z',
+    moveInDate: '2025-09-15',
+  },
+];
+
+// ── Viewing Requests ──────────────────────────────────────────────────────────
+const FAKE_VIEWING_REQUESTS = [
+  {
+    id: 'view-001',
+    listingId: 'prop-001',
+    listingTitle: '3-Bedroom House for Sale in Brgy. Poblacion',
+    buyerId: 'usr-001',
+    buyerName: 'Maria Santos',
+    sellerId: 'usr-003',
+    sellerName: 'Ramon Cruz',
+    status: 'pending', // pending, accepted, declined, counter-proposed, confirmed
+    requestedDate: '2026-06-05',
+    requestedTime: '14:00',
+    proposedDate: null, // Set when seller counter-proposes
+    proposedTime: null,
+    buyerNotes: 'I would like to see the property this Friday afternoon.',
+    sellerNotes: null,
+    createdAt: '2026-06-02T10:30:00Z',
+    updatedAt: '2026-06-02T10:30:00Z'
+  },
+  {
+    id: 'view-002',
+    listingId: 'prop-006',
+    listingTitle: '2-Bedroom Condo Unit for Rent – Gusa',
+    buyerId: 'usr-002',
+    buyerName: 'Jose Reyes',
+    sellerId: 'usr-003',
+    sellerName: 'Ramon Cruz',
+    status: 'counter-proposed',
+    requestedDate: '2026-06-04',
+    requestedTime: '10:00',
+    proposedDate: '2026-06-04',
+    proposedTime: '15:00',
+    buyerNotes: 'Prefer morning viewing if possible.',
+    sellerNotes: 'Morning is not available, but I can do 3 PM same day. Would that work?',
+    createdAt: '2026-06-01T14:20:00Z',
+    updatedAt: '2026-06-01T16:45:00Z'
+  },
+  {
+    id: 'view-003',
+    listingId: 'prop-004',
+    listingTitle: 'Studio Apartment for Rent near Lim Ket Kai',
+    buyerId: 'usr-001',
+    buyerName: 'Maria Santos',
+    sellerId: 'usr-004',
+    sellerName: 'Lourdes Navarro',
+    status: 'confirmed',
+    requestedDate: '2026-06-03',
+    requestedTime: '11:00',
+    proposedDate: null,
+    proposedTime: null,
+    buyerNotes: 'I can come anytime in the morning.',
+    sellerNotes: null,
+    createdAt: '2026-05-30T09:15:00Z',
+    updatedAt: '2026-05-30T10:00:00Z'
+  }
+];
+
+// ── Messages / Conversations ──────────────────────────────────────────────────
+const FAKE_MESSAGES = [
+  {
+    id: 'msg-001',
+    conversationId: 'conv-usr001-usr003', // buyer-seller pair
+    senderId: 'usr-001',
+    senderName: 'Maria Santos',
+    receiverId: 'usr-003',
+    receiverName: 'Ramon Cruz',
+    type: 'text', // text, viewing-request, viewing-response
+    message: 'Hi! I saw your property listing. Is it still available?',
+    timestamp: '2026-06-01T09:00:00Z',
+    read: true
+  },
+  {
+    id: 'msg-002',
+    conversationId: 'conv-usr001-usr003',
+    senderId: 'usr-003',
+    senderName: 'Ramon Cruz',
+    receiverId: 'usr-001',
+    receiverName: 'Maria Santos',
+    type: 'text',
+    message: 'Yes, it is! Would you like to schedule a viewing?',
+    timestamp: '2026-06-01T10:30:00Z',
+    read: true
+  },
+  {
+    id: 'msg-003',
+    conversationId: 'conv-usr001-usr003',
+    senderId: 'usr-001',
+    senderName: 'Maria Santos',
+    receiverId: 'usr-003',
+    receiverName: 'Ramon Cruz',
+    type: 'viewing-request',
+    message: null,
+    viewingRequestId: 'view-001', // Links to FAKE_VIEWING_REQUESTS
+    viewingData: {
+      listingId: 'prop-001',
+      listingTitle: '3-Bedroom House for Sale in Brgy. Poblacion',
+      requestedDate: '2026-06-05',
+      requestedTime: '14:00',
+      buyerNotes: 'I would like to see the property this Friday afternoon.'
+    },
+    timestamp: '2026-06-02T10:30:00Z',
+    read: false,
+    status: 'pending' // pending, accepted, declined, counter-proposed
+  },
+  {
+    id: 'msg-004',
+    conversationId: 'conv-usr002-usr003',
+    senderId: 'usr-002',
+    senderName: 'Jose Reyes',
+    receiverId: 'usr-003',
+    receiverName: 'Ramon Cruz',
+    type: 'viewing-request',
+    message: null,
+    viewingRequestId: 'view-002',
+    viewingData: {
+      listingId: 'prop-006',
+      listingTitle: '2-Bedroom Condo Unit for Rent – Gusa',
+      requestedDate: '2026-06-04',
+      requestedTime: '10:00',
+      buyerNotes: 'Prefer morning viewing if possible.'
+    },
+    timestamp: '2026-06-01T14:20:00Z',
+    read: true,
+    status: 'counter-proposed'
+  },
+  {
+    id: 'msg-005',
+    conversationId: 'conv-usr002-usr003',
+    senderId: 'usr-003',
+    senderName: 'Ramon Cruz',
+    receiverId: 'usr-002',
+    receiverName: 'Jose Reyes',
+    type: 'viewing-response',
+    message: null,
+    viewingRequestId: 'view-002',
+    viewingData: {
+      listingId: 'prop-006',
+      listingTitle: '2-Bedroom Condo Unit for Rent – Gusa',
+      originalDate: '2026-06-04',
+      originalTime: '10:00',
+      proposedDate: '2026-06-04',
+      proposedTime: '15:00',
+      sellerNotes: 'Morning is not available, but I can do 3 PM same day. Would that work?'
+    },
+    timestamp: '2026-06-01T16:45:00Z',
+    read: true,
+    status: 'counter-proposed'
+  }
+];
+
+// ── Make data globally accessible ────────────────────────────────────────────
+window.FAKE_USERS = FAKE_USERS;
+window.FAKE_LISTINGS = FAKE_LISTINGS;
+window.FAKE_REPORTS = FAKE_REPORTS;
+window.FAKE_REVIEWS = FAKE_REVIEWS;
+window.FAKE_TRANSACTIONS = FAKE_TRANSACTIONS;
+window.FAKE_VIEWING_REQUESTS = FAKE_VIEWING_REQUESTS;
+window.FAKE_MESSAGES = FAKE_MESSAGES;

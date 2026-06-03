@@ -104,10 +104,32 @@
     }
 
     // Rejection reason banner (only in draft tab for rejected listings)
-    const rejectionBanner = (tab === 'draft' && listing.status === 'rejected' && listing.rejectionReason)
-      ? `<div class="rejection-banner">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <span><strong>Rejected:</strong> ${listing.rejectionReason}</span>
+    const rejectionBanner = (tab === 'draft' && listing.status === 'rejected')
+      ? `<div class="rejection-banner-enhanced">
+          <div class="rejection-banner-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <span class="rejection-banner-title">Listing Rejected by Admin</span>
+          </div>
+          <div class="rejection-banner-body">
+            <div class="rejection-reason">
+              <strong>Reason:</strong> ${listing.rejectionReason || 'No specific reason provided'}
+            </div>
+            ${listing.rejectionNotes ? `<div class="rejection-notes">${listing.rejectionNotes}</div>` : ''}
+            <div class="rejection-actions">
+              <button class="btn-fix-edit" onclick="handleEdit('${listing.id}')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Fix & Resubmit
+              </button>
+              <span class="rejection-help">Edit the listing to address the issues above, then submit for review again.</span>
+            </div>
+          </div>
         </div>`
       : '';
 

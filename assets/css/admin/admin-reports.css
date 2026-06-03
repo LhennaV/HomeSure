@@ -248,6 +248,206 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); colo
 .btn-modal.review  { background: rgba(96,165,250,0.12); color: #60a5fa; border-color: rgba(96,165,250,0.22); }
 .btn-modal.close   { background: rgba(255,255,255,0.06); color: var(--muted2); border-color: var(--border); }
 
+/* ── Assignment Section ── */
+.assignment-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.assign-dropdown {
+  flex: 1;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.assign-dropdown:hover {
+  border-color: var(--teal);
+  background: rgba(0,201,167,0.05);
+}
+
+.assign-dropdown:focus {
+  outline: none;
+  border-color: var(--teal);
+}
+
+.btn-assign {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 16px;
+  background: var(--teal);
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+
+.btn-assign:hover {
+  background: #00a88a;
+  transform: translateY(-1px);
+}
+
+.btn-assign svg {
+  width: 16px;
+  height: 16px;
+}
+
+.assignment-current {
+  font-size: 12px;
+  color: var(--muted2);
+  padding: 8px 12px;
+  background: rgba(0,201,167,0.08);
+  border: 1px solid rgba(0,201,167,0.2);
+  border-radius: 8px;
+  margin-bottom: 4px;
+}
+
+.assignment-current strong {
+  color: var(--teal);
+}
+
+/* ── Comments Section ── */
+.comments-list {
+  margin-bottom: 14px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.comments-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.comments-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.comments-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+.comment-item {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+
+.comment-item:last-child {
+  margin-bottom: 0;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.comment-header strong {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.comment-time {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.comment-text {
+  font-size: 13px;
+  color: var(--muted2);
+  line-height: 1.6;
+}
+
+.comments-empty {
+  text-align: center;
+  padding: 24px;
+  color: var(--muted);
+  font-size: 13px;
+  background: rgba(255,255,255,0.02);
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  margin-bottom: 14px;
+}
+
+.comment-input-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.comment-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.6;
+  resize: vertical;
+  transition: all 0.18s;
+}
+
+.comment-textarea:focus {
+  outline: none;
+  border-color: var(--teal);
+  background: rgba(0,201,167,0.05);
+}
+
+.comment-textarea::placeholder {
+  color: var(--muted);
+}
+
+.btn-add-comment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 16px;
+  background: rgba(0,201,167,0.12);
+  color: var(--teal);
+  border: 1px solid rgba(0,201,167,0.25);
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s;
+  align-self: flex-end;
+}
+
+.btn-add-comment:hover {
+  background: rgba(0,201,167,0.18);
+  border-color: rgba(0,201,167,0.35);
+  transform: translateY(-1px);
+}
+
+.btn-add-comment svg {
+  width: 16px;
+  height: 16px;
+}
+
 /* ── Light mode ── */
 [data-theme="light"] {
   --bg: #f1f5f9; --card: #ffffff; --card2: #f8fafc;

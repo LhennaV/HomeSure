@@ -171,11 +171,336 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); colo
 .toast-icon { flex-shrink: 0; }
 .toast-icon svg { width: 16px; height: 16px; color: var(--teal); display: block; }
 
+/* ── Payment Type Badges ── */
+.badge-type-security,
+.badge-type-rent,
+.badge-type-both {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-type-security {
+  background: rgba(167, 139, 250, 0.15);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  color: var(--purple);
+}
+
+.badge-type-rent {
+  background: rgba(0, 201, 167, 0.15);
+  border: 1px solid rgba(0, 201, 167, 0.3);
+  color: var(--teal);
+}
+
+.badge-type-both {
+  background: rgba(251, 191, 36, 0.15);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  color: var(--yellow);
+}
+
+/* ── Transaction Detail Modal ── */
+.transaction-modal-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  z-index: 9000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+.transaction-modal-backdrop.active {
+  display: flex;
+}
+
+.transaction-modal {
+  background: var(--card);
+  border-radius: 18px;
+  width: 90%;
+  max-width: 520px;
+  max-height: 85vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.transaction-modal-header {
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.transaction-modal-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.transaction-modal-close {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 28px;
+  line-height: 1;
+  padding: 4px;
+  transition: color 0.2s;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.transaction-modal-close:hover {
+  color: var(--text);
+}
+
+.transaction-modal-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.transaction-modal-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.transaction-modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.transaction-modal-body::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+.tx-detail-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.tx-detail-section:last-child {
+  border-bottom: none;
+}
+
+.tx-detail-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+.tx-detail-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* ── Deduction Approval ── */
+.badge-pending-deduction {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  background: rgba(251, 191, 36, 0.15);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  color: var(--yellow);
+  margin-left: 6px;
+}
+
+.deduction-info {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.deduction-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.deduction-info-row:last-child {
+  border-bottom: none;
+}
+
+.deduction-info-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.deduction-info-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pending-deductions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.deduction-request-card {
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+  transition: all 0.2s;
+}
+
+.deduction-request-card:hover {
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.deduction-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.deduction-amount {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--yellow);
+}
+
+.deduction-date {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.deduction-reason {
+  font-size: 13px;
+  color: var(--muted2);
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+
+.deduction-reason strong {
+  color: var(--text);
+}
+
+.deduction-evidence {
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.02);
+  border-left: 3px solid var(--border);
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+.deduction-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.btn-approve,
+.btn-reject {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.btn-approve {
+  background: var(--teal);
+  color: #fff;
+}
+
+.btn-approve:hover {
+  background: #00a88a;
+  transform: translateY(-1px);
+}
+
+.btn-approve svg {
+  width: 16px;
+  height: 16px;
+}
+
+.btn-reject {
+  background: rgba(248, 113, 113, 0.12);
+  color: var(--red);
+  border: 1px solid rgba(248, 113, 113, 0.25);
+}
+
+.btn-reject:hover {
+  background: rgba(248, 113, 113, 0.18);
+  border-color: rgba(248, 113, 113, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-reject svg {
+  width: 16px;
+  height: 16px;
+}
+
 /* ── Light mode ── */
 [data-theme="light"] {
   --bg: #f1f5f9; --card: #ffffff; --card2: #f8fafc;
   --border: rgba(0,0,0,0.09); --text: #1e293b;
-  --muted: rgba(0,0,0,0.45); --muted2: rgba(0,0,0,0.62);
+  --muted: rgba(0,0,0,0.65); --muted2: rgba(0,0,0,0.62);
 }
 [data-theme="light"] body { background: var(--bg); }
 [data-theme="light"] .filter-select option { background: #ffffff; color: #1e293b; }

@@ -480,9 +480,9 @@ function overpassToGeoJSON(osm) {
   return { type: 'FeatureCollection', features };
 }
 
-// ── Theme init (read localStorage, default dark) ──────────────────────────────
+// ── Theme init (read localStorage, default light) ──────────────────────────────
 (function () {
-  const t = localStorage.getItem('hs-theme') || 'dark';
+  const t = localStorage.getItem('hs-theme') || 'light';
   document.documentElement.setAttribute('data-theme', t);
 })();
 
@@ -731,7 +731,7 @@ const moonSVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 // Navbar
 function Navbar() {
   const [theme, setTheme] = useState(
-    document.documentElement.getAttribute('data-theme') || 'dark'
+    document.documentElement.getAttribute('data-theme') || 'light'
   );
 
   function toggleTheme() {
@@ -995,7 +995,7 @@ function Hero() {
         // Desktop: Browse Listings & List Property
         React.createElement(
           "button",
-          { className: "hero-btn-primary hero-btn-browse", onClick: () => (window.location.href = "module/buyer/dashboard.html") },
+          { className: "hero-btn-primary hero-btn-browse", onClick: () => (window.location.href = "browse.html") },
           React.createElement("span", { dangerouslySetInnerHTML: { __html: searchIcon } }),
           React.createElement("span", null, "Browse Listings"),
         ),
@@ -1511,7 +1511,7 @@ function CTA() {
 // Footer
 function Footer() {
   const platformLinks = ["Browse Listings", "List Your Property", "About Us"];
-  const supportLinks = ["Contact Us", "Report a Listing"];
+  const supportLinks = ["Help & Support", "Contact Us", "Report a Listing"];
   const legalLinks = ["Privacy Policy", "Terms of Service"];
 
   return React.createElement(
@@ -1571,7 +1571,11 @@ function Footer() {
         ...supportLinks.map((l) =>
           React.createElement(
             "a",
-            { key: l, className: "footer-link", href: "#" },
+            {
+              key: l,
+              className: "footer-link",
+              href: l === "Help & Support" ? "faqs.html" : "#"
+            },
             l,
           ),
         ),

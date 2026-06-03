@@ -376,10 +376,51 @@
     .toast.success .toast-icon { background: var(--teal); }
     .toast.error   .toast-icon { background: var(--danger); }
 
+    /* ── Theme Toggle ── */
+    .theme-toggle-container {
+      display: flex;
+      gap: 10px;
+    }
+
+    .theme-option {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: var(--card2);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      color: var(--muted2);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-width: 110px;
+    }
+
+    .theme-option svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .theme-option:hover {
+      border-color: var(--teal);
+      background: rgba(0, 201, 167, 0.05);
+      color: var(--text);
+    }
+
+    .theme-option.active {
+      background: rgba(0, 201, 167, 0.12);
+      border-color: var(--teal);
+      color: var(--teal);
+    }
+
     /* ── Light mode ── */
     [data-theme="light"] {
       --bg: #f1f5f9; --card: #ffffff; --card2: #f8fafc; --border: rgba(0,0,0,0.09);
-      --text: #1e293b; --muted: rgba(0,0,0,0.45); --muted2: rgba(0,0,0,0.6);
+      --text: #1e293b; --muted: rgba(0,0,0,0.65); --muted2: rgba(0,0,0,0.8);
     }
     [data-theme="light"] body { background: var(--bg); }
     [data-theme="light"] .toggle-track { background: rgba(0,0,0,0.1); }

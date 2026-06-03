@@ -65,8 +65,16 @@
     seller.firstName + ' ' + seller.lastName;
 
   const activeCount = approvedListings.length;
+
+  // Count sold/rented listings
+  const soldCount = FAKE_LISTINGS.filter(l => l.sellerId === seller.id && l.lifecycleStatus === 'sold').length;
+  const rentedCount = FAKE_LISTINGS.filter(l => l.sellerId === seller.id && l.lifecycleStatus === 'rented').length;
+  const closedCount = soldCount + rentedCount;
+
   const metaItems = [
     `<span class="profile-meta-item">${activeCount} Active Listing${activeCount !== 1 ? 's' : ''}</span>`,
+    `<span class="meta-dot"></span>`,
+    `<span class="profile-meta-item">${closedCount} Sold/Rented</span>`,
     `<span class="meta-dot"></span>`,
     `<span class="profile-meta-item">Member since ${formatJoinDate(seller.joinedAt)}</span>`,
   ];
@@ -124,6 +132,14 @@
         ? `<span class="badge-tl badge-rent">For Rent</span>`
         : `<span class="badge-tl badge-sale">For Sale</span>`;
       const photoBadge = `<span class="badge-tr">${l.images.length} Photo${l.images.length !== 1 ? 's' : ''}</span>`;
+
+      // Lifecycle status badge (Sold/Rented)
+      const lifecycleBadge = l.lifecycleStatus === 'sold'
+        ? `<div class="lifecycle-badge lifecycle-sold">SOLD</div>`
+        : l.lifecycleStatus === 'rented'
+        ? `<div class="lifecycle-badge lifecycle-rented">RENTED</div>`
+        : '';
+
       const verifiedBadge = l.verified
         ? `<span class="verified-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>`
         : '';
@@ -132,12 +148,13 @@
       const priceSub  = isRent ? '<span class="prop-price-per"> / month</span>' : '';
 
       return `
-        <div class="prop-card"
+        <div class="prop-card${l.lifecycleStatus ? ' listing-closed' : ''}"
              onclick="window.location.href='listing.html?id=${l.id}'">
           <div class="prop-img-wrap">
             <img src="${l.images[0]}" alt="${l.title}" loading="lazy" />
             ${typeBadge}
             ${photoBadge}
+            ${lifecycleBadge}
           </div>
           <div class="prop-body">
             <div class="prop-title">${l.title}${verifiedBadge}</div>
@@ -157,3 +174,152 @@
 
     container.appendChild(grid);
   }
+
+  // ── Ratings & Reviews Section ──────────────────────────────────────────────
+  const renderStars = (rating, size = 16) => {
+    const fullStars = Math.floor(rating);
+    const hasHalf = rating % 1 >= 0.5;
+    let stars = '';
+    for (let i = 0; i < 5; i++) {
+      if (i < fullStars) {
+        stars += `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="#fbbf24" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+      } else if (i === fullStars && hasHalf) {
+        stars += `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="url(#half-${rating})" stroke="none"><defs><linearGradient id="half-${rating}"><stop offset="50%" stop-color="#fbbf24"/><stop offset="50%" stop-color="#e5e7eb"/></linearGradient></defs><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+      } else {
+        stars += `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="#e5e7eb" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+      }
+    }
+    return stars;
+  };
+
+  const sellerReviews = FAKE_REVIEWS.filter(r => r.type === 'buyer-to-seller' && r.sellerId === seller.id);
+  const reviewCount   = sellerReviews.length;
+  const avgRating     = reviewCount > 0
+    ? (sellerReviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount).toFixed(1)
+    : 0;
+
+  const starCounts = [0, 0, 0, 0, 0];
+  sellerReviews.forEach(r => starCounts[r.rating - 1]++);
+
+  const ratingsHtml = reviewCount === 0 ? `
+    <div class="ratings-section">
+      <div class="section-header">
+        <div class="section-title">My Reviews</div>
+        <div class="section-sub">Ratings and feedback from buyers</div>
+      </div>
+      <div class="empty-state">
+        <div class="empty-icon">⭐</div>
+        <div class="empty-title">No reviews yet</div>
+        <div class="empty-sub">Complete transactions to receive buyer feedback</div>
+      </div>
+    </div>
+  ` : `
+    <div class="ratings-section">
+      <div class="section-header">
+        <div class="section-title">My Reviews</div>
+        <div class="section-sub">${reviewCount} review${reviewCount !== 1 ? 's' : ''} from buyers • ${avgRating} average rating</div>
+      </div>
+      <div class="ratings-overview">
+        <div class="avg-rating-display">
+          <div class="avg-rating-number">${avgRating}</div>
+          <div class="avg-rating-stars">${renderStars(avgRating, 20)}</div>
+          <div class="avg-rating-count">${reviewCount} review${reviewCount !== 1 ? 's' : ''}</div>
+        </div>
+        <div class="star-distribution">
+          ${[5,4,3,2,1].map(s => {
+            const cnt = starCounts[s - 1];
+            const pct = reviewCount > 0 ? Math.round((cnt / reviewCount) * 100) : 0;
+            return `
+              <div class="star-bar-row">
+                <div class="star-bar-label">${s} ⭐</div>
+                <div class="star-bar-track">
+                  <div class="star-bar-fill" style="width: ${pct}%"></div>
+                </div>
+                <div class="star-bar-count">${cnt}</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+      <div class="reviews-list">
+        ${sellerReviews.sort((a,b) => new Date(b.reviewDate) - new Date(a.reviewDate)).map(rev => {
+          const buyer = FAKE_USERS.find(u => u.id === rev.buyerId);
+          const buyerName = buyer ? `${buyer.firstName} ${buyer.lastName}` : 'Anonymous';
+          const buyerInitials = buyer ? buyer.firstName[0] + buyer.lastName[0] : '?';
+          const reviewDate = new Date(rev.reviewDate).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+          return `
+            <div class="review-card">
+              <div class="review-header">
+                <div class="review-avatar">${buyerInitials}</div>
+                <div class="review-meta">
+                  <div class="review-author">${buyerName}</div>
+                  <div class="review-stars">${renderStars(rev.rating, 14)}</div>
+                </div>
+                <div class="review-date">${reviewDate}</div>
+              </div>
+              <div class="review-comment">${rev.comment}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+
+  // Insert ratings section after listings
+  const ratingsDiv = document.createElement('div');
+  ratingsDiv.innerHTML = ratingsHtml;
+  document.querySelector('.content').appendChild(ratingsDiv);
+
+
+  // ── Edit Profile Modal ──────────────────────────────────────────────────────
+  window.openEditModal = function() {
+    // Populate modal with current values
+    document.getElementById('editFirstName').value = seller.firstName || '';
+    document.getElementById('editLastName').value = seller.lastName || '';
+    document.getElementById('editPhone').value = seller.phone || '';
+    document.getElementById('editEmail').value = seller.email || '';
+
+    // Show modal
+    document.getElementById('editModal').classList.add('active');
+  };
+
+  window.closeEditModal = function() {
+    document.getElementById('editModal').classList.remove('active');
+  };
+
+  window.saveProfile = function() {
+    const firstName = document.getElementById('editFirstName').value.trim();
+    const lastName = document.getElementById('editLastName').value.trim();
+    const phone = document.getElementById('editPhone').value.trim();
+
+    // Validation
+    if (!firstName || !lastName) {
+      alert('Please enter both first and last name');
+      return;
+    }
+
+    // Update seller data
+    seller.firstName = firstName;
+    seller.lastName = lastName;
+    seller.phone = phone;
+
+    // Update session
+    session.firstName = firstName;
+    session.lastName = lastName;
+    session.phone = phone;
+    saveSession(session);
+
+    // Update FAKE_USERS
+    const userIndex = FAKE_USERS.findIndex(u => u.id === seller.id);
+    if (userIndex !== -1) {
+      FAKE_USERS[userIndex] = { ...FAKE_USERS[userIndex], firstName, lastName, phone };
+    }
+
+    // Close modal
+    closeEditModal();
+
+    // Refresh page to show updated info
+    alert('✅ Profile updated successfully!');
+    location.reload();
+  };
+

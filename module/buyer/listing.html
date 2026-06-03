@@ -103,6 +103,66 @@
       </div>
     </div>
 
+    <!-- ── Schedule Viewing Modal ── -->
+    <div class="modal-overlay" id="scheduleModal">
+      <div class="modal-box schedule-modal-box">
+        <button class="modal-close" onclick="closeScheduleModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+
+        <div class="modal-title">Schedule Property Viewing</div>
+        <div class="modal-sub">Select a date and time to visit this property</div>
+
+        <div class="modal-field">
+          <label class="modal-label">Select Date <span class="req">*</span></label>
+          <input type="date" class="modal-input" id="viewingDate" min="" />
+          <div class="modal-error" id="viewingDateErr">Please select a date</div>
+        </div>
+
+        <div class="modal-field">
+          <label class="modal-label">Select Time <span class="req">*</span></label>
+          <select class="modal-select" id="viewingTime">
+            <option value="">Choose a time slot</option>
+            <option value="09:00">9:00 AM</option>
+            <option value="10:00">10:00 AM</option>
+            <option value="11:00">11:00 AM</option>
+            <option value="13:00">1:00 PM</option>
+            <option value="14:00">2:00 PM</option>
+            <option value="15:00">3:00 PM</option>
+            <option value="16:00">4:00 PM</option>
+            <option value="17:00">5:00 PM</option>
+          </select>
+          <div class="modal-error" id="viewingTimeErr">Please select a time</div>
+        </div>
+
+        <div class="modal-field">
+          <label class="modal-label">Additional Notes (Optional)</label>
+          <textarea class="modal-textarea" id="viewingNotes" rows="3" placeholder="Any specific requests or questions..."></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button class="modal-cancel" onclick="closeScheduleModal()">Cancel</button>
+          <button class="modal-submit" onclick="submitSchedule()">Request Viewing</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Notification -->
+    <div class="success-notification" id="successNotif">
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <div class="success-content">
+        <div class="success-title">Viewing Request Sent!</div>
+        <div class="success-message" id="successMessage"></div>
+      </div>
+    </div>
+
     <script src="../../assets/js/fake-data.js"></script>
     <script src="../../components/sidebar.js"></script>
     <script src="../../components/topbar.js"></script>

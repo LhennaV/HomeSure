@@ -281,3 +281,36 @@
     document.getElementById('deleteBtn').style.display = '';
     showToast('Account deletion cancelled. Your account is safe.');
   }
+
+  // ── Theme Toggle ─────────────────────────────────────────────────────────
+  function getTheme() {
+    return localStorage.getItem('hs-theme') || 'light';
+  }
+
+  function applyTheme(mode) {
+    document.documentElement.setAttribute('data-theme', mode);
+    localStorage.setItem('hs-theme', mode);
+    updateThemeButtons(mode);
+  }
+
+  function updateThemeButtons(mode) {
+    const lightBtn = document.getElementById('themeLight');
+    const darkBtn = document.getElementById('themeDark');
+
+    if (mode === 'light') {
+      lightBtn.classList.add('active');
+      darkBtn.classList.remove('active');
+    } else {
+      darkBtn.classList.add('active');
+      lightBtn.classList.remove('active');
+    }
+  }
+
+  window.setTheme = function(mode) {
+    applyTheme(mode);
+    showToast(`Theme changed to ${mode} mode`);
+  };
+
+  // Initialize theme on page load
+  const currentTheme = getTheme();
+  applyTheme(currentTheme);

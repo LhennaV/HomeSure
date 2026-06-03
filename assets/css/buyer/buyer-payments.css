@@ -604,7 +604,7 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); colo
 [data-theme="light"] {
   --bg: #f1f5f9; --card: #ffffff; --card2: #f8fafc;
   --border: rgba(0,0,0,0.09); --text: #1e293b;
-  --muted: rgba(0,0,0,0.45); --muted2: rgba(0,0,0,0.62);
+  --muted: rgba(0,0,0,0.65); --muted2: rgba(0,0,0,0.62);
 }
 [data-theme="light"] body { background: var(--bg); }
 [data-theme="light"] .form-select option { background: #ffffff; color: #1e293b; }

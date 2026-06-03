@@ -38,6 +38,12 @@
           <option value="Ramon Cruz">Ramon Cruz</option>
           <option value="Lourdes Navarro">Lourdes Navarro</option>
         </select>
+        <select class="filter-select" id="fPaymentType" onchange="renderTransactions()">
+          <option value="">All Payment Types</option>
+          <option value="security">Security Deposit</option>
+          <option value="rent">Rent Payment</option>
+          <option value="both">Security + Rent</option>
+        </select>
         <select class="filter-select" id="fStatus" onchange="renderTransactions()">
           <option value="">All Statuses</option>
           <option value="confirmed">Confirmed</option>
@@ -61,6 +67,7 @@
               <th>Property</th>
               <th>Period</th>
               <th>Amount</th>
+              <th>Type</th>
               <th>Method</th>
               <th>Status</th>
               <th>Actions</th>
@@ -86,6 +93,7 @@
               <th>Refundable</th>
               <th>Status</th>
               <th>Landlord</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody id="depositsBody"></tbody>
