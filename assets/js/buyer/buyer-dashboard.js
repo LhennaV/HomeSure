@@ -1,16 +1,26 @@
 
-  // ── Auth guard ────────────────────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════════════
+  // Auth Guard — Bouncer Mode Activated
+  // Sellers trying to sneak in? NOPE. Buyers only club.
+  // ══════════════════════════════════════════════════════════════════════════
   const user = getSession();
   if (!user || user.role !== 'buyer') window.location.href = '../../auth/signin.html';
 
-  // ── Init shared components ────────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────────────────────────
+  // Initialize Sidebar & Topbar Components
+  // Like setting up your workspace, but make it aesthetic
+  // ──────────────────────────────────────────────────────────────────────────
   HomeSureSidebar.init({ activePage: 'dashboard' });
   HomeSureTopbar.init({
     placeholder: 'Search by property, location, or seller name...',
     onSearch: renderListings,
   });
 
-  // ── Populate barangay dropdown ────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────────────────────────
+  // Populate Barangay Dropdown
+  // All 16 barangays of Valenzuela, alphabetically sorted
+  // (because chaos is not an option here)
+  // ──────────────────────────────────────────────────────────────────────────
   const approved = FAKE_LISTINGS.filter(l => l.status === 'approved');
   const barangays = [...new Set(approved.map(l => l.barangay))].sort();
   const barSel = document.getElementById('filterBarangay');
@@ -18,13 +28,19 @@
     const o = document.createElement('option'); o.value = b; o.textContent = b; barSel.appendChild(o);
   });
 
-  // ── Icons ─────────────────────────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════════════
+  // Property Icons
+  // Because words are boring, icons are forever
+  // ══════════════════════════════════════════════════════════════════════════
   const iconBed  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg>`;
   const iconBath = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6 6.5 3.5a1.5 1.5 0 0 0-1-.5C4.683 3 4 3.683 4 4.5V17a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/><line x1="10" y1="5" x2="8" y2="7"/><line x1="2" y1="12" x2="22" y2="12"/></svg>`;
   const iconArea = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>`;
   const iconPin  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
 
-  // ── Sort dropdown ─────────────────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════════════
+  // Sort Dropdown Logic
+  // Recommended? Cheapest? Newest? Yes to all, picky buyer!
+  // ══════════════════════════════════════════════════════════════════════════
   let currentSort = 'recommended';
 
   function toggleSortDropdown() {

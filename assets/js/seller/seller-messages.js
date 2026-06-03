@@ -1,8 +1,16 @@
+// ══════════════════════════════════════════════════════════════════════════════
+// HomeSure Seller Messages
+// Where deals happen, viewings get scheduled, and "pls respond" is sent at 2AM
+// ══════════════════════════════════════════════════════════════════════════════
+
 (function() {
-  // DEMO MODE: Create test seller session if not logged in
+  // ────────────────────────────────────────────────────────────────────────
+  // DEMO MODE: Auto-Login for Testing
+  // Forgot to sign in? We got you fam. Here's Juan Santos.
+  // ────────────────────────────────────────────────────────────────────────
   let user = getSession();
   if (!user || user.role !== 'seller') {
-    // Create demo seller session
+    // Instant seller transformation, no registration required
     const demoUser = {
       id: 'usr-003',
       role: 'seller',
@@ -23,7 +31,11 @@
   const sellerData = FAKE_USERS.find(u => u.id === user.id) || {};
   const isVerified = user.accountStatus === 'verified' || sellerData.accountStatus === 'verified';
 
-  // ── Fake conversations ─────────────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════════════
+  // Fake Conversations
+  // Realistic chat data for testing without actual buyers
+  // (Spoiler: They all want viewings)
+  // ══════════════════════════════════════════════════════════════════════════
   const CONVS = [
     // ★ NEW: Viewing Request Sample
     {
@@ -206,6 +218,9 @@
     },
   ];
 
+  // Make CONVS accessible globally for action handlers
+  window.CONVS = CONVS;
+
   // ── Icons ──────────────────────────────────────────────────────────────────
   const iconCheck2 = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
   const iconSend   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>`;
@@ -318,7 +333,7 @@
       </div>` : '';
 
     return `
-      <div class="msg-row seller" id="proof-card-${p.id}">
+      <div class="msg-row buyer" id="proof-card-${p.id}">
         <div class="payment-request-card proof-card">
           <div class="pr-header">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -470,8 +485,25 @@
     }
     c.unread = 0;
 
-    renderConvList(document.getElementById('convSearch').value);
+    // Show loading state
+    const chatPanel = document.getElementById('chatPanel');
+    chatPanel.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;height:100%;">
+        <div style="text-align:center;">
+          <div class="loading-spinner"></div>
+          <p style="font-size:13px;color:var(--muted);margin-top:12px;">Loading conversation...</p>
+        </div>
+      </div>
+    `;
 
+    // Small delay for smooth transition
+    setTimeout(() => {
+      renderConvList(document.getElementById('convSearch').value);
+      renderConversation(id, c, l);
+    }, 150);
+  };
+
+  function renderConversation(id, c, l) {
     const isRent  = l.listingFor === 'rent';
     const price   = '₱' + l.price.toLocaleString('en-PH');
 
@@ -657,8 +689,25 @@
     `;
   }
 
+  // ── Show empty state ───────────────────────────────────────────────────────
+  function showEmptyState() {
+    const chatPanel = document.getElementById('chatPanel');
+    if (chatPanel) {
+      chatPanel.innerHTML = `
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:40px;text-align:center;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="64" height="64" style="opacity:0.3;margin-bottom:20px;">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <h3 style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px;">No conversation selected</h3>
+          <p style="font-size:13px;color:var(--muted);max-width:300px;">Select a conversation from the list to view messages</p>
+        </div>
+      `;
+    }
+  }
+
   // ── Init ───────────────────────────────────────────────────────────────────
   renderConvList();
+  showEmptyState();
 })();
 
 
@@ -681,39 +730,77 @@
       <div class="msg-row seller">
         <div class="viewing-request-card">
           <div class="vr-header">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-              <line x1="16" y1="2" x2="16" y2="6"/>
-              <line x1="8" y1="2" x2="8" y2="6"/>
-              <line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>
-            Viewing Request
-          </div>
-          <div class="vr-property">${v.listingTitle}</div>
-          <div class="vr-datetime">
-            <div class="vr-detail-row">
-              <span class="vr-label">📅 Date:</span>
-              <span class="vr-value">${formattedDate}</span>
+            <div class="vr-header-left">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              <span>VIEWING REQUEST</span>
             </div>
-            <div class="vr-detail-row">
-              <span class="vr-label">🕐 Time:</span>
-              <span class="vr-value">${formattedTime}</span>
-            </div>
+            ${!isPending ? (
+              v.status === 'accepted' ? `
+                <div class="vr-status-badge accepted">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="14" height="14">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  Accepted
+                </div>
+              ` :
+              v.status === 'declined' ? `
+                <div class="vr-status-badge declined">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                  Declined
+                </div>
+              ` :
+              `
+                <div class="vr-status-badge counter">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                    <polyline points="23 4 23 10 17 10"/>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                  </svg>
+                  Counter Proposed
+                </div>
+              `
+            ) : ''}
           </div>
+
+          <h4 class="vr-property">${v.listingTitle}</h4>
+
+          <div class="vr-detail">
+            <span class="vr-label">Period:</span>
+            <span class="vr-value">${formattedDate}</span>
+          </div>
+
+          <div class="vr-amount">${formattedTime}</div>
+
           ${v.buyerNotes ? `
             <div class="vr-notes">
               <strong>Message:</strong> ${v.buyerNotes}
             </div>
           ` : ''}
+
           ${isPending ? `
             <div class="vr-actions">
-              <button class="vr-btn vr-decline" onclick="declineViewing('${v.id}', '${convId}')">Decline</button>
-              <button class="vr-btn vr-counter" onclick="counterViewing('${v.id}', '${convId}')">Counter-Propose</button>
-              <button class="vr-btn vr-accept" onclick="acceptViewing('${v.id}', '${convId}')">Accept</button>
+              <button class="vr-btn vr-btn-reject" onclick="openRejectModal('${v.id}', '${convId}')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+                Reject
+              </button>
+              <button class="vr-btn vr-btn-accept" onclick="acceptViewing('${v.id}', '${convId}')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Accept
+              </button>
             </div>
-          ` : `
-            <div class="vr-status vr-status-${v.status}">${v.status.toUpperCase()}</div>
-          `}
+          ` : ''}
         </div>
         <div class="msg-time">${m.time}</div>
       </div>
@@ -724,35 +811,137 @@
 
   // ── Viewing Request Actions ─────────────────────────────────────────────────
   window.acceptViewing = function(viewingId, convId) {
-    const c = CONVS.find(x => x.id === convId);
+    const c = window.CONVS.find(x => x.id === convId);
     const msg = c?.messages.find(m => m.viewingRequest?.id === viewingId);
     if (!msg) return;
-    
+
     msg.viewingRequest.status = 'accepted';
-    
-    // Re-render
     openConv(convId);
-    
-    // Show confirmation
-    alert('✅ Viewing confirmed! The buyer will be notified.');
+
+    showNotification('✅ Viewing confirmed! The buyer will be notified.', 'success');
   };
 
-  window.declineViewing = function(viewingId, convId) {
-    if (!confirm('Are you sure you want to decline this viewing request?')) return;
-    
-    const c = CONVS.find(x => x.id === convId);
+  window.openRejectModal = function(viewingId, convId) {
+    // Store the IDs for later use
+    window.currentViewingId = viewingId;
+    window.currentConvId = convId;
+
+    // Create and show modal
+    const modal = document.getElementById('rejectViewingModal');
+    if (!modal) {
+      createRejectModal();
+    }
+
+    document.getElementById('rejectViewingModal').classList.add('active');
+    document.getElementById('rejectMessage').value = '';
+    document.getElementById('rejectMessage').focus();
+  };
+
+  window.closeRejectModal = function() {
+    document.getElementById('rejectViewingModal').classList.remove('active');
+  };
+
+  window.submitReject = function() {
+    const textarea = document.getElementById('rejectMessage');
+    const message = textarea.value.trim();
+    const errorMsg = document.getElementById('rejectError');
+
+    if (!message) {
+      // Show custom error
+      if (!errorMsg) {
+        const error = document.createElement('div');
+        error.id = 'rejectError';
+        error.className = 'reject-error';
+        error.textContent = 'Please enter a message';
+        textarea.parentNode.appendChild(error);
+      }
+      textarea.classList.add('error');
+      textarea.focus();
+      return;
+    }
+
+    // Remove error if exists
+    if (errorMsg) errorMsg.remove();
+    textarea.classList.remove('error');
+
+    const viewingId = window.currentViewingId;
+    const convId = window.currentConvId;
+
+    const c = window.CONVS.find(x => x.id === convId);
     const msg = c?.messages.find(m => m.viewingRequest?.id === viewingId);
     if (!msg) return;
-    
+
+    // Update status to declined
     msg.viewingRequest.status = 'declined';
-    
-    // Re-render
+
+    // Add seller's message to chat
+    c.messages.push({
+      from: 'seller',
+      text: message,
+      time: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+    });
+
+    closeRejectModal();
     openConv(convId);
-    
-    alert('❌ Viewing declined. The buyer will be notified.');
+
+    showNotification('Viewing declined and message sent to buyer', 'success');
   };
 
-  window.counterViewing = function(viewingId, convId) {
-    alert('🔄 Counter-Propose feature coming soon! You will be able to suggest a different date/time.');
+  function createRejectModal() {
+    const modalHTML = `
+      <div id="rejectViewingModal" class="reject-modal">
+        <div class="reject-modal-content">
+          <div class="reject-modal-header">
+            <h3>Decline Viewing Request</h3>
+            <button class="reject-modal-close" onclick="closeRejectModal()">×</button>
+          </div>
+
+          <div class="reject-modal-body">
+            <label for="rejectMessage">Message to buyer:</label>
+            <textarea
+              id="rejectMessage"
+              placeholder="Explain why you're declining or suggest an alternative time..."
+              rows="4"
+              oninput="clearRejectError()"
+            ></textarea>
+            <p class="reject-help">💬 This message will be sent to the buyer in your chat</p>
+          </div>
+
+          <div class="reject-modal-actions">
+            <button class="reject-modal-btn reject-send" onclick="submitReject()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+              Decline & Send Message
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+  }
+
+  window.clearRejectError = function() {
+    const errorMsg = document.getElementById('rejectError');
+    const textarea = document.getElementById('rejectMessage');
+    if (errorMsg) errorMsg.remove();
+    if (textarea) textarea.classList.remove('error');
   };
+
+  // Custom notification function
+  function showNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.className = `custom-notification ${type}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    setTimeout(() => notification.classList.add('show'), 10);
+
+    setTimeout(() => {
+      notification.classList.remove('show');
+      setTimeout(() => notification.remove(), 300);
+    }, 3000);
+  }
 

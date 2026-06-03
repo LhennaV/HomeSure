@@ -1,6 +1,14 @@
+// ══════════════════════════════════════════════════════════════════════════════
 // HomeSure – System Reports (Super Admin)
+// The big boss dashboard. With great power comes great... analytics?
+// Only the chosen ones (superadmins) shall pass.
+// ══════════════════════════════════════════════════════════════════════════════
 
 (function () {
+  // ────────────────────────────────────────────────────────────────────────
+  // Ultra-Secure Auth Guard
+  // Not a superadmin? Yeet yourself out.
+  // ────────────────────────────────────────────────────────────────────────
   const user = getSession();
   if (!user || user.role !== 'superadmin') {
     window.location.href = '../../auth/signin.html';
@@ -10,7 +18,10 @@
   HomeSureSidebar.init({ activePage: 'reports' });
   HomeSureTopbar.init({ placeholder: 'Search...' });
 
-  // ── Computed stats ────────────────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════════════
+  // Computed Stats
+  // Crunching numbers like it's nobody's business
+  // ══════════════════════════════════════════════════════════════════════════
   const buyers      = FAKE_USERS.filter(u => u.role === 'buyer').length;
   const sellers     = FAKE_USERS.filter(u => u.role === 'seller').length;
   const totalUsers  = buyers + sellers;
@@ -36,14 +47,29 @@
       </div>
     </div>`).join('');
 
-  // ── User Growth Line Chart ────────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════════════
+  // User Growth Line Chart
+  // Watching our user count go up like stonks
+  // (Please go up. Pretty please.)
+  // ══════════════════════════════════════════════════════════════════════════
   const growthData = {
     monthly: { labels: ['Oct','Nov','Dec','Jan','Feb','Mar','Apr'], values: [3,5,6,8,11,14,18], sub: 'Monthly new accounts — last 7 months' },
     weekly:  { labels: ['Wk1','Wk2','Wk3','Wk4','Wk5','Wk6','Wk7'], values: [2,3,2,4,3,5,4], sub: 'Weekly new accounts — last 7 weeks' },
     daily:   { labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], values: [1,2,1,3,2,1,2], sub: 'Daily new accounts — last 7 days' },
   };
 
+  // ────────────────────────────────────────────────────────────────────────
+  // renderUserGrowthChart() — Draw the Growth Line
+  // SVG magic + Math wizardry = Pretty chart
+  // Now with 100% more theme support (light mode people rejoice!)
+  // ────────────────────────────────────────────────────────────────────────
   function renderUserGrowthChart(period) {
+    // Check if user is in "I hate my eyes" mode (light theme)
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    const gridColor = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
+    const axisColor = isLight ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)';
+    const labelColor = isLight ? 'rgba(0,0,0,0.38)' : 'rgba(255,255,255,0.38)';
+
     const { labels, values, sub } = growthData[period];
     document.getElementById('userGrowthSub').textContent = sub;
     const W = 500, H = 160, padL = 32, padR = 16, padT = 16, padB = 32;
@@ -53,16 +79,21 @@
     const linePath = xs.map((x, i) => (i === 0 ? `M${x},${ys[i]}` : `L${x},${ys[i]}`)).join(' ');
     const areaPath = `${linePath} L${xs[xs.length-1]},${H-padB} L${xs[0]},${H-padB} Z`;
     const yGrids   = [0,0.25,0.5,0.75,1].map(p => padT + (1-p)*(H-padT-padB));
-    const gridLines = yGrids.map(y => `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`).join('');
-    const xLabels   = labels.map((m, i) => `<text x="${xs[i]}" y="${H-4}" text-anchor="middle" fill="rgba(255,255,255,0.38)" font-size="10" font-family="Plus Jakarta Sans">${m}</text>`).join('');
+    const gridLines = yGrids.map(y => `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="${gridColor}" stroke-width="1"/>`).join('');
+    const xLabels   = labels.map((m, i) => `<text x="${xs[i]}" y="${H-4}" text-anchor="middle" fill="${labelColor}" font-size="10" font-family="Plus Jakarta Sans">${m}</text>`).join('');
     const dots      = xs.map((x, i) => `<circle cx="${x}" cy="${ys[i]}" r="4" fill="#00c9a7" stroke="var(--card)" stroke-width="2"/><title>${labels[i]}: ${values[i]} users</title>`).join('');
+    const chartH = H - padT - padB;
+    const axes = `
+      <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + chartH}" stroke="${axisColor}" stroke-width="2"/>
+      <line x1="${padL}" y1="${padT + chartH}" x2="${W - padR}" y2="${padT + chartH}" stroke="${axisColor}" stroke-width="2"/>
+    `;
     document.getElementById('userGrowthChart').setAttribute('viewBox', `0 0 ${W} ${H}`);
     document.getElementById('userGrowthChart').innerHTML = `
       <defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0%" stop-color="#00c9a7" stop-opacity="0.25"/>
         <stop offset="100%" stop-color="#00c9a7" stop-opacity="0"/>
       </linearGradient></defs>
-      ${gridLines}
+      ${axes}${gridLines}
       <path d="${areaPath}" fill="url(#areaGrad)"/>
       <path d="${linePath}" fill="none" stroke="#00c9a7" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
       ${dots}${xLabels}`;

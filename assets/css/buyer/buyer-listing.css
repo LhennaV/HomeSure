@@ -743,7 +743,7 @@
         background: rgba(255, 255, 255, 0.12);
       }
       .modal-submit {
-        background: #ef4444;
+        background: var(--teal);
         border: none;
         color: #fff;
         border-radius: 8px;
@@ -757,7 +757,7 @@
           transform 0.15s;
       }
       .modal-submit:hover {
-        background: #dc2626;
+        background: #1fc8b4;
         transform: translateY(-1px);
       }
 

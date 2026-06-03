@@ -1,8 +1,21 @@
+// ══════════════════════════════════════════════════════════════════════════════
+// Password Peek-a-Boo Icons
+// Because trust issues are real and you deserve to see what you typed
+// ══════════════════════════════════════════════════════════════════════════════
 const eyeOpen = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
 const eyeOff  = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Theme Toggle Icons
+// For the vampires who code at 3AM and the early birds who don't
+// ══════════════════════════════════════════════════════════════════════════════
 const sunIcon  = `<svg id="themeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
 const moonIcon = `<svg id="themeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
 
+// ──────────────────────────────────────────────────────────────────────────────
+// togglePw() — Show/Hide Password
+// "Did I type 'password123' or 'passw0rd123'?" - Everyone, always
+// ──────────────────────────────────────────────────────────────────────────────
 function togglePw(id, btn) {
   const input = document.getElementById(id);
   const isPassword = input.type === 'password';
@@ -10,6 +23,10 @@ function togglePw(id, btn) {
   btn.innerHTML = isPassword ? eyeOff : eyeOpen;
 }
 
+// ──────────────────────────────────────────────────────────────────────────────
+// applyAuthTheme() — Apply Light or Dark Mode
+// Your eyeballs called, they have opinions about brightness levels
+// ──────────────────────────────────────────────────────────────────────────────
 function applyAuthTheme(mode) {
   document.body.classList.toggle('dark',  mode === 'dark');
   document.body.classList.toggle('light', mode === 'light');
@@ -17,19 +34,34 @@ function applyAuthTheme(mode) {
   if (iconEl) iconEl.outerHTML = mode === 'dark' ? moonIcon : sunIcon;
 }
 
+// ──────────────────────────────────────────────────────────────────────────────
+// toggleTheme() — Switch Between Light and Dark Mode
+// Clicking this at 2AM? We don't judge. Much.
+// ──────────────────────────────────────────────────────────────────────────────
 function toggleTheme() {
   const next = document.body.classList.contains('light') ? 'dark' : 'light';
   localStorage.setItem('hs-theme', next);
   applyAuthTheme(next);
 }
 
+// ──────────────────────────────────────────────────────────────────────────────
+// setRole() — Toggle Between Buyer and Seller
+// Identity crisis? Solved with one click.
+// ──────────────────────────────────────────────────────────────────────────────
 function setRole(role) {
   document.getElementById('buyerBtn').classList.toggle('active',  role === 'buyer');
   document.getElementById('sellerBtn').classList.toggle('active', role === 'seller');
 }
 
-// ── Validation helpers ────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// Validation Helpers
+// Because "oops" is not a valid error message
+// ══════════════════════════════════════════════════════════════════════════════
 
+// ──────────────────────────────────────────────────────────────────────────────
+// showError() — Display Validation Error
+// The polite way to tell users they messed up
+// ──────────────────────────────────────────────────────────────────────────────
 function showError(input, message) {
   input.classList.add('error');
   const group = input.closest('.field-group');
@@ -42,6 +74,10 @@ function showError(input, message) {
   msg.textContent = message;
 }
 
+// ──────────────────────────────────────────────────────────────────────────────
+// clearError() — Remove Validation Error
+// Redemption arc for your input fields
+// ──────────────────────────────────────────────────────────────────────────────
 function clearError(input) {
   input.classList.remove('error');
   const group = input && input.closest('.field-group');

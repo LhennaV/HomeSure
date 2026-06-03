@@ -487,6 +487,23 @@
     msgs.scrollTop = msgs.scrollHeight;
   }
 
+  // ── Show empty state ───────────────────────────────────────────────────────
+  function showEmptyState() {
+    const chatPanel = document.getElementById('chatPanel');
+    if (chatPanel) {
+      chatPanel.innerHTML = `
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:40px;text-align:center;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="64" height="64" style="opacity:0.3;margin-bottom:20px;">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <h3 style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px;">No conversation selected</h3>
+          <p style="font-size:13px;color:var(--muted);max-width:300px;">Select a conversation from the list to view messages</p>
+        </div>
+      `;
+    }
+  }
+
   // ── Init ───────────────────────────────────────────────────────────────────
   renderConvList();
+  showEmptyState();
 })();

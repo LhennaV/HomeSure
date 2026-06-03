@@ -1,6 +1,13 @@
+// ══════════════════════════════════════════════════════════════════════════════
 // HomeSure – Admin Analytics
+// Where numbers tell stories and charts look pretty
+// ══════════════════════════════════════════════════════════════════════════════
 
 (function () {
+  // ──────────────────────────────────────────────────────────────────────────
+  // Auth Guard — Admins Only Beyond This Point
+  // Regular users? There's the door.
+  // ──────────────────────────────────────────────────────────────────────────
   const user = getSession();
   if (!user || user.role !== 'admin') {
     window.location.href = '../../auth/signin.html';
@@ -10,7 +17,10 @@
   HomeSureSidebar.init({ activePage: 'analytics' });
   HomeSureTopbar.init({ placeholder: 'Search...' });
 
-  // ── Computed data ────────────────────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════════════
+  // Computed Data
+  // Math is happening here. Numbers go brrr.
+  // ══════════════════════════════════════════════════════════════════════════
   const totalListings   = FAKE_LISTINGS.length;
   const approved        = FAKE_LISTINGS.filter(l => l.status === 'approved').length;
   const pending         = FAKE_LISTINGS.filter(l => l.status === 'pending').length;
@@ -65,18 +75,34 @@
     </div>
   `;
 
-  // ── High-Demand Areas (vertical bar chart) ───────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════════════
+  // High-Demand Areas (Vertical Bar Chart)
+  // Visualizing which barangays are the MVPs of real estate
+  // Pulong Buhangin probably winning again, let's be real
+  // ══════════════════════════════════════════════════════════════════════════
   const barangayCounts = {};
   FAKE_LISTINGS.forEach(l => { barangayCounts[l.barangay] = (barangayCounts[l.barangay] || 0) + 1; });
   const topAreasMonthly = Object.entries(barangayCounts).sort((a, b) => b[1] - a[1]).slice(0, 6);
 
   const demandData = {
     monthly: topAreasMonthly,
-    weekly:  [['San Isidro',2],['Pulong',1],['Bagbaguin',2],['Balasing',1],['Poblacion',1],['Tumana',1]],
-    daily:   [['San Isidro',1],['Pulong',1],['Bagbaguin',0],['Balasing',1],['Poblacion',0],['Tumana',1]],
+    weekly:  [['Pulong',3],['San Isidro',2],['Bagbaguin',2],['Balasing',1],['Poblacion',1],['Tumana',1]],
+    daily:   [['Pulong',4],['San Isidro',1],['Bagbaguin',0],['Balasing',1],['Poblacion',0],['Tumana',1]],
   };
 
+  // ────────────────────────────────────────────────────────────────────────
+  // drawVerticalBars() — Render Bar Chart
+  // Making rectangles look fancy since 2026
+  // Pro tip: Light mode users exist, respect their eyeballs
+  // ────────────────────────────────────────────────────────────────────────
   function drawVerticalBars(items) {
+    // Theme-aware colors because we're not savages
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    const gridColor = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
+    const axisColor = isLight ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)';
+    const textColor = isLight ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.55)';
+    const labelColor = isLight ? 'rgba(0,0,0,0.65)' : 'rgba(255,255,255,0.65)';
+
     const rawMax = Math.max(...items.map(i => i[1]), 1);
     const step   = Math.max(1, Math.ceil(rawMax / 4));
     const max    = step * 4;
@@ -84,18 +110,24 @@
     const yLabels = Array.from({ length: 5 }, (_, i) => {
       const val = step * (4 - i);
       const y   = padT + Math.round(i / 4 * chartH);
-      return `<line x1="${padL}" y1="${y}" x2="${totalW - 8}" y2="${y}" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
-        <text x="${padL - 8}" y="${y + 4}" text-anchor="end" font-size="10" fill="rgba(255,255,255,0.55)" font-weight="600" font-family="Plus Jakarta Sans">${val}</text>`;
+      return `<line x1="${padL}" y1="${y}" x2="${totalW - 8}" y2="${y}" stroke="${gridColor}" stroke-width="1"/>
+        <text x="${padL - 8}" y="${y + 4}" text-anchor="end" font-size="10" fill="${textColor}" font-weight="600" font-family="Plus Jakarta Sans">${val}</text>`;
     }).join('');
     const bars = items.map(([name, val], i) => {
       const barH = Math.max(Math.round(val / max * chartH), 4);
       const x = padL + i * (barW + gap);
       const y = padT + chartH - barH;
+      const labelX = x + barW / 2;
+      const labelY = padT + chartH + 12;
       return `<rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="6" fill="#00c9a7" opacity="0.95"/>
-        <text x="${x + barW / 2}" y="${padT + chartH + 16}" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.65)" font-weight="600" font-family="Plus Jakarta Sans">${name.split(' ')[0]}</text>`;
+        <text x="${labelX}" y="${labelY}" text-anchor="end" font-size="6.5" fill="${labelColor}" font-weight="500" font-family="Plus Jakarta Sans" transform="rotate(-45 ${labelX} ${labelY})">${name}</text>`;
     }).join('');
+    const axes = `
+      <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + chartH}" stroke="${axisColor}" stroke-width="2"/>
+      <line x1="${padL}" y1="${padT + chartH}" x2="${totalW - 8}" y2="${padT + chartH}" stroke="${axisColor}" stroke-width="2"/>
+    `;
     document.getElementById('demandChart').innerHTML =
-      `<svg viewBox="0 0 ${totalW} ${totalH}" style="width:100%;display:block;overflow:visible;padding:4px">${yLabels}${bars}</svg>`;
+      `<svg viewBox="0 0 ${totalW} ${totalH}" style="width:100%;display:block;overflow:visible;padding:4px">${axes}${yLabels}${bars}</svg>`;
   }
 
   drawVerticalBars(demandData.monthly);
@@ -108,17 +140,33 @@
     drawVerticalBars(demandData[period]);
   };
 
-  // ── Search Trends line chart ─────────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════════════
+  // Search Trends (Line Chart)
+  // Is it going up? Good. Down? Not good. Sideways? Interesting.
+  // Chart goes brrr when numbers go up
+  // ══════════════════════════════════════════════════════════════════════════
   const trendsData = {
     monthly: { labels: ['Aug','Sep','Oct','Nov','Dec','Jan','Feb'], values: [110,128,142,158,175,204,240], title: 'Search Trends (Last 7 Months)' },
     weekly:  { labels: ['Wk1','Wk2','Wk3','Wk4','Wk5','Wk6','Wk7'], values: [38,42,39,50,47,55,61], title: 'Search Trends (Last 7 Weeks)' },
     daily:   { labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], values: [18,22,19,28,25,20,16], title: 'Search Trends (Last 7 Days)' },
   };
 
+  // ────────────────────────────────────────────────────────────────────────
+  // drawLineChart() — Render Line Chart with Gradient
+  // Connecting the dots, but make it smooth
+  // That gradient fill? *Chef's kiss*
+  // ────────────────────────────────────────────────────────────────────────
   function drawLineChart(data) {
+    // Theme detection: are we in vampire mode or not?
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    const gridColor = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
+    const axisColor = isLight ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)';
+    const textColor = isLight ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.55)';
+    const labelColor = isLight ? 'rgba(0,0,0,0.65)' : 'rgba(255,255,255,0.65)';
+
     const { labels, values, title } = data;
     document.getElementById('trendChartTitle').textContent = title;
-    const W = 440, H = 172, pL = 42, pR = 16, pT = 20, pB = 32;
+    const W = 340, H = 206, pL = 36, pR = 16, pT = 20, pB = 36;
     const cW = W - pL - pR, cH = H - pT - pB;
     const minV = Math.floor(Math.min(...values) * 0.85);
     const maxV = Math.ceil(Math.max(...values) * 1.1);
@@ -127,22 +175,26 @@
     const grid = Array.from({ length: 5 }, (_, i) => {
       const val = Math.round(minV + (maxV - minV) * i / 4);
       const y   = toY(val);
-      return `<line x1="${pL}" y1="${y}" x2="${W - pR}" y2="${y}" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
-        <text x="${pL - 8}" y="${y + 4}" text-anchor="end" font-size="10" fill="rgba(255,255,255,0.55)" font-weight="600" font-family="Plus Jakarta Sans">${val}</text>`;
+      return `<line x1="${pL}" y1="${y}" x2="${W - pR}" y2="${y}" stroke="${gridColor}" stroke-width="1"/>
+        <text x="${pL - 8}" y="${y + 4}" text-anchor="end" font-size="10" fill="${textColor}" font-weight="600" font-family="Plus Jakarta Sans">${val}</text>`;
     }).join('');
     const xLabels = labels.map((m, i) =>
-      `<text x="${toX(i)}" y="${H - 8}" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.65)" font-weight="600" font-family="Plus Jakarta Sans">${m}</text>`
+      `<text x="${toX(i)}" y="${H - 8}" text-anchor="middle" font-size="10" fill="${labelColor}" font-weight="600" font-family="Plus Jakarta Sans">${m}</text>`
     ).join('');
     const ptArr    = values.map((v, i) => `${toX(i)},${toY(v)}`);
     const areaPath = `M ${toX(0)},${pT + cH} ` + values.map((v, i) => `L ${toX(i)},${toY(v)}`).join(' ') + ` L ${toX(values.length - 1)},${pT + cH} Z`;
     const dots     = values.map((v, i) => `<circle cx="${toX(i)}" cy="${toY(v)}" r="4.5" fill="#00c9a7" stroke="var(--card)" stroke-width="2.5"/>`).join('');
+    const axes = `
+      <line x1="${pL}" y1="${pT}" x2="${pL}" y2="${pT + cH}" stroke="${axisColor}" stroke-width="2"/>
+      <line x1="${pL}" y1="${pT + cH}" x2="${W - pR}" y2="${pT + cH}" stroke="${axisColor}" stroke-width="2"/>
+    `;
     document.getElementById('trendsChart').innerHTML = `
       <svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block;overflow:visible;padding:4px">
         <defs><linearGradient id="lineAreaGrad" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stop-color="#00c9a7" stop-opacity="0.22"/>
           <stop offset="100%" stop-color="#00c9a7" stop-opacity="0"/>
         </linearGradient></defs>
-        ${grid}${xLabels}
+        ${axes}${grid}${xLabels}
         <path d="${areaPath}" fill="url(#lineAreaGrad)"/>
         <polyline points="${ptArr.join(' ')}" fill="none" stroke="#00c9a7" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
         ${dots}
