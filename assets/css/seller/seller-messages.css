@@ -1,3 +1,13 @@
+/* ── Message Layout Overrides (Seller Perspective) ──────────── */
+/* From seller's view: buyer = LEFT, seller = RIGHT */
+.msg-row.buyer {
+  flex-direction: row !important; /* LEFT side */
+}
+
+.msg-row.seller {
+  flex-direction: row-reverse !important; /* RIGHT side */
+}
+
 /* ── Viewing Request Card ──────────────────────────────────── */
 .viewing-request-card {
   background: var(--card);

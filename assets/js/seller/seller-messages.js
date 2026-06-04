@@ -294,7 +294,7 @@
     };
     const s = statusMap[p.status] || statusMap.pending;
     return `
-      <div class="msg-row buyer">
+      <div class="msg-row seller">
         <div class="payment-request-card">
           <div class="pr-header">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
