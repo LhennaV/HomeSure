@@ -107,7 +107,7 @@
     document.getElementById('statRow').innerHTML = `
       <div class="stat-card">
         <div class="stat-icon teal">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <div style="font-size:24px;font-weight:600;">₱</div>
         </div>
         <div class="stat-label">Total Received</div>
         <div class="stat-value">${fmtMoney(452000)}</div>
@@ -443,18 +443,18 @@
   }
 
   // ══════════════════════════════════════════════════════════════════════════════
-  // PAYMONGO INTEGRATION - Show received payments
+  // QRPH INTEGRATION - Show received payments
   // ══════════════════════════════════════════════════════════════════════════════
 
-  function loadPayMongoTransactions() {
-    // Get transactions from PayMongo integration
+  function loadQRPHTransactions() {
+    // Get transactions from QRPH integration
     const allTransactions = PaymentIntegration.getTransactions({
       landlordId: user.id  // Filter by current seller
     });
 
-    console.log('📊 PayMongo Transactions for Seller:', allTransactions);
+    console.log('📊 QRPH Transactions for Seller:', allTransactions);
 
-    // Add real PayMongo transactions to the display
+    // Add real QRPH transactions to the display
     if (allTransactions && allTransactions.length > 0) {
       // Clear fake data and show real data
       PENDING.length = 0;
@@ -489,10 +489,131 @@
     }
   }
 
-  // Load PayMongo transactions after short delay (ensure PaymentIntegration is ready)
-  setTimeout(loadPayMongoTransactions, 500);
+  // Load QRPH transactions after short delay (ensure PaymentIntegration is ready)
+  setTimeout(loadQRPHTransactions, 500);
 
   // ── Init ──────────────────────────────────────────────────────────────────────
   renderStats();
   renderPending();
 })();
+
+// ══════════════════════════════════════════════════════════════════════════
+// PAYMENT SETTINGS TAB
+// Configure payment methods once, use everywhere
+// ══════════════════════════════════════════════════════════════════════════
+
+function togglePaymentMethodPay(method, isEnabled) {
+  const fieldsId = method + 'FieldsPay';
+  const fields = document.getElementById(fieldsId);
+  
+  if (isEnabled) {
+    fields.style.display = 'grid';
+  } else {
+    fields.style.display = 'none';
+  }
+}
+
+function savePaymentMethodsPay() {
+  const user = getSession();
+  if (!user) return;
+
+  const paymentMethods = {
+    gcash: {
+      enabled: document.getElementById('enableGcashPay').checked,
+      number: document.getElementById('gcashNumberPay').value.trim(),
+      name: document.getElementById('gcashNamePay').value.trim()
+    },
+    maya: {
+      enabled: document.getElementById('enableMayaPay').checked,
+      number: document.getElementById('mayaNumberPay').value.trim(),
+      name: document.getElementById('mayaNamePay').value.trim()
+    },
+    bank: {
+      enabled: document.getElementById('enableBankPay').checked,
+      bankName: document.getElementById('bankNamePay').value.trim(),
+      accountNumber: document.getElementById('bankAccountPay').value.trim(),
+      accountName: document.getElementById('bankAccountNamePay').value.trim()
+    }
+  };
+
+  // Validate enabled methods have all required fields
+  if (paymentMethods.gcash.enabled && (!paymentMethods.gcash.number || !paymentMethods.gcash.name)) {
+    alert('Please fill in all GCash fields');
+    return;
+  }
+  if (paymentMethods.maya.enabled && (!paymentMethods.maya.number || !paymentMethods.maya.name)) {
+    alert('Please fill in all Maya fields');
+    return;
+  }
+  if (paymentMethods.bank.enabled && (!paymentMethods.bank.bankName || !paymentMethods.bank.accountNumber || !paymentMethods.bank.accountName)) {
+    alert('Please fill in all Bank Transfer fields');
+    return;
+  }
+
+  // Save to user object
+  user.paymentMethods = paymentMethods;
+  updateSession(user);
+
+  showSuccessToast('Payment methods saved successfully!');
+}
+
+function loadPaymentMethodsPay() {
+  const user = getSession();
+  if (!user || !user.paymentMethods) return;
+
+  const pm = user.paymentMethods;
+
+  // Load GCash
+  if (pm.gcash) {
+    document.getElementById('enableGcashPay').checked = pm.gcash.enabled || false;
+    document.getElementById('gcashNumberPay').value = pm.gcash.number || '';
+    document.getElementById('gcashNamePay').value = pm.gcash.name || '';
+    if (pm.gcash.enabled) {
+      document.getElementById('gcashFieldsPay').style.display = 'grid';
+    }
+  }
+
+  // Load Maya
+  if (pm.maya) {
+    document.getElementById('enableMayaPay').checked = pm.maya.enabled || false;
+    document.getElementById('mayaNumberPay').value = pm.maya.number || '';
+    document.getElementById('mayaNamePay').value = pm.maya.name || '';
+    if (pm.maya.enabled) {
+      document.getElementById('mayaFieldsPay').style.display = 'grid';
+    }
+  }
+
+  // Load Bank
+  if (pm.bank) {
+    document.getElementById('enableBankPay').checked = pm.bank.enabled || false;
+    document.getElementById('bankNamePay').value = pm.bank.bankName || '';
+    document.getElementById('bankAccountPay').value = pm.bank.accountNumber || '';
+    document.getElementById('bankAccountNamePay').value = pm.bank.accountName || '';
+    if (pm.bank.enabled) {
+      document.getElementById('bankFieldsPay').style.display = 'grid';
+    }
+  }
+}
+
+function showSuccessToast(message) {
+  // Simple toast notification
+  const toast = document.createElement('div');
+  toast.textContent = message;
+  toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#00c9a7;color:#051226;padding:14px 20px;border-radius:10px;font-weight:700;font-size:13px;z-index:9999;animation:slideIn 0.3s;';
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.animation = 'slideOut 0.3s';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+// Load payment methods when switching to settings tab
+const originalSwitchTab = window.switchTab;
+window.switchTab = function(tab) {
+  originalSwitchTab(tab);
+  if (tab === 'settings') {
+    setTimeout(loadPaymentMethodsPay, 50);
+  }
+};
+

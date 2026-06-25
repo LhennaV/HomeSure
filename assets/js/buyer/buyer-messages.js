@@ -224,7 +224,7 @@
   }
 
   // ══════════════════════════════════════════════════════════════════════════════
-  // PAYMONGO INTEGRATION - Pay from chat
+  // QRPH INTEGRATION - Pay from chat
   // ══════════════════════════════════════════════════════════════════════════════
 
   window.payFromChat = function (convId, paymentReqId) {
@@ -236,7 +236,7 @@
 
     const payment = msg.payment;
 
-    // Open PayMongo payment modal
+    // Open QRPH payment modal
     PaymentIntegration.openPaymentModal({
       amount: payment.amount,
       listingTitle: payment.property,
@@ -268,7 +268,7 @@
             period: payment.period,
             property: payment.property,
             paymentType: payment.paymentType,
-            fileName: 'paymongo_receipt.pdf',
+            fileName: 'QRPH_receipt.pdf',
             ref: transaction.reference,
             status: 'confirmed'
           }
@@ -280,7 +280,7 @@
         }, 2000);
       }
     });
-    // PayMongo modal opens automatically - no need to show old modal
+    // QRPH modal opens automatically - no need to show old modal
   };
 
   // ═══════════════════════════════════════════════════════════════════════════

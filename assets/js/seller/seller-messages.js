@@ -326,10 +326,6 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg>
           Confirm Receipt
         </button>
-        <button class="proof-btn proof-btn-reject" onclick="openRejectModal('${convId}','${p.id}')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          Reject
-        </button>
       </div>` : '';
 
     return `
@@ -727,7 +723,7 @@
     const isPending = v.status === 'pending';
 
     return `
-      <div class="msg-row seller">
+      <div class="msg-row buyer">
         <div class="viewing-request-card">
           <div class="vr-header">
             <div class="vr-header-left">

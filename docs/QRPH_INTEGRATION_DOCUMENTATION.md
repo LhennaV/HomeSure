@@ -1,4 +1,4 @@
-# 📘 PayMongo Payment Integration - Documentation for Capstone Defense
+# 📘 QRPH Payment Integration - Documentation for Capstone Defense
 
 ## 📋 Table of Contents
 1. [Overview](#overview)
@@ -15,9 +15,9 @@
 
 ## 🎯 Overview
 
-HomeSure integrates **PayMongo** as its payment gateway to facilitate secure rental payments between tenants and landlords. PayMongo is a licensed payment service provider in the Philippines that supports multiple payment methods including GCash, Maya (PayMaya), and credit/debit cards.
+HomeSure integrates **QRPH** as its payment gateway to facilitate secure rental payments between tenants and landlords. QRPH is a licensed payment service provider in the Philippines that supports multiple payment methods including GCash, Maya (PayMaya), and credit/debit cards.
 
-### Why PayMongo?
+### Why QRPH?
 - ✅ **Licensed in Philippines** - Compliant with BSP regulations
 - ✅ **Multiple Payment Methods** - GCash, Maya, Cards
 - ✅ **Developer-Friendly API** - Well-documented REST API
@@ -47,24 +47,24 @@ HomeSure integrates **PayMongo** as its payment gateway to facilitate secure ren
 │  1. User clicks "Pay Now"                                  │
 │  2. Sends payment request to backend                       │
 │  4. Receives checkout URL                                  │
-│  5. Redirects to PayMongo checkout                         │
-│  8. Returns from PayMongo                                  │
+│  5. Redirects to QRPH checkout                         │
+│  8. Returns from QRPH                                  │
 │  9. Shows payment status                                   │
 └────────────────┬──────────────────────────────────────────┘
                  │
                  ▼
 ┌───────────────────────────────────────────────────────────┐
 │              BACKEND SERVER (Node.js/PHP)                  │
-│  3. Creates Payment Intent with PayMongo                   │
+│  3. Creates Payment Intent with QRPH                   │
 │     (using SECRET KEY - never exposed to frontend)         │
-│  6. Receives webhook from PayMongo                         │
+│  6. Receives webhook from QRPH                         │
 │  7. Updates database with payment status                   │
 │  10. Serves payment receipt                                │
 └────────────────┬──────────────────────┬──────────────────┘
                  │                      │
                  ▼                      ▼
 ┌──────────────────────────┐  ┌────────────────────────────┐
-│   PAYMONGO API           │  │   DATABASE (MongoDB/MySQL) │
+│   QRPH API           │  │   DATABASE (MongoDB/MySQL) │
 │   • Processes payment    │  │   • Users                  │
 │   • Sends webhooks       │  │   • Transactions           │
 │   • Returns status       │  │   • Listings               │
@@ -79,7 +79,7 @@ HomeSure integrates **PayMongo** as its payment gateway to facilitate secure ren
 ```javascript
 Frontend:  HTML5 + CSS3 + Vanilla JavaScript
 Storage:   localStorage (temporary)
-Payment:   Simulated PayMongo flow (no real API calls)
+Payment:   Simulated QRPH flow (no real API calls)
 ```
 
 ### Required for Production
@@ -87,7 +87,7 @@ Payment:   Simulated PayMongo flow (no real API calls)
 Frontend:  HTML5 + CSS3 + Vanilla JavaScript
 Backend:   Node.js + Express (or PHP + Laravel)
 Database:  MongoDB (or MySQL/PostgreSQL)
-Payment:   PayMongo API
+Payment:   QRPH API
 Hosting:   Heroku/Railway (backend) + Netlify/Vercel (frontend)
 ```
 
@@ -120,9 +120,9 @@ User chooses from available payment methods:
 ```javascript
 // In production, this would:
 // 1. Send request to YOUR backend server
-// 2. Backend creates PayMongo Payment Intent:
+// 2. Backend creates QRPH Payment Intent:
 
-const paymentIntent = await paymongo.paymentIntents.create({
+const paymentIntent = await QRPH.paymentIntents.create({
   data: {
     attributes: {
       amount: 1500000,  // Amount in centavos (₱15,000.00)
@@ -134,15 +134,15 @@ const paymentIntent = await paymongo.paymentIntents.create({
 });
 
 // 3. Backend returns checkout URL to frontend
-// 4. Frontend redirects user to PayMongo checkout page
+// 4. Frontend redirects user to QRPH checkout page
 window.location.href = checkoutUrl;
 ```
 
 #### 4. **Payment Confirmation**
 ```javascript
-// After payment on PayMongo:
-// 1. PayMongo redirects back to your site
-// 2. PayMongo sends webhook to your backend
+// After payment on QRPH:
+// 1. QRPH redirects back to your site
+// 2. QRPH sends webhook to your backend
 // 3. Backend verifies payment and updates database
 // 4. Frontend shows success message
 ```
@@ -152,7 +152,7 @@ window.location.href = checkoutUrl;
 // Transaction stored in database with:
 {
   id: 'TXN-1234567890',
-  paymongoPaymentId: 'pi_xxxxxxxxxxxxx',  // From PayMongo
+  QRPHPaymentId: 'pi_xxxxxxxxxxxxx',  // From QRPH
   amount: 15000,
   status: 'confirmed',
   method: 'gcash',
@@ -180,9 +180,9 @@ const secretKey = 'sk_test_xxxxxxxxxxxxx';
 
 **Environment Variables (.env file on backend):**
 ```bash
-PAYMONGO_SECRET_KEY=sk_test_xxxxxxxxxxxxxxxxxxxxx
-PAYMONGO_PUBLIC_KEY=pk_test_xxxxxxxxxxxxxxxxxxxxx
-PAYMONGO_WEBHOOK_SECRET=whsec_xxxxxxxxxxxxxxxxxxxxx
+QRPH_SECRET_KEY=sk_test_xxxxxxxxxxxxxxxxxxxxx
+QRPH_PUBLIC_KEY=pk_test_xxxxxxxxxxxxxxxxxxxxx
+QRPH_WEBHOOK_SECRET=whsec_xxxxxxxxxxxxxxxxxxxxx
 ```
 
 ### 2. **Webhook Signature Verification**
@@ -192,7 +192,7 @@ const crypto = require('crypto');
 
 function verifyWebhookSignature(payload, signature) {
   const expectedSignature = crypto
-    .createHmac('sha256', process.env.PAYMONGO_WEBHOOK_SECRET)
+    .createHmac('sha256', process.env.QRPH_WEBHOOK_SECRET)
     .update(JSON.stringify(payload))
     .digest('hex');
   
@@ -202,9 +202,9 @@ function verifyWebhookSignature(payload, signature) {
 
 ### 3. **Payment Verification**
 ```javascript
-// Always verify payment status from PayMongo API
+// Always verify payment status from QRPH API
 // NEVER trust client-side data alone
-const payment = await paymongo.paymentIntents.retrieve(paymentId);
+const payment = await QRPH.paymentIntents.retrieve(paymentId);
 
 if (payment.data.attributes.status === 'succeeded') {
   // Update database
@@ -235,14 +235,14 @@ HomeSure/
 ├── module/
 │   └── buyer/
 │       └── payments.html              # Payments page
-└── PAYMONGO_INTEGRATION_DOCUMENTATION.md  # This file
+└── QRPH_INTEGRATION_DOCUMENTATION.md  # This file
 ```
 
 ### Key Files Explained
 
 #### 1. `payment-modal.css`
 - Styles for payment modal
-- PayMongo-inspired design
+- QRPH-inspired design
 - Responsive mobile-friendly layout
 - Loading/success/error states
 
@@ -271,7 +271,7 @@ HomeSure/
    ```
    (or open directly in browser)
 
-2. **Click "Pay Now (PayMongo)" button**
+2. **Click "Pay Now (QRPH)" button**
 
 3. **Select Payment Method**
    - Click on GCash, Maya, or Card option
@@ -292,10 +292,10 @@ HomeSure/
    localStorage.getItem('homesure_transactions');
    ```
 
-### Testing in Production (With Real PayMongo)
+### Testing in Production (With Real QRPH)
 
-1. **Sign up for PayMongo Test Account**
-   - Go to https://developers.paymongo.com
+1. **Sign up for QRPH Test Account**
+   - Go to https://developers.QRPH.com
    - Create free account
    - Get test API keys
 
@@ -307,11 +307,11 @@ HomeSure/
    ```
 
 3. **Use Test GCash**
-   - PayMongo provides test phone number
+   - QRPH provides test phone number
    - Will not charge real money
 
 4. **Check Dashboard**
-   - View test transactions at dashboard.paymongo.com
+   - View test transactions at dashboard.QRPH.com
 
 ---
 
@@ -322,19 +322,19 @@ HomeSure/
 #### 1. **Backend Server**
 ```bash
 # Example: Node.js + Express backend
-npm install express paymongo dotenv
+npm install express QRPH dotenv
 
 # Create server.js:
 ```
 ```javascript
 const express = require('express');
-const paymongo = require('paymongo');
+const QRPH = require('QRPH');
 
 const app = express();
 app.use(express.json());
 
-// Initialize PayMongo
-const client = paymongo.client(process.env.PAYMONGO_SECRET_KEY);
+// Initialize QRPH
+const client = QRPH.client(process.env.QRPH_SECRET_KEY);
 
 // Create payment intent
 app.post('/api/create-payment', async (req, res) => {
@@ -355,7 +355,7 @@ app.post('/api/create-payment', async (req, res) => {
 });
 
 // Webhook receiver
-app.post('/webhooks/paymongo', async (req, res) => {
+app.post('/webhooks/QRPH', async (req, res) => {
   // Verify webhook signature
   // Update database
   // Send confirmation
@@ -370,7 +370,7 @@ app.listen(3000);
 -- Transactions table
 CREATE TABLE transactions (
   id VARCHAR(50) PRIMARY KEY,
-  paymongo_payment_id VARCHAR(100),
+  QRPH_payment_id VARCHAR(100),
   amount DECIMAL(10, 2),
   status VARCHAR(20),
   method VARCHAR(20),
@@ -387,15 +387,15 @@ CREATE TABLE transactions (
 #### 3. **Environment Variables**
 ```bash
 # Production .env file
-PAYMONGO_SECRET_KEY=sk_live_xxxxxxxxxxxxxxxxxxxxx
-PAYMONGO_PUBLIC_KEY=pk_live_xxxxxxxxxxxxxxxxxxxxx
-PAYMONGO_WEBHOOK_SECRET=whsec_xxxxxxxxxxxxxxxxxxxxx
+QRPH_SECRET_KEY=sk_live_xxxxxxxxxxxxxxxxxxxxx
+QRPH_PUBLIC_KEY=pk_live_xxxxxxxxxxxxxxxxxxxxx
+QRPH_WEBHOOK_SECRET=whsec_xxxxxxxxxxxxxxxxxxxxx
 DATABASE_URL=mongodb://username:password@host:port/database
 ```
 
 #### 4. **Webhook Setup**
-1. Go to PayMongo Dashboard
-2. Create webhook endpoint: `https://yourdomain.com/webhooks/paymongo`
+1. Go to QRPH Dashboard
+2. Create webhook endpoint: `https://yourdomain.com/webhooks/QRPH`
 3. Select events:
    - `payment.paid` - Payment successful
    - `payment.failed` - Payment failed
@@ -407,9 +407,9 @@ DATABASE_URL=mongodb://username:password@host:port/database
 
 ### Common Questions from Panelists
 
-#### Q1: "Why did you choose PayMongo over other payment gateways?"
+#### Q1: "Why did you choose QRPH over other payment gateways?"
 **Answer:**
-- PayMongo is licensed by BSP for Philippines
+- QRPH is licensed by BSP for Philippines
 - Supports popular local payment methods (GCash, Maya)
 - Developer-friendly API with good documentation
 - Provides test environment for safe development
@@ -418,15 +418,15 @@ DATABASE_URL=mongodb://username:password@host:port/database
 #### Q2: "How do you ensure payment security?"
 **Answer:**
 1. **API Key Protection** - Secret keys stored on backend only
-2. **Webhook Verification** - Verify signatures from PayMongo
+2. **Webhook Verification** - Verify signatures from QRPH
 3. **HTTPS Encryption** - All data transmitted encrypted
-4. **Payment Verification** - Always verify with PayMongo API
+4. **Payment Verification** - Always verify with QRPH API
 5. **User Authentication** - Only authenticated users can pay
 6. **No Card Storage** - Card data never touches our servers
 
 #### Q3: "What happens if payment fails?"
 **Answer:**
-1. PayMongo returns error status
+1. QRPH returns error status
 2. Webhook notifies our backend
 3. Transaction marked as 'failed' in database
 4. User receives error message
@@ -437,8 +437,8 @@ DATABASE_URL=mongodb://username:password@host:port/database
 #### Q4: "How do you handle refunds?"
 **Answer:**
 1. Landlord/Admin initiates refund in system
-2. Backend calls PayMongo refund API
-3. PayMongo processes refund to original payment method
+2. Backend calls QRPH refund API
+3. QRPH processes refund to original payment method
 4. Webhook confirms refund completion
 5. Database updated with refund status
 6. Both parties receive email notification
@@ -446,15 +446,15 @@ DATABASE_URL=mongodb://username:password@host:port/database
 
 #### Q5: "Can you explain the webhook system?"
 **Answer:**
-Webhooks are HTTP callbacks that PayMongo sends to our server when events occur:
+Webhooks are HTTP callbacks that QRPH sends to our server when events occur:
 
 **Flow:**
 ```
-1. Payment completed on PayMongo
-2. PayMongo sends POST to our webhook URL
+1. Payment completed on QRPH
+2. QRPH sends POST to our webhook URL
 3. Our backend verifies webhook signature
 4. Updates database with payment status
-5. Sends confirmation response to PayMongo
+5. Sends confirmation response to QRPH
 6. Triggers notification to user
 ```
 
@@ -478,7 +478,7 @@ Current state: **Demo/Prototype** for capstone demonstration
 **What's needed for production:**
 - ❌ Backend server (Node.js/PHP)
 - ❌ Database (MongoDB/MySQL)
-- ❌ Real PayMongo API integration
+- ❌ Real QRPH API integration
 - ❌ Webhook receiver
 - ❌ Email notifications
 - ❌ Production API keys
@@ -487,13 +487,13 @@ Current state: **Demo/Prototype** for capstone demonstration
 
 **Timeline to production:** 2-3 weeks with backend developer
 
-#### Q7: "Show me the actual PayMongo API calls"
+#### Q7: "Show me the actual QRPH API calls"
 **Answer:**
 ```javascript
 // Example: Create Payment Intent
-const paymongo = require('paymongo')('sk_test_xxxxx');
+const QRPH = require('QRPH')('sk_test_xxxxx');
 
-const paymentIntent = await paymongo.paymentIntents.create({
+const paymentIntent = await QRPH.paymentIntents.create({
   data: {
     attributes: {
       amount: 1500000,  // ₱15,000.00 in centavos
@@ -516,7 +516,7 @@ const paymentIntent = await paymongo.paymentIntents.create({
 });
 
 // Example: Attach Payment Method
-const attachedIntent = await paymongo.paymentIntents.attach(
+const attachedIntent = await QRPH.paymentIntents.attach(
   paymentIntent.id,
   {
     data: {
@@ -530,7 +530,7 @@ const attachedIntent = await paymongo.paymentIntents.attach(
 
 #### Q8: "How do you test without real money?"
 **Answer:**
-PayMongo provides test mode:
+QRPH provides test mode:
 
 **Test Cards:**
 ```
@@ -539,7 +539,7 @@ Decline: 4571 7360 0000 0010
 ```
 
 **Test GCash:**
-- Use test phone numbers provided by PayMongo
+- Use test phone numbers provided by QRPH
 - Simulates real flow without charges
 
 **Test Environment:**
@@ -553,18 +553,18 @@ Decline: 4571 7360 0000 0010
 ## 📚 Additional Resources
 
 ### Official Documentation
-- PayMongo API: https://developers.paymongo.com/docs
-- PayMongo SDKs: https://developers.paymongo.com/docs/sdks
-- Webhooks: https://developers.paymongo.com/docs/webhooks
+- QRPH API: https://developers.QRPH.com/docs
+- QRPH SDKs: https://developers.QRPH.com/docs/sdks
+- Webhooks: https://developers.QRPH.com/docs/webhooks
 
 ### Integration Guides
-- GCash: https://developers.paymongo.com/docs/gcash
-- Maya: https://developers.paymongo.com/docs/paymaya
-- Cards: https://developers.paymongo.com/docs/card-payments
+- GCash: https://developers.QRPH.com/docs/gcash
+- Maya: https://developers.QRPH.com/docs/paymaya
+- Cards: https://developers.QRPH.com/docs/card-payments
 
 ### Code Examples
-- Node.js: https://github.com/paymongo/paymongo-node
-- PHP: https://github.com/paymongo/paymongo-php
+- Node.js: https://github.com/QRPH/QRPH-node
+- PHP: https://github.com/QRPH/QRPH-php
 
 ---
 
@@ -584,7 +584,7 @@ The demo implementation serves as proof of concept for capstone requirements whi
 
 **For Questions or Clarifications:**
 - Review code comments in `payment-integration.js`
-- Check PayMongo documentation
+- Check QRPH documentation
 - Test the demo thoroughly
 - Prepare to explain each step during defense
 

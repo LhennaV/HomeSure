@@ -223,7 +223,7 @@ const ChatbotWidget = (function() {
       response = 'To list a property:\n1. Complete identity verification first\n2. Click "Post Property" from your dashboard\n3. Fill in property details, upload photos\n4. Submit required documents (TCT/Deed of Sale)\n5. Wait for admin approval (1-2 business days)';
     }
     else if (lowerText.includes('payment') || lowerText.includes('pay') && lowerText.includes('how')) {
-      response = 'HomeSure uses PayMongo for secure payments. You can pay via:\n• GCash\n• Maya (PayMaya)\n• Credit/Debit Card\n\nPayments are confirmed instantly and sellers receive notifications.';
+      response = 'HomeSure uses QRPH for secure payments. You can pay via:\n• GCash\n• Maya (Maya)\n• Credit/Debit Card\n\nPayments are confirmed instantly and sellers receive notifications.';
     }
     else if (lowerText.includes('verify') || lowerText.includes('verification')) {
       response = 'To verify your account:\n1. Go to your Profile page\n2. Click "Re-verify Account"\n3. Take photos of your ID and selfie using your camera\n4. Submit for review\n5. Approval within 24 hours\n\nVerification is required to message sellers and list properties.';

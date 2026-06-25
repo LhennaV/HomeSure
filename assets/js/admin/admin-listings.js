@@ -14,7 +14,7 @@
 
   // ── Check if listing has confirmed payments ─────────────────────────────────
   function checkListingHasPayment(listingId) {
-    // Check localStorage for PayMongo transactions
+    // Check localStorage for QRPH transactions
     const transactions = JSON.parse(localStorage.getItem('homesure_transactions') || '[]');
 
     // Check if any transaction for this listing is confirmed

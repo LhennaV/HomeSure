@@ -369,3 +369,113 @@
     document.getElementById('deleteBtn').style.display = '';
     showToast('Account deletion cancelled. Your account is safe.');
   }
+
+// ══════════════════════════════════════════════════════════════════════════
+// PAYMENT METHODS
+// Save once, use forever. No more typing GCash numbers at 2AM.
+// ══════════════════════════════════════════════════════════════════════════
+
+function togglePaymentMethod(method, isEnabled) {
+  const fieldsId = method + 'Fields';
+  const fields = document.getElementById(fieldsId);
+  const header = fields.previousElementSibling;
+  
+  if (isEnabled) {
+    fields.style.display = 'grid';
+    header.classList.add('expanded');
+  } else {
+    fields.style.display = 'none';
+    header.classList.remove('expanded');
+  }
+}
+
+function savePaymentMethods() {
+  const user = getSession();
+  if (!user) return;
+
+  const paymentMethods = {
+    gcash: {
+      enabled: document.getElementById('enableGcash').checked,
+      number: document.getElementById('gcashNumber').value.trim(),
+      name: document.getElementById('gcashName').value.trim()
+    },
+    maya: {
+      enabled: document.getElementById('enableMaya').checked,
+      number: document.getElementById('mayaNumber').value.trim(),
+      name: document.getElementById('mayaName').value.trim()
+    },
+    bank: {
+      enabled: document.getElementById('enableBank').checked,
+      bankName: document.getElementById('bankName').value.trim(),
+      accountNumber: document.getElementById('bankAccount').value.trim(),
+      accountName: document.getElementById('bankAccountName').value.trim()
+    }
+  };
+
+  // Validate enabled methods have all required fields
+  if (paymentMethods.gcash.enabled && (!paymentMethods.gcash.number || !paymentMethods.gcash.name)) {
+    showToast('Please fill in all GCash fields', 'error');
+    return;
+  }
+  if (paymentMethods.maya.enabled && (!paymentMethods.maya.number || !paymentMethods.maya.name)) {
+    showToast('Please fill in all Maya fields', 'error');
+    return;
+  }
+  if (paymentMethods.bank.enabled && (!paymentMethods.bank.bankName || !paymentMethods.bank.accountNumber || !paymentMethods.bank.accountName)) {
+    showToast('Please fill in all Bank Transfer fields', 'error');
+    return;
+  }
+
+  // Save to user object
+  user.paymentMethods = paymentMethods;
+  updateSession(user);
+
+  showToast('Payment methods saved successfully!', 'success');
+}
+
+function loadPaymentMethods() {
+  const user = getSession();
+  if (!user || !user.paymentMethods) return;
+
+  const pm = user.paymentMethods;
+
+  // Load GCash
+  if (pm.gcash) {
+    document.getElementById('enableGcash').checked = pm.gcash.enabled || false;
+    document.getElementById('gcashNumber').value = pm.gcash.number || '';
+    document.getElementById('gcashName').value = pm.gcash.name || '';
+    if (pm.gcash.enabled) {
+      document.getElementById('gcashFields').style.display = 'grid';
+      document.getElementById('gcashFields').previousElementSibling.classList.add('expanded');
+    }
+  }
+
+  // Load Maya
+  if (pm.maya) {
+    document.getElementById('enableMaya').checked = pm.maya.enabled || false;
+    document.getElementById('mayaNumber').value = pm.maya.number || '';
+    document.getElementById('mayaName').value = pm.maya.name || '';
+    if (pm.maya.enabled) {
+      document.getElementById('mayaFields').style.display = 'grid';
+      document.getElementById('mayaFields').previousElementSibling.classList.add('expanded');
+    }
+  }
+
+  // Load Bank
+  if (pm.bank) {
+    document.getElementById('enableBank').checked = pm.bank.enabled || false;
+    document.getElementById('bankName').value = pm.bank.bankName || '';
+    document.getElementById('bankAccount').value = pm.bank.accountNumber || '';
+    document.getElementById('bankAccountName').value = pm.bank.accountName || '';
+    if (pm.bank.enabled) {
+      document.getElementById('bankFields').style.display = 'grid';
+      document.getElementById('bankFields').previousElementSibling.classList.add('expanded');
+    }
+  }
+}
+
+// Load payment methods on page load
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(loadPaymentMethods, 100);
+});
+

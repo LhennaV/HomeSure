@@ -389,7 +389,7 @@
               </div>
               <label for="enableCard" style="font-size:13px;font-weight:700;color:#f1f5f9;cursor:pointer;flex:1;">Credit/Debit Card</label>
             </div>
-            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:6px;padding-left:32px;">Visa, Mastercard, JCB via PayMongo</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:6px;padding-left:32px;">Manual bank deposit or online transfer</div>
           </div>
         </div>
       </div>
@@ -421,7 +421,7 @@
       inputs.forEach(input => input.style.display = e.target.checked ? 'block' : 'none');
     });
 
-    // Card is always enabled (no additional inputs needed - handled by PayMongo)
+    // Card is always enabled (no additional inputs needed - handled by QRPH)
   });
 
   // Custom notification (copy from buyer messages)
@@ -481,6 +481,41 @@
 
   // Open Payment Request Modal
   window.openPayReqModal = function() {
+    // Auto-load saved payment methods
+    const user = getSession();
+    if (user && user.paymentMethods) {
+      const pm = user.paymentMethods;
+
+      // Load GCash
+      if (pm.gcash && pm.gcash.enabled) {
+        document.getElementById('enableGcash').checked = true;
+        document.getElementById('gcashNumber').value = pm.gcash.number || '';
+        document.getElementById('gcashName').value = pm.gcash.name || '';
+        document.getElementById('gcashNumber').style.display = 'block';
+        document.getElementById('gcashName').style.display = 'block';
+      }
+
+      // Load Maya
+      if (pm.maya && pm.maya.enabled) {
+        document.getElementById('enableMaya').checked = true;
+        document.getElementById('mayaNumber').value = pm.maya.number || '';
+        document.getElementById('mayaName').value = pm.maya.name || '';
+        document.getElementById('mayaNumber').style.display = 'block';
+        document.getElementById('mayaName').style.display = 'block';
+      }
+
+      // Load Bank
+      if (pm.bank && pm.bank.enabled) {
+        document.getElementById('enableBank').checked = true;
+        document.getElementById('bankName').value = pm.bank.bankName || '';
+        document.getElementById('bankAccount').value = pm.bank.accountNumber || '';
+        document.getElementById('bankAccountName').value = pm.bank.accountName || '';
+        document.getElementById('bankName').style.display = 'block';
+        document.getElementById('bankAccount').style.display = 'block';
+        document.getElementById('bankAccountName').style.display = 'block';
+      }
+    }
+
     document.getElementById('payReqModal').style.display = 'flex';
   };
 

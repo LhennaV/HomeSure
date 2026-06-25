@@ -321,10 +321,10 @@
     }
   };
 
-  // Platform payment method selected (simulate PayMongo)
+  // Platform payment method selected (simulate QRPH)
   window.selectPlatformMethod = function (method) {
     // Simulate payment gateway redirect
-    showToast('In production, you would be redirected to secure PayMongo payment page...');
+    showToast('In production, you would be redirected to secure QRPH payment page...');
     setTimeout(() => {
       showToast('Payment of ₱15,390 completed successfully! (Demo)');
       closePayModal();
@@ -508,7 +508,7 @@
     // Close property selector
     closePropertySelector();
 
-    // Open PayMongo payment modal with selected property details
+    // Open QRPH payment modal with selected property details
     setTimeout(() => {
       PaymentIntegration.openPaymentModal({
         amount: payment.amount,
@@ -529,10 +529,10 @@
   };
 
   // ══════════════════════════════════════════════════════════════════════════════
-  // NEW PAYMENT INTEGRATION (PayMongo Demo)
+  // NEW PAYMENT INTEGRATION (QRPH Demo)
   // ══════════════════════════════════════════════════════════════════════════════
 
-  window.payNowWithPayMongo = function() {
+  window.payNowWithQRPH = function() {
     // Open property selector first
     openPropertySelector();
   };

@@ -1,11 +1,11 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   HOMESURE - PAYMONGO PAYMENT INTEGRATION (Demo/Prototype)
+   HOMESURE - QRPH PAYMENT INTEGRATION (Demo/Prototype)
 
    FOR CAPSTONE DEFENSE:
-   This simulates a complete PayMongo payment flow for demonstration purposes.
+   This simulates a complete QRPH payment flow for demonstration purposes.
    In production, this would connect to:
    1. Backend server (Node.js/PHP) to create Payment Intent
-   2. PayMongo API for actual payment processing
+   2. QRPH API for actual payment processing
    3. Database to store transaction records
    4. Webhook receiver for real-time payment status updates
 
@@ -22,14 +22,14 @@ const PaymentIntegration = (function() {
   // ═══════════════════════════════════════════════════════════════════════════
 
   const CONFIG = {
-    // PayMongo Test Keys (FOR DEMO ONLY - In production, these are on backend)
+    // QRPH Test Keys (FOR DEMO ONLY - In production, these are on backend)
     // Public Key: pk_test_... (safe to use in frontend)
     // Secret Key: sk_test_... (MUST be on backend only!)
 
     // Simulated processing time (milliseconds)
     PROCESSING_DELAY: 3000,
 
-    // PayMongo supported payment methods
+    // QRPH supported payment methods
     PAYMENT_METHODS: {
       GCASH: { id: 'gcash', name: 'GCash', desc: 'Pay via GCash e-wallet' },
       MAYA: { id: 'paymaya', name: 'Maya', desc: 'Pay via Maya (formerly PayMaya)' },
@@ -189,7 +189,7 @@ const PaymentIntegration = (function() {
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
         </svg>
         <div class="payment-security-notice-text">
-          <strong>Secure Payment:</strong> Your payment is processed securely through PayMongo.
+          <strong>Secure Payment:</strong> Your payment is processed securely through QRPH.
           Your financial information is encrypted and never stored on our servers.
         </div>
       </div>
@@ -238,12 +238,12 @@ const PaymentIntegration = (function() {
     /*
       IN PRODUCTION, THIS WOULD:
       1. Send request to YOUR backend server
-      2. Backend creates PayMongo Payment Intent with secret key
+      2. Backend creates QRPH Payment Intent with secret key
       3. Backend returns checkout URL
-      4. Frontend redirects user to PayMongo checkout page
-      5. User completes payment on PayMongo
-      6. PayMongo redirects back to your site
-      7. PayMongo sends webhook to your backend
+      4. Frontend redirects user to QRPH checkout page
+      5. User completes payment on QRPH
+      6. QRPH redirects back to your site
+      7. QRPH sends webhook to your backend
       8. Backend updates database with payment status
       9. Frontend shows success/failure message
     */
@@ -253,7 +253,7 @@ const PaymentIntegration = (function() {
 
     // Simulate payment processing delay
     setTimeout(() => {
-      // Generate transaction reference (in production, this comes from PayMongo)
+      // Generate transaction reference (in production, this comes from QRPH)
       const transactionRef = generateTransactionReference(selectedMethod);
 
       // Create transaction record
@@ -354,7 +354,7 @@ const PaymentIntegration = (function() {
 
   // ═══════════════════════════════════════════════════════════════════════════
   // GENERATE TRANSACTION REFERENCE
-  // In production, this comes from PayMongo API
+  // In production, this comes from QRPH API
   // ═══════════════════════════════════════════════════════════════════════════
 
   function generateTransactionReference(method) {
@@ -393,7 +393,7 @@ const PaymentIntegration = (function() {
       tenantId: user.id,
       tenantName: `${user.firstName} ${user.lastName}`,
       landlordId: currentPayment.landlordId,
-      // In production, would include PayMongo payment_intent_id
+      // In production, would include QRPH payment_intent_id
       paymongoPaymentId: `pi_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     };
   }
@@ -560,5 +560,5 @@ const PaymentIntegration = (function() {
 // AUTO-INITIALIZE
 // ═══════════════════════════════════════════════════════════════════════════
 
-console.log('✅ PayMongo Payment Integration loaded (Demo Mode)');
+console.log('✅ QRPH Payment Integration loaded (Demo Mode)');
 console.log('💡 Test in console: PaymentIntegration._testPayment()');

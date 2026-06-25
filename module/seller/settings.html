@@ -180,7 +180,132 @@
           </div>
         </div>
 
-        <!-- ── Section 3: Notification Preferences ── -->
+        <!-- ── Section 3: Payment Methods ── -->
+        <div class="section-card">
+          <div class="section-header">
+            <div class="section-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            </div>
+            <div>
+              <div class="section-title">Payment Methods</div>
+              <div class="section-sub">Save your payment details for faster transactions</div>
+            </div>
+          </div>
+
+          <div class="form-body">
+            <!-- GCash -->
+            <div class="payment-method-block">
+              <div class="payment-method-header">
+                <div class="payment-method-icon" style="background:#007dfe;overflow:hidden;">
+                  <img src="../../assets/img/gcashlogo.png" alt="GCash" style="width:100%;height:100%;object-fit:cover;" />
+                </div>
+                <div class="payment-method-info">
+                  <div class="payment-method-name">GCash</div>
+                  <div class="payment-method-desc">Mobile wallet payment</div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" id="enableGcash" onchange="togglePaymentMethod('gcash', this.checked)" />
+                  <div class="toggle-track"></div>
+                </label>
+              </div>
+              <div class="payment-method-fields" id="gcashFields" style="display:none">
+                <div class="field">
+                  <label>GCash Number</label>
+                  <div class="field-input-wrap">
+                    <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.37A2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.27a16 16 0 0 0 5.82 5.82l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.18 14l.74 2.92z"/></svg>
+                    <input type="tel" id="gcashNumber" placeholder="09XX XXX XXXX" maxlength="13" />
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Account Name</label>
+                  <div class="field-input-wrap">
+                    <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <input type="text" id="gcashName" placeholder="Full name on GCash account" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Maya -->
+            <div class="payment-method-block">
+              <div class="payment-method-header">
+                <div class="payment-method-icon" style="background:#1a1a1a;overflow:hidden;">
+                  <img src="../../assets/img/mayalogo.png" alt="Maya" style="width:100%;height:100%;object-fit:cover;" />
+                </div>
+                <div class="payment-method-info">
+                  <div class="payment-method-name">Maya</div>
+                  <div class="payment-method-desc">Mobile wallet payment</div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" id="enableMaya" onchange="togglePaymentMethod('maya', this.checked)" />
+                  <div class="toggle-track"></div>
+                </label>
+              </div>
+              <div class="payment-method-fields" id="mayaFields" style="display:none">
+                <div class="field">
+                  <label>Maya Number</label>
+                  <div class="field-input-wrap">
+                    <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.37A2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.27a16 16 0 0 0 5.82 5.82l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.18 14l.74 2.92z"/></svg>
+                    <input type="tel" id="mayaNumber" placeholder="09XX XXX XXXX" maxlength="13" />
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Account Name</label>
+                  <div class="field-input-wrap">
+                    <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <input type="text" id="mayaName" placeholder="Full name on Maya account" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bank Transfer -->
+            <div class="payment-method-block">
+              <div class="payment-method-header">
+                <div class="payment-method-icon" style="background:#6b7280">
+                  <div style="font-size:20px;font-weight:700;color:white;">₱</div>
+                </div>
+                <div class="payment-method-info">
+                  <div class="payment-method-name">Bank Transfer</div>
+                  <div class="payment-method-desc">Direct bank deposit</div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" id="enableBank" onchange="togglePaymentMethod('bank', this.checked)" />
+                  <div class="toggle-track"></div>
+                </label>
+              </div>
+              <div class="payment-method-fields" id="bankFields" style="display:none">
+                <div class="field">
+                  <label>Bank Name</label>
+                  <div class="field-input-wrap">
+                    <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    <input type="text" id="bankName" placeholder="e.g., BDO, BPI, Metrobank" />
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Account Number</label>
+                  <div class="field-input-wrap">
+                    <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                    <input type="text" id="bankAccount" placeholder="Account number" />
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Account Name</label>
+                  <div class="field-input-wrap">
+                    <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <input type="text" id="bankAccountName" placeholder="Full name on bank account" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-save-row">
+            <button class="btn-primary" onclick="savePaymentMethods()">Save Payment Methods</button>
+          </div>
+        </div>
+
+        <!-- ── Section 4: Notification Preferences ── -->
         <div class="section-card">
           <div class="section-header">
             <div class="section-icon">

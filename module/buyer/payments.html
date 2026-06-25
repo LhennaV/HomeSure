@@ -34,7 +34,7 @@
           <div class="page-title">My Payments</div>
           <div class="page-sub">Track rent payments, view history, and manage your security deposit</div>
         </div>
-        <button class="btn-primary" onclick="payNowWithPayMongo()">
+        <button class="btn-primary" onclick="payNowWithQRPH()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
           Pay Now
         </button>
@@ -75,7 +75,7 @@
 </div>
 
 <!--
-  OLD PAYMENT MODAL - DISABLED (Replaced with PayMongo integration)
+  OLD PAYMENT MODAL - DISABLED (Replaced with QRPH integration)
   Kept here for reference only - can be deleted later
 
 <div class="modal-backdrop" id="payModal" style="display:none" onclick="if(event.target===this)closePayModal()">
@@ -139,7 +139,7 @@
         </div>
       </div>
 
-      <!-- ── Step 1a: Platform Payment (PayMongo Simulation) ── -->
+      <!-- ── Step 1a: Platform Payment (QRPH Simulation) ── -->
       <div id="payStep1a" style="display:none">
         <div class="platform-payment-container">
           <div class="platform-payment-header">
@@ -148,7 +148,7 @@
             </div>
             <div>
               <div class="platform-title">Secure Platform Payment</div>
-              <div class="platform-subtitle">Powered by PayMongo</div>
+              <div class="platform-subtitle">Powered by QRPH</div>
             </div>
           </div>
 
