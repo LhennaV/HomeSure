@@ -20,22 +20,54 @@
   // Apply theme on load
   applyTheme(getTheme());
 
-  // ── Get approved listings ───────────────────────────────────────────────────
-  const allListings = FAKE_LISTINGS.filter(l =>
-    l.status === 'approved' &&
-    l.lifecycleStatus !== 'sold' &&
-    l.lifecycleStatus !== 'rented'
-  );
+  // ── Load verified listings from Supabase ────────────────────────────────────
+  let allListings = [];
 
-  // Get unique barangays for filter
-  const barangays = [...new Set(allListings.map(l => l.barangay))].sort();
-  const barangaySelect = document.getElementById('filterBarangay');
-  barangays.forEach(b => {
-    const option = document.createElement('option');
-    option.value = b;
-    option.textContent = b;
-    barangaySelect.appendChild(option);
-  });
+  // PLACEHOLDER: ayusin ang mga pangalan sa kanan base sa totoong columns ng properties table
+  function normalizeListing(r) {
+    return {
+      id: r.id,
+      title: r.title,
+      address: r.address,
+      barangay: r.barangay,
+      type: r.type,
+      listingFor: r.listing_for ?? r.listingFor,
+      price: Number(r.price),
+      bedrooms: r.bedrooms,
+      bathrooms: r.bathrooms,
+      floorArea: r.floor_area ?? r.floorArea,
+      images: r.images || [],
+      status: r.verification_state
+    };
+  }
+
+  function fillBarangays() {
+    const barangaySelect = document.getElementById('filterBarangay');
+    const barangays = [...new Set(allListings.map(l => l.barangay))].filter(Boolean).sort();
+    barangays.forEach(b => {
+      const option = document.createElement('option');
+      option.value = b;
+      option.textContent = b;
+      barangaySelect.appendChild(option);
+    });
+  }
+
+  async function loadListings() {
+    try {
+      const { data, error } = await sb
+        .from('properties')
+        .select('*')
+        .eq('verification_state', 'verified');
+      if (error) throw error;
+      allListings = (data || []).map(normalizeListing);
+    } catch (err) {
+      console.error('Failed to load listings:', err);
+      document.getElementById('resultsCount').textContent = 'Could not load listings';
+      return;
+    }
+    fillBarangays();
+    applyFilters();
+  }
 
   // ── Format helpers ──────────────────────────────────────────────────────────
   function formatPrice(listing) {
@@ -122,9 +154,9 @@
 
     if (searchQuery) {
       filtered = filtered.filter(l =>
-        l.title.toLowerCase().includes(searchQuery) ||
-        l.address.toLowerCase().includes(searchQuery) ||
-        l.barangay.toLowerCase().includes(searchQuery)
+        (l.title || '').toLowerCase().includes(searchQuery) ||
+        (l.address || '').toLowerCase().includes(searchQuery) ||
+        (l.barangay || '').toLowerCase().includes(searchQuery)
       );
     }
 
@@ -154,5 +186,5 @@
   };
 
   // ── Init ────────────────────────────────────────────────────────────────────
-  applyFilters();
+  loadListings();
 })();

@@ -87,7 +87,7 @@ function clearError(input) {
 
 // ── Sign In ───────────────────────────────────────────────────────────────────
 
-function submitSignin() {
+async function submitSignin() {
   const email = document.querySelector('input[type="email"]');
   const pw    = document.getElementById('pw1');
   let valid   = true;
@@ -104,26 +104,32 @@ function submitSignin() {
 
   if (!valid) return;
 
-  // Check if account exists first
-  const emailVal = email.value.trim();
-  const userExists = window.FAKE_USERS?.find(u => u.email.toLowerCase() === emailVal.toLowerCase());
+  const { data, error } = await sb.auth.signInWithPassword({
+    email: email.value.trim(),
+    password: pw.value
+  });
 
-  if (!userExists) {
-    // No account with this email
-    showError(email, 'No account found with this email');
-    clearError(pw);
+  if (error) {
+    // Supabase gives one generic message for wrong email or password
+    showError(pw, 'Incorrect email or password');
     return;
   }
 
-  // Account exists, now check password
-  const user = fakeLogin(emailVal, pw.value);
-  if (!user) {
-    // Wrong password
-    showError(pw, 'Incorrect password');
-    clearError(email);
-    return;
-  }
+  // Role lives in the profiles table
+  const { data: profile } = await sb
+    .from('profiles')
+    .select('full_name, role')
+    .eq('id', data.user.id)
+    .single();
 
+  const user = {
+    id: data.user.id,
+    email: data.user.email,
+    name: profile?.full_name || '',
+    role: profile?.role || 'buyer'
+  };
+
+  // These two still come from fake-data.js, so keep that script on the sign-in page for now
   saveSession(user);
   redirectToDashboard(user.role);
 }
@@ -180,9 +186,35 @@ function toggleSignupBtn() {
 
 let _resendTimer = null;
 
-function openVerifyModal() {
+async function openVerifyModal() {
   if (!validateSignup()) return;
-  const email = document.querySelector('input[type="email"]').value.trim();
+
+  const surname   = document.querySelector('input[placeholder="Surname"]').value.trim();
+  const firstName = document.querySelector('input[placeholder="First Name"]').value.trim();
+  const emailEl   = document.querySelector('input[type="email"]');
+  const email     = emailEl.value.trim();
+  const phone     = document.querySelector('input[type="tel"]').value.trim();
+  const password  = document.getElementById('pw1').value;
+  const role      = document.getElementById('sellerBtn').classList.contains('active') ? 'seller' : 'buyer';
+
+  const { error } = await sb.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: window.location.origin + '/auth/signin.html',
+      data: {
+        full_name: `${firstName} ${surname}`,
+        phone_number: phone,
+        role: role
+      }
+    }
+  });
+
+  if (error) {
+    showError(emailEl, error.message);
+    return;
+  }
+
   document.getElementById('modalEmail').textContent = email;
   document.getElementById('verifyModal').classList.add('active');
   startCountdown(32);
@@ -211,7 +243,9 @@ function startCountdown(seconds) {
   }, 1000);
 }
 
-function resendEmail() {
+async function resendEmail() {
+  const email = document.getElementById('modalEmail').textContent;
+  await sb.auth.resend({ type: 'signup', email });
   clearInterval(_resendTimer);
   startCountdown(32);
 }
@@ -220,12 +254,19 @@ function resendEmail() {
 
 let _fpTimer = null;
 
-function submitForgotPassword() {
+async function submitForgotPassword() {
   const input = document.getElementById('fpEmail');
   if (!input) return;
   if (!input.value.trim()) { showError(input, 'Email is required'); return; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value.trim())) { showError(input, 'Enter a valid email address'); return; }
   clearError(input);
+
+  const { error } = await sb.auth.resetPasswordForEmail(input.value.trim(), {
+    // PLACEHOLDER: kailangan din i-whitelist, at kailangan ng page na tumatanggap ng bagong password
+    redirectTo: window.location.origin + '/auth/signin.html'
+  });
+  if (error) { showError(input, error.message); return; }
+
   document.getElementById('sentEmail').textContent = input.value.trim();
   document.getElementById('formView').style.display    = 'none';
   document.getElementById('successView').style.display = '';
@@ -245,7 +286,12 @@ function startFpCountdown(seconds) {
   }, 1000);
 }
 
-function resendReset() { clearInterval(_fpTimer); startFpCountdown(32); }
+async function resendReset() {
+  const email = document.getElementById('sentEmail').textContent;
+  await sb.auth.resetPasswordForEmail(email);
+  clearInterval(_fpTimer);
+  startFpCountdown(32);
+}
 
 // ── Dodge Button Easter Egg REMOVED ───────────────────────────────────────────
 // QA feedback: Button moving causes bad UX. Removed all dodge functionality.
