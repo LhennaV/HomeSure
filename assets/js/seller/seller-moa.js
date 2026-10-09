@@ -55,14 +55,14 @@ HomeSure is an online real estate marketplace that connects property sellers and
         'The Seller shall respond to buyer or tenant inquiries in a timely and professional manner.',
         'The Seller shall immediately notify HomeSure of any changes in property status (e.g., property has been sold or rented).',
         'The Seller shall comply with all applicable local government ordinances, national laws, and regulations governing real estate transactions in the Philippines.',
-        'The Seller shall undergo and pass HomeSure's identity verification process before publishing active listings.',
+        "The Seller shall undergo and pass HomeSure's identity verification process before publishing active listings.",
         'The Seller shall not engage in any fraudulent, misleading, or deceptive practices on the platform.',
       ],
     },
     {
       title: 'ARTICLE III — OBLIGATIONS OF HOMESURE',
       items: [
-        'HomeSure shall maintain the Seller's listings on the platform in accordance with these terms for the duration of the Seller's active account.',
+        "HomeSure shall maintain the Seller's listings on the platform in accordance with these terms for the duration of the Seller's active account.",
         'HomeSure shall provide the Seller with access to listing management tools, inquiry notifications, and analytics within the platform.',
         'HomeSure shall handle all personal data provided by the Seller in compliance with the Data Privacy Act of 2012 (Republic Act No. 10173).',
         'HomeSure shall process verification documents securely and use them solely for identity verification purposes.',

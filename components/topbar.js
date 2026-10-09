@@ -806,11 +806,13 @@
         } else if (action === 'reverify') {
           if (typeof global._hsOpenReverify === 'function') global._hsOpenReverify();
         } else if (action === 'logout') {
-          if (typeof clearSession === 'function') clearSession();
           const logoutPath = p.includes('/module/') ? '../../auth/signin.html'
             : p.includes('/auth/') ? '../auth/signin.html'
             : 'auth/signin.html';
-          window.location.href = logoutPath;
+          // Sign out of Supabase too (not just the cached copy), then leave.
+          const done = () => { window.location.href = logoutPath; };
+          if (typeof hsSignOut === 'function') hsSignOut().then(done, done);
+          else { if (typeof clearSession === 'function') clearSession(); done(); }
         }
       });
     }

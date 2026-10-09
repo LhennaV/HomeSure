@@ -104,33 +104,22 @@ async function submitSignin() {
 
   if (!valid) return;
 
-  const { data, error } = await sb.auth.signInWithPassword({
-    email: email.value.trim(),
-    password: pw.value
-  });
-
-  if (error) {
-    // Supabase gives one generic message for wrong email or password
-    showError(pw, 'Incorrect email or password');
+  // Signs in, loads the profile (role, verification status, saved listings) and caches it for the pages.
+  let user;
+  try {
+    user = await HS.auth.signIn(email.value.trim(), pw.value);
+  } catch (err) {
+    showError(pw, err.message);
     return;
   }
 
-  // Role lives in the profiles table
-  const { data: profile } = await sb
-    .from('profiles')
-    .select('full_name, role')
-    .eq('id', data.user.id)
-    .single();
+  // Coming from a public listing? Buyers go straight back to it (only our own buyer pages are allowed).
+  const back = new URLSearchParams(window.location.search).get('redirect');
+  if (user.role === 'buyer' && back && /^module\/buyer\/[a-z-]+\.html(\?[\w=&-]*)?$/.test(back)) {
+    window.location.href = '../' + back;
+    return;
+  }
 
-  const user = {
-    id: data.user.id,
-    email: data.user.email,
-    name: profile?.full_name || '',
-    role: profile?.role || 'buyer'
-  };
-
-  // These two still come from fake-data.js, so keep that script on the sign-in page for now
-  saveSession(user);
   redirectToDashboard(user.role);
 }
 
@@ -204,8 +193,10 @@ async function openVerifyModal() {
       emailRedirectTo: window.location.origin + '/auth/signin.html',
       data: {
         full_name: `${firstName} ${surname}`,
+        first_name: firstName,
+        last_name: surname,
         phone_number: phone,
-        role: role
+        role: role   // 'buyer' | 'seller' — the database trigger ignores anything else
       }
     }
   });

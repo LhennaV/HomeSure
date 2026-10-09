@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 //  HomeSure – Fake / Sample Data  (Front-End Development Only)
-//  Replace this file with real API calls once the back-end is ready.
+//  Being retired: pages move to data.js (HS.*) one by one. Session helpers now live in session.js.
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── Fake Accounts ─────────────────────────────────────────────────────────────
@@ -8,7 +8,7 @@ const FAKE_USERS = [
   {
     id: 'usr-001', role: 'buyer',
     firstName: 'Maria', lastName: 'Santos',
-    email: 'buyer@homesure.com', password: 'buyer1234',
+    email: 'buyer@homesure.com',
     phone: '09171234567', avatar: null, verified: true,
     isVerified: true, verifiedAt: '2025-11-20', verificationExpiry: '2027-05-20',
     phoneVerified: true,
@@ -17,7 +17,7 @@ const FAKE_USERS = [
   {
     id: 'usr-002', role: 'buyer',
     firstName: 'Jose', lastName: 'Reyes',
-    email: 'jose.reyes@gmail.com', password: 'buyer1234',
+    email: 'jose.reyes@gmail.com',
     phone: '09281234567', avatar: null, verified: true,
     isVerified: true, verifiedAt: '2026-01-20', verificationExpiry: '2027-01-20',
     phoneVerified: true,
@@ -26,7 +26,7 @@ const FAKE_USERS = [
   {
     id: 'usr-003', role: 'seller',
     firstName: 'Ramon', lastName: 'Cruz',
-    email: 'seller@homesure.com', password: 'seller1234',
+    email: 'seller@homesure.com',
     phone: '09191234567', avatar: null, verified: true,
     accountStatus: 'verified', listings: ['prop-001', 'prop-002', 'prop-003', 'prop-006', 'prop-007', 'prop-008', 'prop-014', 'prop-015'],
     joinedAt: '2025-10-01',
@@ -42,7 +42,7 @@ const FAKE_USERS = [
   {
     id: 'usr-004', role: 'seller',
     firstName: 'Lourdes', lastName: 'Navarro',
-    email: 'lourdes.navarro@gmail.com', password: 'seller1234',
+    email: 'lourdes.navarro@gmail.com',
     phone: '09271234567', avatar: null, verified: true,
     accountStatus: 'verified', listings: ['prop-004', 'prop-005', 'prop-009', 'prop-010', 'prop-011', 'prop-012', 'prop-013'],
     joinedAt: '2026-02-14',
@@ -58,7 +58,7 @@ const FAKE_USERS = [
   {
     id: 'usr-007', role: 'seller',
     firstName: 'Ana', lastName: 'Reyes',
-    email: 'seller2@homesure.com', password: 'seller1234',
+    email: 'seller2@homesure.com',
     phone: '09561234567', avatar: null, verified: true,
     accountStatus: 'verified', listings: [],
     joinedAt: '2026-03-20',
@@ -74,13 +74,13 @@ const FAKE_USERS = [
   {
     id: 'usr-005', role: 'admin',
     firstName: 'Andrea', lastName: 'Villanueva',
-    email: 'admin@homesure.com', password: 'admin1234',
+    email: 'admin@homesure.com',
     phone: '09301234567', avatar: null, verified: true, joinedAt: '2025-08-15',
   },
   {
     id: 'usr-006', role: 'superadmin',
     firstName: 'Ricardo', lastName: 'Dela Cruz',
-    email: 'superadmin@homesure.com', password: 'superadmin1234',
+    email: 'superadmin@homesure.com',
     phone: '09091234567', avatar: null, verified: true, joinedAt: '2025-07-01',
   },
 ];
@@ -377,49 +377,6 @@ const FAKE_ADMINS = FAKE_USERS.filter(u => u.role === 'admin').map(u => ({
   addedBy: 'Ricardo Dela Cruz',
   addedAt: u.joinedAt,
 }));
-
-// ── Auth Helpers ──────────────────────────────────────────────────────────────
-function fakeLogin(email, password) {
-  return FAKE_USERS.find(
-    (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
-  ) || null;
-}
-
-function saveSession(user) {
-  const session = {
-    id: user.id, role: user.role,
-    firstName: user.firstName, lastName: user.lastName,
-    email: user.email, phone: user.phone,
-    verified: user.verified, accountStatus: user.accountStatus || null,
-    savedListings: user.savedListings || [],
-    avatar: user.avatar || null,
-    isVerified: user.isVerified || false,
-    verifiedAt: user.verifiedAt || null,
-    verificationExpiry: user.verificationExpiry || null,
-    phoneVerified: user.phoneVerified || false,
-  };
-  sessionStorage.setItem('homesure_user', JSON.stringify(session));
-}
-
-function getSession() {
-  const raw = sessionStorage.getItem('homesure_user');
-  return raw ? JSON.parse(raw) : null;
-}
-
-function clearSession() {
-  sessionStorage.removeItem('homesure_user');
-}
-
-function redirectToDashboard(role) {
-  const routes = {
-    buyer:      '../module/buyer/buyer.html',
-    seller:     '../module/seller/seller.html',
-    admin:      '../module/admin/admin.html',
-    superadmin: '../module/super-admin/super-admin.html',
-  };
-  const path = routes[role];
-  if (path) window.location.href = path;
-}
 
 // ── Reviews (Two-Way: Buyer ↔ Seller) ────────────────────────────────────────
 const FAKE_REVIEWS = [

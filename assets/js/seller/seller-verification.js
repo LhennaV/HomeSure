@@ -5,10 +5,6 @@
   HomeSureSidebar.init({ activePage: 'settings' });
   HomeSureTopbar.init({ placeholder: 'Identity Verification' });
 
-  const fullUser   = FAKE_USERS.find(u => u.id === user.id);
-  const isVerified = fullUser && fullUser.accountStatus === 'verified';
-  const isExpired  = isVerified && fullUser.verificationExpiry && new Date(fullUser.verificationExpiry) < new Date();
-
   const col = document.getElementById('verifyCol');
 
   function fmtDate(d) {
@@ -16,9 +12,47 @@
     return new Date(d).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
   }
 
-  {
+  // Reads the account's current status from the database, then draws the page.
+  async function renderPage() {
+    col.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Loading…</div>';
+    let fullUser;
+    try {
+      fullUser = await HS.auth.refresh();
+    } catch (err) {
+      console.error(err);
+      col.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Could not load your account. Please try again.</div>';
+      return;
+    }
+    if (!fullUser) { window.location.href = '../../auth/signin.html'; return; }
+
+    const isVerified = fullUser.accountStatus === 'verified';
+    const isExpired  = isVerified && fullUser.verificationExpiry && new Date(fullUser.verificationExpiry) < new Date();
+
+    // Under review / last rejection (the reason is written by the admin who reviewed the documents)
+    const underReview = fullUser.accountStatus === 'pending' || fullUser.accountStatus === 'reverification';
+    const notices = (underReview ? `
+      <div class="banner-card">
+        <div class="banner-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div>
+          <div class="banner-title">Documents Under Review</div>
+          <div class="banner-desc">We received your documents. An admin will review them within 1–2 business days. You can submit new photos below if you need to replace them.</div>
+        </div>
+      </div>` : '') + (fullUser.accountStatus === 'unverified' && fullUser.verificationRejectReason ? `
+      <div class="banner-card danger">
+        <div class="banner-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div>
+          <div class="banner-title">Your last submission was not approved</div>
+          <div class="banner-desc">${fullUser.verificationRejectReason}</div>
+        </div>
+      </div>` : '');
+
     // ── Upload form ─────────────────────────────────────────────────────────
     col.innerHTML = `
+      ${notices}
       <!-- Verification banner -->
       <div class="banner-card ${isExpired ? 'danger' : ''}">
         <div class="banner-icon">
@@ -129,6 +163,8 @@
     `;
   }
 
+  renderPage();
+
   // ══════════════════════════════════════════════════════════════════════════════
   // CAMERA CAPTURE
   // ══════════════════════════════════════════════════════════════════════════════
@@ -198,7 +234,7 @@
   }
 
   // ── Submit handler ──────────────────────────────────────────────────────────
-  function submitVerification() {
+  async function submitVerification() {
     if (!idPhotoData || !selfiePhotoData) {
       showToast('⚠️ Please take both ID photo and selfie');
       return;
@@ -208,14 +244,19 @@
     btn.disabled = true;
     btn.textContent = 'Submitting...';
 
-    // Save photos to localStorage (in production, upload to server)
-    const verificationData = {
-      idPhoto: idPhotoData,
-      selfiePhoto: selfiePhotoData,
-      submittedAt: new Date().toISOString(),
-      status: 'pending'
-    };
-    localStorage.setItem('homesure_verification_' + user.id, JSON.stringify(verificationData));
+    // Photos go to the private bucket; the account then waits for an admin's review.
+    try {
+      await HS.verification.submit([
+        { label: 'Government-Issued ID', sources: [idPhotoData] },
+        { label: 'Selfie Verification',  sources: [selfiePhotoData] },
+      ]);
+    } catch (err) {
+      console.error(err);
+      btn.disabled = false;
+      btn.textContent = 'Submit for Verification';
+      showToast('⚠️ Could not submit your documents: ' + err.message);
+      return;
+    }
 
     showToast("✅ Documents submitted! We'll review and notify you within 1-2 business days.");
     setTimeout(() => window.location.href = 'seller.html', 3000);

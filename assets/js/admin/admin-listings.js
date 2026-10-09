@@ -12,19 +12,11 @@
 
   let activeStatus = 'all';
 
-  // ── Check if listing has confirmed payments ─────────────────────────────────
-  function checkListingHasPayment(listingId) {
-    // Check localStorage for QRPH transactions
-    const transactions = JSON.parse(localStorage.getItem('homesure_transactions') || '[]');
+  // ── Data (all statuses; admins can read every listing) ──────────────────────
+  let listings = [];
+  let paidIds  = new Set();   // listings that have a confirmed payment
 
-    // Check if any transaction for this listing is confirmed
-    const hasPayment = transactions.some(tx =>
-      tx.listingId === listingId &&
-      (tx.status === 'confirmed' || tx.status === 'paid')
-    );
-
-    return hasPayment;
-  }
+  const fmtDate = iso => (iso ? String(iso).slice(0, 10) : '');
 
   // ── Filter tabs ─────────────────────────────────────────────────────────────
   document.getElementById('filterTabs').addEventListener('click', e => {
@@ -39,7 +31,7 @@
   // ── Render table ────────────────────────────────────────────────────────────
   window.renderListings = function () {
     const q = (document.getElementById('hsSearch') || {}).value?.toLowerCase() || '';
-    const filtered = FAKE_LISTINGS.filter(l => {
+    const filtered = listings.filter(l => {
       if (l.status === 'draft') return false; // not visible until seller submits
       const matchStatus = activeStatus === 'all' || l.status === activeStatus;
       const matchQ = !q || l.title.toLowerCase().includes(q) || l.barangay.toLowerCase().includes(q);
@@ -53,19 +45,16 @@
     }
 
     tbody.innerHTML = filtered.map(l => {
-      const seller = FAKE_USERS.find(u => u.id === l.sellerId);
-      const sellerName = seller ? seller.firstName + ' ' + seller.lastName : 'Unknown';
+      const sellerName = l.seller ? l.seller.name : 'Unknown';
       const price = l.listingFor === 'rent'
         ? '₱' + l.price.toLocaleString('en-PH') + '/mo'
         : '₱' + l.price.toLocaleString('en-PH');
 
-      // Check if this listing has confirmed payments (indicates it's occupied)
-      const hasConfirmedPayment = checkListingHasPayment(l.id);
-      console.log('🔍 Listing:', l.id, l.title, '→ Has payment?', hasConfirmedPayment);
+      // A confirmed payment indicates the property is probably occupied
+      const hasConfirmedPayment = paidIds.has(l.id);
       const paymentBadge = hasConfirmedPayment
         ? `<span style="display:inline-block;background:rgba(251,191,36,0.15);color:#f59e0b;border:1px solid rgba(251,191,36,0.3);padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;margin-left:6px;" title="This listing has confirmed payments - likely occupied">💰 PAYMENT CONFIRMED</span>`
         : '';
-      console.log('  Badge HTML:', paymentBadge ? 'WILL SHOW' : 'EMPTY');
 
       const approveBtn = l.status !== 'approved'
         ? `<button class="btn-sm approve" onclick="setStatus('${l.id}','approved')">Approve</button>`
@@ -73,7 +62,7 @@
       const rejectBtn = l.status !== 'rejected'
         ? `<button class="btn-sm reject" onclick="openRejectModal('${l.id}')">Reject</button>`
         : `<button class="btn-sm reject" disabled style="opacity:0.3;cursor:not-allowed">Reject</button>`;
-      const closeBtn = l.status === 'approved' && l.availability !== 'Occupied'
+      const closeBtn = l.status === 'approved'
         ? `<button class="btn-sm" style="background:#f59e0b;border-color:#f59e0b;" onclick="openAdminCloseListing('${l.id}','${l.title.replace(/'/g, "\\'")}','${sellerName}')">Close</button>`
         : '';
       const eyeBtn = `<button class="btn-sm btn-icon" onclick="window.location.href='listing-detail.html?id=${l.id}'" title="View">
@@ -84,7 +73,7 @@
         <tr>
           <td>
             <div class="listing-col">
-              <img class="thumb" src="${l.images[0]}" alt="${l.title}" />
+              <img class="thumb" src="${HS.cover(l)}" alt="${l.title}" />
               <div class="listing-col-info">
                 <div class="l-title">${l.title}${paymentBadge}</div>
                 <div class="l-loc">${l.barangay}</div>
@@ -92,9 +81,9 @@
             </div>
           </td>
           <td>${sellerName}</td>
-          <td style="text-transform:capitalize">${l.type}</td>
+          <td style="text-transform:capitalize">${l.type || '—'}</td>
           <td>${price}</td>
-          <td>${l.postedAt}</td>
+          <td>${fmtDate(l.postedAt)}</td>
           <td><span class="badge ${l.status}">${l.status.charAt(0).toUpperCase() + l.status.slice(1)}</span></td>
           <td>
             <div class="action-btns">
@@ -109,11 +98,18 @@
   };
 
   // ── Set status ──────────────────────────────────────────────────────────────
-  window.setStatus = function (id, status, reason) {
-    const l = FAKE_LISTINGS.find(x => x.id === id);
+  window.setStatus = async function (id, status, reason) {
+    const l = listings.find(x => x.id === id);
     if (!l) return;
-    l.status = status;
-    if (reason) l.rejectionReason = reason;
+    try {
+      const updated = status === 'approved' ? await HS.listings.approve(id) : await HS.listings.reject(id, reason);
+      Object.assign(l, updated);
+      HS.audit.log(status === 'approved' ? 'Approved listing' : 'Rejected listing', 'listing',
+        l.title + (reason ? ' – ' + reason : ''));
+    } catch (err) {
+      hsToast('Could not update the listing: ' + err.message, 'error');
+      return;
+    }
     renderListings();
     closeModal();
   };
@@ -173,26 +169,26 @@
     document.querySelectorAll('.carousel-dot').forEach((d, i) => d.classList.toggle('active', i === _carouselIdx));
   };
 
-  window.openModal = function (id) {
-    const l = FAKE_LISTINGS.find(x => x.id === id);
+  window.openModal = async function (id) {
+    const l = listings.find(x => x.id === id);
     if (!l) return;
-    const seller = FAKE_USERS.find(u => u.id === l.sellerId);
-    const sellerName = seller ? seller.firstName + ' ' + seller.lastName : 'Unknown';
+    const sellerName = l.seller ? l.seller.name : 'Unknown';
+    const docs = await HS.storage.resolveDocs(l.documents);
     const price = l.listingFor === 'rent'
       ? '₱' + l.price.toLocaleString('en-PH') + '/month'
       : '₱' + l.price.toLocaleString('en-PH');
 
     _carouselIdx  = 0;
-    _carouselImgs = l.images || [];
+    _carouselImgs = (l.images && l.images.length) ? l.images : [HS.PLACEHOLDER_IMG];
 
     const dotsHtml = _carouselImgs.map((_, i) =>
       `<span class="carousel-dot${i === 0 ? ' active' : ''}"></span>`
     ).join('');
 
-    const docsHtml = (l.documents && l.documents.length)
+    const docsHtml = docs.length
       ? `<div class="modal-docs-title">Submitted Documents</div>
          <div class="modal-docs-row">
-           ${l.documents.map(d => `
+           ${docs.map(d => `
              <a href="${d.url}" target="_blank" class="modal-doc-thumb" title="${d.label}">
                <img src="${d.url}" alt="${d.label}" />
                <span>${d.label}</span>
@@ -219,12 +215,12 @@
         <div class="modal-detail">
           <div class="modal-detail-item"><label>Seller</label><span>${sellerName}</span></div>
           <div class="modal-detail-item"><label>Price</label><span>${price}</span></div>
-          <div class="modal-detail-item"><label>Type</label><span style="text-transform:capitalize">${l.type}</span></div>
+          <div class="modal-detail-item"><label>Type</label><span style="text-transform:capitalize">${l.type || '—'}</span></div>
           <div class="modal-detail-item"><label>For</label><span style="text-transform:capitalize">${l.listingFor}</span></div>
           <div class="modal-detail-item"><label>Bedrooms</label><span>${l.bedrooms ?? '—'}</span></div>
           <div class="modal-detail-item"><label>Bathrooms</label><span>${l.bathrooms ?? '—'}</span></div>
           <div class="modal-detail-item"><label>Floor Area</label><span>${l.floorArea ? l.floorArea + ' sqm' : '—'}</span></div>
-          <div class="modal-detail-item"><label>Posted</label><span>${l.postedAt}</span></div>
+          <div class="modal-detail-item"><label>Posted</label><span>${fmtDate(l.postedAt)}</span></div>
         </div>
         ${rejectionHtml}
         ${docsHtml}
@@ -259,18 +255,28 @@
       amount: 0,
       isAdmin: true, // Flag to customize modal for admin
       onClosed: function() {
-        // Update listing in FAKE_LISTINGS
-        const listing = FAKE_LISTINGS.find(l => l.id === listingId);
-        if (listing) {
-          listing.availability = 'Occupied';
-          listing.status = 'closed';
-        }
-
-        // Refresh listings table
+        const listing = listings.find(l => l.id === listingId);
+        if (listing) listing.status = 'closed';
         renderListings();
       }
     });
   };
 
-  renderListings();
+  async function loadAll() {
+    document.getElementById('listingsBody').innerHTML =
+      '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted)">Loading…</td></tr>';
+    try {
+      const [all, paid] = await Promise.all([HS.listings.all(), HS.admin.paidPropertyIds()]);
+      listings = await HS.listings.withSellers(all);
+      paidIds = paid;
+    } catch (err) {
+      console.error('Failed to load listings:', err);
+      document.getElementById('listingsBody').innerHTML =
+        '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted)">Could not load listings. Please try again.</td></tr>';
+      return;
+    }
+    renderListings();
+  }
+
+  loadAll();
 })();
