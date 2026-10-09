@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -8,34 +9,145 @@ export default async function DashboardPage() {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) redirect("/auth/login");
 
-  const { data: profile } = await supabase.from("profiles").select("role, full_name").eq("id", session.user.id).single();
+  const { data: profile } = await supabase.from("profiles").select("*").eq("id", session.user.id).single();
+
+  // Fetch real platform metrics or fallback to defaults
+  const { count: propertyCount } = await supabase.from("properties").select("*", { count: 'exact', head: true });
+  const { count: userCount } = await supabase.from("profiles").select("*", { count: 'exact', head: true });
+
+  const role = profile?.role || "user";
+  const fullName = profile?.full_name || session.user.email?.split("@")[0] || "User";
 
   return (
-    <div>
-      <h1 className="dash-title" style={{ fontSize: '22px', fontWeight: 700, marginBottom: '4px' }}>Dashboard</h1>
-      <p className="dash-sub" style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '28px' }}>Welcome back, {profile?.full_name || 'User'}. Here&apos;s what&apos;s happening.</p>
-
-      <div className="cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(185px, 1fr))', gap: '14px', marginBottom: '32px' }}>
-        <div className="card" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '20px 22px', transition: 'transform 0.18s ease, border-color 0.2s ease' }}>
-          <div className="card-label" style={{ fontSize: '11px', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 600, marginBottom: '8px', letterSpacing: '0.05em' }}>Role</div>
-          <div className="card-value" style={{ fontSize: '28px', fontWeight: 800, color: '#00c9a7', textTransform: 'capitalize' }}>{profile?.role || "Unknown"}</div>
-        </div>
-        <div className="card" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '20px 22px' }}>
-          <div className="card-label" style={{ fontSize: '11px', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 600, marginBottom: '8px', letterSpacing: '0.05em' }}>Account</div>
-          <div className="card-value" style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{session.user.email}</div>
-        </div>
-        <div className="card" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '20px 22px' }}>
-          <div className="card-label" style={{ fontSize: '11px', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 600, marginBottom: '8px', letterSpacing: '0.05em' }}>Status</div>
-          <div className="card-value" style={{ fontSize: '14px', fontWeight: 700, color: '#00c9a7' }}>Active</div>
+    <div className="dashboard-content">
+      {/* Page Header */}
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Welcome back, {fullName}</h1>
+          <p className="page-sub">HomeSure Dashboard & Platform Overview ({role.toUpperCase()})</p>
         </div>
       </div>
 
-      <div className="placeholder-section" style={{ background: 'var(--card)', border: '1px dashed rgba(255,255,255,0.12)', borderRadius: 'var(--radius)', padding: '50px 24px', textAlign: 'center', color: 'var(--muted)' }}>
-        <h3 style={{ margin: '0 0 6px', fontSize: '14px', color: 'rgba(255,255,255,0.45)', fontWeight: 700 }}>Quick Actions</h3>
-        <p style={{ margin: 0, fontSize: '12px', marginBottom: '20px' }}>Use the sidebar to navigate through your dashboard.</p>
-        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <a href="/dashboard/properties/new" style={{ background: 'var(--teal)', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '8px', fontSize: '13px', fontWeight: 700, textDecoration: 'none' }}>List Property</a>
-          <a href="/dashboard/payments" style={{ background: 'transparent', color: 'var(--text)', border: '1px solid var(--border)', padding: '10px 18px', borderRadius: '8px', fontSize: '13px', fontWeight: 700, textDecoration: 'none' }}>View Payments</a>
+      {/* Stat Grid */}
+      <div className="stat-grid">
+        <div className="stat-card">
+          <div className="stat-icon teal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+          </div>
+          <div className="stat-body">
+            <div className="stat-label">Total Properties</div>
+            <div className="stat-value">{propertyCount ?? 0}</div>
+          </div>
+        </div>
+
+        <div className="stat-card">
+          <div className="stat-icon blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <div className="stat-body">
+            <div className="stat-label">Platform Users</div>
+            <div className="stat-value">{userCount ?? 1}</div>
+          </div>
+        </div>
+
+        <div className="stat-card">
+          <div className="stat-icon green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <div className="stat-body">
+            <div className="stat-label">Your Role</div>
+            <div className="stat-value" style={{ fontSize: '20px', textTransform: 'capitalize' }}>{role}</div>
+          </div>
+        </div>
+
+        <div className="stat-card">
+          <div className="stat-icon amber">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+          <div className="stat-body">
+            <div className="stat-label">Account Status</div>
+            <div className="stat-value" style={{ fontSize: '20px', color: '#00c9a7' }}>Active</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Grid */}
+      <div className="dash-grid">
+        {/* Quick Actions Card */}
+        <div className="dash-card">
+          <div className="dash-card-header">
+            <span className="dash-card-title">Quick Actions</span>
+          </div>
+          <div className="action-list">
+            <Link href="/dashboard/properties/new" className="action-row">
+              <div className="action-icon blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </div>
+              <div className="action-body">
+                <div className="action-title">Create New Listing</div>
+                <div className="action-desc">Add a new property for sale or rent</div>
+              </div>
+              <span className="action-badge review">New</span>
+            </Link>
+
+            <Link href="/dashboard/payments" className="action-row">
+              <div className="action-icon amber">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              </div>
+              <div className="action-body">
+                <div className="action-title">Manage Payments</div>
+                <div className="action-desc">Check payment transactions and balances</div>
+              </div>
+            </Link>
+
+            {role === "admin" && (
+              <Link href="/dashboard/verifications" className="action-row">
+                <div className="action-icon red">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <div className="action-body">
+                  <div className="action-title">Pending Verifications</div>
+                  <div className="action-desc">Review seller & property submission requests</div>
+                </div>
+                <span className="action-badge urgent">Action Required</span>
+              </Link>
+            )}
+          </div>
+        </div>
+
+        {/* Account Info Breakdown */}
+        <div className="dash-card">
+          <div className="dash-card-header">
+            <span className="dash-card-title">Profile Info</span>
+          </div>
+          <div className="breakdown-list">
+            <div className="breakdown-row">
+              <span className="breakdown-label">Email</span>
+              <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{session.user.email}</span>
+            </div>
+            <div className="breakdown-row">
+              <span className="breakdown-label">Full Name</span>
+              <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text)' }}>{fullName}</span>
+            </div>
+            <div className="breakdown-row">
+              <span className="breakdown-label">Account Role</span>
+              <span className="badge approved">{role}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
