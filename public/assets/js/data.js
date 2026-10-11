@@ -214,7 +214,11 @@ const HS = (function () {
     async signIn(email, password) {
       const { error } = await sb.auth.signInWithPassword({ email, password });
       if (error) {
-        if (/confirm/i.test(error.message)) throw new Error('Please confirm your email first — check your inbox.');
+        // The auth server is what refuses an unconfirmed account, so this is the real gate, not
+        // a check this code could be talked out of.
+        if (/confirm/i.test(error.message)) {
+          throw new Error('Please confirm your email first — check your inbox for the link from HomeSure.');
+        }
         throw new Error('Incorrect email or password');
       }
       const user = await auth.refresh();

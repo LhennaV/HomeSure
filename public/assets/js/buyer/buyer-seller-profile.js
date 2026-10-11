@@ -39,7 +39,7 @@
   if (!seller) {
     wrap.innerHTML = `<p style="color:var(--muted);text-align:center;padding:60px 0">Seller not found.</p>`;
   } else {
-    const initials      = seller.firstName[0] + seller.lastName[0];
+    const initials      = hsInitials(seller.firstName, seller.lastName, seller.email);
     const sellerListings = (await HS.listings.bySeller(seller.id).catch(() => [])).filter(l =>
       l.sellerId === seller.id &&
       l.status === 'approved' &&
@@ -99,7 +99,7 @@
           ${sellerReviews.sort((a,b) => new Date(b.reviewDate) - new Date(a.reviewDate)).map(rev => {
             const buyer = rev.reviewer;
             const buyerName = buyer ? `${buyer.firstName} ${buyer.lastName}` : 'Anonymous';
-            const buyerInitials = buyer ? buyer.firstName[0] + buyer.lastName[0] : '?';
+            const buyerInitials = buyer ? hsInitials(buyer.firstName, buyer.lastName, buyer.email) : '?';
             const reviewDate = new Date(rev.reviewDate).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
             return `
               <div class="review-card">

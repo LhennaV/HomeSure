@@ -186,29 +186,38 @@ async function openVerifyModal() {
   const password  = document.getElementById('pw1').value;
   const role      = document.getElementById('sellerBtn').classList.contains('active') ? 'seller' : 'buyer';
 
-  const { error } = await sb.auth.signUp({
-    email,
-    password,
-    options: {
-      emailRedirectTo: window.location.origin + '/auth/signin.html',
-      data: {
-        full_name: `${firstName} ${surname}`,
-        first_name: firstName,
-        last_name: surname,
-        phone_number: phone,
-        role: role   // 'buyer' | 'seller' — the database trigger ignores anything else
-      }
-    }
-  });
+  // Signing up goes through our own API, not straight to Supabase.
+  //
+  // The auth server insists on a confirmed email but has no mail sender of its own, so its signup
+  // endpoint fails every time with "Error sending confirmation email". Our route creates the
+  // account unconfirmed — which sends nothing and so cannot fail that way — and emails the link
+  // from this app instead. The account still cannot be used until the link is opened.
+  const btn = document.getElementById('signupBtn');
+  const label = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Creating your account…'; }
 
-  if (error) {
-    showError(emailEl, error.message);
+  let result;
+  try {
+    const res = await fetch('/api/auth/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email, password, firstName, lastName: surname, phone, role,
+      }),
+    });
+    result = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(result.error || 'Could not create your account.');
+  } catch (err) {
+    if (btn) { btn.disabled = false; btn.textContent = label; }
+    showError(emailEl, err.message);
     return;
   }
 
+  if (btn) { btn.disabled = false; btn.textContent = label; }
+
   document.getElementById('modalEmail').textContent = email;
   document.getElementById('verifyModal').classList.add('active');
-  startCountdown(32);
+  startCountdown(60);
 }
 
 function closeModal() {
@@ -236,10 +245,65 @@ function startCountdown(seconds) {
 
 async function resendEmail() {
   const email = document.getElementById('modalEmail').textContent;
-  await sb.auth.resend({ type: 'signup', email });
+  const countdown = document.getElementById('resendCountdown');
+
+  try {
+    const res = await fetch('/api/auth/resend-verification', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      if (countdown) countdown.textContent = body.error || 'Could not resend. Try again shortly.';
+      clearInterval(_resendTimer);
+      startCountdown(body.retryAfter || 60);
+      return;
+    }
+  } catch (err) {
+    if (countdown) countdown.textContent = 'Could not resend. Check your connection.';
+    return;
+  }
+
   clearInterval(_resendTimer);
-  startCountdown(32);
+  startCountdown(60);
 }
+
+// ── Coming back from the confirmation link ───────────────────────────────────
+// /api/auth/verify-email sends people here with ?verified=… so they see a sentence rather than
+// a bare JSON response.
+(function showVerificationResult() {
+  const status = new URLSearchParams(window.location.search).get('verified');
+  if (!status) return;
+
+  const MESSAGES = {
+    success: ['Your email is confirmed. You can sign in now.', 'ok'],
+    already: ['That email was already confirmed. Go ahead and sign in.', 'ok'],
+    expired: ['That link has expired. Sign up again, or use "Resend" to get a new one.', 'error'],
+    invalid: ['That confirmation link is not valid. Please request a new one.', 'error'],
+    missing: ['That confirmation link was incomplete. Please request a new one.', 'error'],
+    failed:  ['We could not confirm your email. Please try the link again shortly.', 'error'],
+  };
+  const [text, kind] = MESSAGES[status] || MESSAGES.invalid;
+
+  const banner = document.createElement('div');
+  banner.setAttribute('role', 'status');
+  banner.textContent = text;
+  banner.style.cssText = `
+    margin: 0 0 18px; padding: 12px 14px; border-radius: 10px;
+    font-size: 13px; font-weight: 600; line-height: 1.5;
+    background: ${kind === 'ok' ? 'rgba(0,201,167,0.12)' : 'rgba(248,113,113,0.12)'};
+    border: 1px solid ${kind === 'ok' ? 'rgba(0,201,167,0.35)' : 'rgba(248,113,113,0.35)'};
+    color: ${kind === 'ok' ? '#0d8f7b' : '#b91c1c'};
+  `;
+
+  const form = document.querySelector('form') || document.body.firstElementChild;
+  if (form && form.parentNode) form.parentNode.insertBefore(banner, form);
+
+  // Keep the page shareable/reloadable without re-triggering the banner.
+  const clean = window.location.pathname;
+  window.history.replaceState({}, '', clean);
+})();
 
 // ── Forgot Password ───────────────────────────────────────────────────────────
 

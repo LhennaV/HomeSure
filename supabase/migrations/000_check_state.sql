@@ -21,7 +21,8 @@ WITH state AS (
     EXISTS (SELECT 1 FROM information_schema.columns
             WHERE table_schema = 'public' AND table_name = 'payments' AND column_name = 'due_date')          AS has_payment_columns,
     EXISTS (SELECT 1 FROM information_schema.columns
-            WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'payment_methods')   AS has_payment_methods
+            WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'payment_methods')   AS has_payment_methods,
+    to_regclass('public.email_verifications') IS NOT NULL AS has_email_verification
 )
 SELECT * FROM (
   SELECT 1 AS n, '001_initial_schema'          AS migration,
@@ -52,4 +53,8 @@ SELECT * FROM (
          CASE WHEN has_deposits AND has_payment_columns AND has_payment_methods
               THEN 'APPLIED' ELSE 'RUN THIS' END,
          'payment periods + proofs, security deposits, seller payment details' FROM state
+  UNION ALL
+  SELECT 8, '008_email_verification',
+         CASE WHEN has_email_verification THEN 'APPLIED' ELSE 'RUN THIS' END,
+         'confirmation links HomeSure emails itself' FROM state
 ) rows ORDER BY n;

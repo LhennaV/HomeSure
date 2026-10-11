@@ -449,6 +449,10 @@
 
       <div class="hs-bottom">
         <div class="hs-divider"></div>
+        <button class="hs-logout-btn" id="hsLogoutBtn" type="button">
+          ${IC.logout}
+          Log out
+        </button>
       </div>
     `;
   }
@@ -463,6 +467,19 @@
 
   // ── Bind events ──────────────────────────────────────────────────────────────
   function bindEvents(el) {
+    const logoutBtn = el.querySelector('#hsLogoutBtn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', async () => {
+        logoutBtn.disabled = true;
+        if (typeof hsSignOut === 'function') {
+          await hsSignOut();            // clears the Supabase session, then redirects
+        } else {
+          if (typeof clearSession === 'function') clearSession();
+          window.location.href = '../../auth/signin.html';
+        }
+      });
+    }
+
     // Nav routing
     const NAV_ROUTES = {
       buyer:      { dashboard: 'buyer.html', saved: 'saved.html', messages: 'messages.html', payments: 'payments.html' },

@@ -83,7 +83,7 @@
 
   function renderAdminTable() {
     document.getElementById('adminTable').innerHTML = adminList.map(a => {
-      const initials = (a.firstName[0] + a.lastName[0]).toUpperCase();
+      const initials = hsInitials(a.firstName, a.lastName, a.email);
       const statusBadge = a.status === 'active'
         ? `<span class="badge active">Active</span>`
         : `<span class="badge inactive">Inactive</span>`;

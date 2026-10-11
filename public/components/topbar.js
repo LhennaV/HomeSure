@@ -498,8 +498,8 @@
     if (!el) { console.warn('HomeSureTopbar: #hs-topbar not found.'); return; }
 
     const user = typeof getSession === 'function' ? getSession() : null;
-    const initials  = user ? (user.firstName[0] + user.lastName[0]).toUpperCase() : 'U';
-    const fullName  = user ? user.firstName + ' ' + user.lastName : 'User';
+    const initials  = user ? hsInitials(user.firstName, user.lastName, user.email) : 'U';
+    const fullName  = hsDisplayName(user);
     const role      = user ? user.role : 'buyer';
     const avatarContent = user && user.avatar
       ? `<img src="${user.avatar}" alt="${fullName}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;" />`

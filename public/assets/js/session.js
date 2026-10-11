@@ -99,6 +99,32 @@ async function requireRole(...roles) {
   });
 })();
 
+// Initials for an avatar circle.
+//
+// Every caller used to write `first[0] + last[0]`, which throws the moment a name is null — and a
+// name is null for any account made straight in Supabase rather than through the sign-up form.
+// One of those throws took the whole topbar down, and with it every line of the page script after
+// it, which is why a page could end up showing its leftover placeholder markup.
+function hsInitials(first, last, fallback) {
+  const a = (first || '').trim();
+  const b = (last || '').trim();
+  const letters = (a.charAt(0) + b.charAt(0)).trim();
+  if (letters) return letters.toUpperCase();
+
+  // No name on the profile: fall back to the email, then to a neutral mark.
+  const from = (fallback || '').trim();
+  return from ? from.charAt(0).toUpperCase() : '?';
+}
+
+// A display name that is never blank.
+function hsDisplayName(user) {
+  if (!user) return 'User';
+  const name = [user.firstName, user.lastName].filter(Boolean).join(' ').trim()
+    || (user.fullName || '').trim();
+  if (name) return name;
+  return (user.email || '').split('@')[0] || 'User';
+}
+
 // Small toast for reporting database/network results on pages that have no toast of their own.
 function hsToast(text, kind) {
   const el = document.createElement('div');

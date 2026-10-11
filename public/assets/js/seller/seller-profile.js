@@ -34,7 +34,7 @@
   );
 
   // ── Render profile card ──────────────────────────────────────────────────────
-  const initials      = (seller.firstName[0] || '') + (seller.lastName[0] || '');
+  const initials      = hsInitials(seller.firstName, seller.lastName, seller.email);
   const profileAvatar = document.getElementById('profileAvatar');
 
   function renderSellerAvatar() {

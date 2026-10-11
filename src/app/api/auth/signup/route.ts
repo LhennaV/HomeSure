@@ -1,39 +1,105 @@
 import { NextResponse } from "next/server";
-import { getServerSupabase } from "@/lib/supabase/server-client";
+import { getAdminSupabase } from "@/lib/supabase/admin-client";
+import { sendMail, verificationEmail, appOrigin, isEmailConfigured } from "@/lib/email";
+import { issueToken } from "@/lib/verification";
 
 export async function GET() {
   return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
 }
 
-// Public endpoint: signing up must not require an existing session.
-// The front end signs up with supabase-js directly; this route is for server-side callers.
+type Body = {
+  email?: string;
+  password?: string;
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+  phone?: string;
+  role?: string;
+};
+
+/**
+ * Create an account and email the confirmation link ourselves.
+ *
+ * The Supabase auth server requires a confirmed email before sign-in but has no SMTP, so its own
+ * public signup endpoint fails with "Error sending confirmation email". The admin endpoint used
+ * here sends nothing, so it cannot fail that way — we create the account UNCONFIRMED and send the
+ * mail from this app instead.
+ *
+ * The account stays unusable until the link is opened. That is enforced by the auth server, not by
+ * this code: signing in to an unconfirmed account is refused with "Email not confirmed" no matter
+ * who asks.
+ */
 export async function POST(request: Request) {
-  const supabase = await getServerSupabase();
-
-  const body = await request.json().catch(() => null);
-  const { email, password, fullName, firstName, lastName, phone, role } = body ?? {};
-
-  if (!email || !password) {
-    return NextResponse.json({ error: "Email and password required" }, { status: 400 });
+  if (!isEmailConfigured()) {
+    return NextResponse.json(
+      { error: "Sign-up is unavailable right now: this server cannot send email yet." },
+      { status: 503 },
+    );
   }
 
-  // Only buyer/seller can be self-selected. Elevated roles are granted by an admin.
-  const safeRole = role === "seller" ? "seller" : "buyer";
+  const body = (await request.json().catch(() => null)) as Body | null;
+  const email = body?.email?.trim().toLowerCase();
+  const { password, firstName, lastName, fullName, phone, role } = body ?? {};
 
-  const { data, error } = await supabase.auth.signUp({
+  if (!email || !password) {
+    return NextResponse.json({ error: "Email and password are required." }, { status: 400 });
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return NextResponse.json({ error: "That does not look like an email address." }, { status: 400 });
+  }
+  if (password.length < 8) {
+    return NextResponse.json({ error: "Your password must be at least 8 characters." }, { status: 400 });
+  }
+
+  // Only buyer and seller can be chosen here. Admin and superadmin are granted by an admin.
+  const safeRole = role === "seller" ? "seller" : "buyer";
+  const admin = getAdminSupabase();
+
+  const { data: created, error: createError } = await admin.auth.admin.createUser({
     email,
     password,
-    options: {
-      data: {
-        full_name: fullName ?? [firstName, lastName].filter(Boolean).join(" "),
-        first_name: firstName,
-        last_name: lastName,
-        phone_number: phone,
-        role: safeRole,
-      },
+    email_confirm: false,          // ← the whole point: unusable until the link is opened
+    user_metadata: {
+      full_name: fullName ?? [firstName, lastName].filter(Boolean).join(" "),
+      first_name: firstName,
+      last_name: lastName,
+      phone_number: phone,
+      role: safeRole,
     },
   });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  return NextResponse.json({ user: data.user }, { status: 200 });
+  if (createError || !created?.user) {
+    const message = createError?.message ?? "Could not create the account.";
+    if (/already|registered|exists|duplicate/i.test(message)) {
+      return NextResponse.json(
+        { error: "An account with that email already exists. Try signing in, or reset your password." },
+        { status: 409 },
+      );
+    }
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
+
+  const userId = created.user.id;
+
+  // From here on a failure leaves an account nobody can use, so roll it back and let them retry
+  // with the same address rather than stranding it.
+  try {
+    const token = await issueToken(userId, email);
+    const link = `${appOrigin(request)}/api/auth/verify-email?token=${encodeURIComponent(token)}`;
+    const mail = verificationEmail({ firstName: firstName ?? "", link });
+    await sendMail({ to: email, ...mail });
+  } catch (err) {
+    await admin.auth.admin.deleteUser(userId).catch(() => {});
+    const detail = err instanceof Error ? err.message : "unknown error";
+    console.error("Signup rolled back, could not send the confirmation email:", detail);
+    return NextResponse.json(
+      { error: "We could not send your confirmation email. Please check the address and try again." },
+      { status: 502 },
+    );
+  }
+
+  return NextResponse.json(
+    { ok: true, email, message: "Check your email for the confirmation link." },
+    { status: 201 },
+  );
 }
