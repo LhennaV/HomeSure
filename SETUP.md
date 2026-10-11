@@ -48,9 +48,12 @@ the SQL Editor **Ctrl+A → Ctrl+V → Run** (see the box at the top). Finish on
 004_similarity_function.sql      ← FIXED (the old version could not run at all)
 005_roles_seller_superadmin.sql  ← NEW: landowner → seller, adds superadmin
 006_frontend_alignment.sql       ← NEW: everything your front end needs
+007_payments_and_deposits.sql    ← NEW: the payments pages and security deposits
 ```
 
-`005` and `006` are safe to run more than once.
+`005`, `006` and `007` are all safe to run more than once.
+
+`007` needs `006` first, and says so plainly if you run it too early.
 
 If you run `006` before `005`, it stops with a clear message telling you to run `005` first — nothing is half-applied.
 
@@ -72,6 +75,16 @@ If it still fails, run `000b_diagnose_role_type.sql` (read-only) and send the re
 
 That is the guard working: `005` did not finish. Fix `005`, then come back to `006`. Nothing was half-applied.
 
+### What `007` adds
+
+* `payments`: `due_date`, `period`, `method`, `reference`, plus `proof_url` and the seller's decision.
+  The payments pages show all of these, and until now the table had nowhere to keep them.
+* `security_deposits`: the amount a landlord holds and the itemised damage deductions, so the buyer
+  can see what is actually refundable. There was no table for this at all.
+* `profiles.payment_methods`: where a seller says how to be paid. The two payment-methods forms were
+  writing this into the browser session, so it vanished on sign-out and no buyer ever saw it.
+* a private `payment-proofs` bucket for GCash screenshots.
+
 ---
 
 ## Step 3 — Check the two storage buckets
@@ -82,34 +95,48 @@ Supabase Studio → **Storage**. You should see:
 |---|---|---|
 | `listing-images` | **yes** | listing photos |
 | `verification-docs` | **no** | IDs, selfies, titles, deeds |
+| `payment-proofs` | **no** | GCash / bank screenshots |
 
-`006` creates them. If they are missing (some self-hosted installs do not expose the `storage` schema to SQL),
+`006` creates the first two and `007` creates the third. If they are missing (some self-hosted installs do not expose the `storage` schema to SQL),
 create them by hand with exactly those names and those public/private settings.
 
-`verification-docs` **must stay private** — it holds people's IDs. The app opens those files with short-lived
-signed links, and only the owner and admins can read them.
+`verification-docs` and `payment-proofs` **must stay private** — one holds people's IDs, the other holds
+screenshots with real names and phone numbers on them. The app opens those files with short-lived signed
+links. For a payment proof, the only people who can read it are the buyer who uploaded it, the seller of
+that particular listing, and an admin.
 
 ---
 
 ## Step 4 — Fill in the backend's secrets
 
-Your `.env.local` already has the Supabase URL, the anon key, and the Xendit keys. Three are missing:
+`.env.local` already has the Supabase URL, the anon key and the service-role key. What is still a
+placeholder:
 
 ```ini
-# Supabase Studio → Settings → API → "service_role" secret. Server-side only.
-# Payments, refunds, the Xendit webhook and analytics do not work without it.
-SUPABASE_SERVICE_ROLE_KEY=paste-the-service-role-key-here
+# Xendit → Settings → Developers → API Keys. Still reads "your-xendit-secret-key".
+# Needed only for the "Pay through HomeSure" QR Ph route. Without it that button answers
+# "Xendit not configured" — it does not pretend to succeed.
+XENDIT_SECRET_KEY=
 
-# Only needed if you ever serve the front end from a different origin than the API.
-# With one server (the normal setup) you can leave this out entirely.
-FRONTEND_ORIGINS=http://localhost:5500,http://127.0.0.1:5500
+# Xendit → Settings → Developers → Webhooks. Set the webhook URL to
+#   https://<your-domain>/api/webhooks/xendit
+# and paste its verification token here. This is what marks a QR charge paid.
+# The route refuses every request while this is unset, so an unconfigured webhook
+# cannot be used to mark payments paid.
+XENDIT_CALLBACK_TOKEN=
 
 # Only needed for the OCR title check. Leave it out and that one feature returns a clear error.
 GOOGLE_CLOUD_VISION_API_KEY=
 ```
 
-Never put the service-role key in `assets/js/config.js` or anywhere in the front end — it bypasses every
-security rule in the database.
+Paying the landlord directly (GCash, bank, cash) needs none of these — it only needs `007` and the
+service-role key, both of which are already in place.
+
+`FRONTEND_ORIGINS` is only for serving the front end from a different origin than the API. With one
+server — the normal setup — leave it out.
+
+Never put the service-role key in `assets/js/config.js` or anywhere in `public/` — it bypasses every
+security rule in the database. The anon key there is public by design; RLS is what protects the data.
 
 ---
 
@@ -183,25 +210,58 @@ This proves front end, backend and database all agree. Make a second account for
 | 7 | Anyone | `browse.html` (even signed out) | the listing is now visible to the public |
 | 8 | Buyer | open it → **Save Listing** | the heart fills; it is in *Saved Listings* after a reload |
 | 9 | Buyer | **Schedule Viewing** | the seller gets a viewing request |
+| 10 | Seller | Settings → *Payment Methods* → fill in GCash → **Save** | sign out, sign back in, the number is still there |
+| 11 | Buyer | *Payments* → **Pay Now** → pick the listing → **I paid the landlord directly** → attach any image | "Proof submitted", and it shows as **Pending Confirmation** |
+| 12 | Seller | *Payments* → the pending card → **View proof** | the buyer's screenshot opens |
+| 13 | Seller | **Mark Received** | it moves to **Confirmed**, and the buyer sees that on their own page |
+| 14 | Seller | *Deposits & Damage* → **File Damage** → ₱2,500 | the refundable balance drops by ₱2,500 on **both** sides |
 
 If step 7 does not show the listing, the admin approval did not go through — check the browser console on the
 admin page.
 
+Step 11 needs `007` to have run. Step 13 needs `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` — confirming a
+payment is a server-side write, so without that key it fails with *"Payment not found"*.
+
+The **Pay through HomeSure** route in step 11 needs real Xendit keys. Without them it answers
+*"Xendit not configured"* instead of pretending to succeed. Everything else above works on Supabase alone.
+
 ---
 
-## What is NOT wired up yet
+## What is wired up
 
-These pages still show sample data from `assets/js/fake-data.js`. They work and look right, but nothing is saved:
+Every page reads and writes the real database. `assets/js/fake-data.js` is gone, and so are the three
+superseded dashboard scripts that used it (`admin/admin.js`, `buyer/buyer.js`, `seller/seller.js` — the live
+pages load `*-dashboard.js` instead). There is no sample data left anywhere in `public/`.
 
-messages · viewing requests (seller side) · reviews · payments / transactions · notifications ·
-reports · analytics · profile & settings · MOA · the super-admin pages
+Pages talk to the database through one module, `assets/js/data.js`, which exposes `HS.*`. It maps the
+database's `snake_case` columns to the `camelCase` the pages already used, so a page never spells a column
+name itself. If you add a page, follow the same load order:
 
-The database tables for all of them already exist (`messages`, `viewing_requests`, `reviews`,
-`listing_reports`, `notifications`, `audit_logs`, `payments`) — they just need the page scripts pointed at
-`HS.*` in `assets/js/data.js`, the same way the converted pages were done.
+```html
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.js"></script>
+<script src="../../assets/js/config.js"></script>   <!-- defines sb -->
+<script src="../../assets/js/session.js"></script>
+<script src="../../assets/js/data.js"></script>     <!-- defines HS -->
+<script src="../../assets/js/your-page.js"></script>
+```
 
-A page still loads `fake-data.js` only if its script still needs sample data. When a page is converted,
-remove that one `<script>` line.
+### Three things that deliberately do NOT go through the browser
+
+`payments` has no `INSERT` or `UPDATE` policy for end users. That is on purpose, and it is why these go
+through API routes instead:
+
+| What | Route | Why it cannot be done client-side |
+|---|---|---|
+| Raising a QR Ph charge | `POST /api/payments/create-invoice` | the **amount** is computed from the listing price on the server. A client that could name its own price could pay ₱1 for a ₱15,000 month. |
+| Recording a manual payment | `POST /api/payments/manual-proof` | same reason, plus it checks the proof you attached is a file you uploaded. |
+| Confirming or rejecting one | `POST /api/payments/confirm` | it verifies you really are the listing's landowner, and refuses to decide a payment twice. |
+
+Marking a QR Ph charge paid is not in that list, because the browser never does it: Xendit calls
+`POST /api/webhooks/xendit` and that is the only thing that sets a charge to `paid`. The payment modal polls
+the row and waits.
+
+Security deposits are different — `security_deposits` has policies the client can use directly (both sides
+read the row, only the seller writes it), so the browser talks to that table without a route.
 
 ---
 

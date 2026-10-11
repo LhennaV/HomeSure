@@ -13,9 +13,10 @@
   const roleColors = { admin: '#3b82f6', superadmin: '#8b5cf6' };
   let auditFilter  = 'all';
   let searchQuery  = '';
+  let entries      = [];      // loaded from audit_logs; only super admins can read it
 
   function buildRow(e) {
-    const initials    = e.actor.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+    const initials    = (e.actor || '?').split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
     const roleLabel   = e.actorRole === 'superadmin' ? 'Super Admin' : 'Admin';
     const roleColor   = roleColors[e.actorRole] || '#6b7280';
     const statusBg    = e.status === 'success' ? '#00c9a7' : '#ef4444';
@@ -39,7 +40,7 @@
 
   function renderTable() {
     const q = searchQuery.toLowerCase();
-    const filtered = FAKE_AUDIT_TRAIL.filter(e => {
+    const filtered = entries.filter(e => {
       const matchType   = auditFilter === 'all' || e.type === auditFilter;
       const matchSearch = !q ||
         e.actor.toLowerCase().includes(q) ||
@@ -59,7 +60,7 @@
   // ── Export CSV ────────────────────────────────────────────────────────────
   window.exportAuditCSV = function () {
     const q = searchQuery.toLowerCase();
-    const filtered = FAKE_AUDIT_TRAIL.filter(e => {
+    const filtered = entries.filter(e => {
       const matchType   = auditFilter === 'all' || e.type === auditFilter;
       const matchSearch = !q ||
         e.actor.toLowerCase().includes(q) ||
@@ -92,6 +93,16 @@
     a.click();
     URL.revokeObjectURL(a.href);
   }
+
+  // ── Load the trail, then draw ───────────────────────────────────────────────
+  (async function load() {
+    try {
+      entries = await HS.audit.list(300);
+    } catch (err) {
+      console.error('Could not load the audit trail:', err);
+    }
+    renderTable();
+  })();
 
   // Filter tabs
   document.getElementById('auditTabs').addEventListener('click', e => {

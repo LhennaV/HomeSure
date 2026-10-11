@@ -3,7 +3,7 @@
 // Where numbers tell stories and charts look pretty
 // ══════════════════════════════════════════════════════════════════════════════
 
-(function () {
+(async function () {
   // ──────────────────────────────────────────────────────────────────────────
   // Auth Guard — Admins Only Beyond This Point
   // Regular users? There's the door.
@@ -16,23 +16,38 @@
 
   HomeSureSidebar.init({ activePage: 'analytics' });
   HomeSureTopbar.init({ placeholder: 'Search...' });
+  let LISTINGS = [];
+  let USERS = [];
+  let REPORTS_DATA = [];
+
+  // Everything below adds up these rows. Load them once; RLS decides what this account may see.
+  try {
+    LISTINGS = await HS.listings.all();
+    USERS    = await HS.admin.users();
+    REPORTS_DATA = await HS.reports.list();
+  } catch (err) {
+    console.error('Could not load dashboard data:', err);
+    hsToast('Could not load the dashboard data. Please refresh.', 'error');
+    return;
+  }
+
 
   // ══════════════════════════════════════════════════════════════════════════
   // Computed Data
   // Math is happening here. Numbers go brrr.
   // ══════════════════════════════════════════════════════════════════════════
-  const totalListings   = FAKE_LISTINGS.length;
-  const approved        = FAKE_LISTINGS.filter(l => l.status === 'approved').length;
-  const pending         = FAKE_LISTINGS.filter(l => l.status === 'pending').length;
-  const forRent         = FAKE_LISTINGS.filter(l => l.listingFor === 'rent').length;
-  const forSale         = FAKE_LISTINGS.filter(l => l.listingFor === 'sale').length;
-  const totalUsers      = FAKE_USERS.filter(u => ['buyer','seller'].includes(u.role)).length;
-  const totalSellers    = FAKE_USERS.filter(u => u.role === 'seller').length;
-  const verifiedSellers = FAKE_USERS.filter(u => u.role === 'seller' && u.accountStatus === 'verified').length;
-  const totalReports    = typeof FAKE_REPORTS !== 'undefined' ? FAKE_REPORTS.length : 8;
+  const totalListings   = LISTINGS.length;
+  const approved        = LISTINGS.filter(l => l.status === 'approved').length;
+  const pending         = LISTINGS.filter(l => l.status === 'pending').length;
+  const forRent         = LISTINGS.filter(l => l.listingFor === 'rent').length;
+  const forSale         = LISTINGS.filter(l => l.listingFor === 'sale').length;
+  const totalUsers      = USERS.filter(u => ['buyer','seller'].includes(u.role)).length;
+  const totalSellers    = USERS.filter(u => u.role === 'seller').length;
+  const verifiedSellers = USERS.filter(u => u.role === 'seller' && u.accountStatus === 'verified').length;
+  const totalReports    = typeof REPORTS_DATA !== 'undefined' ? REPORTS_DATA.length : 8;
   const approvalRate    = totalListings ? Math.round(approved / totalListings * 100) : 0;
-  const avgPrice        = FAKE_LISTINGS.length
-    ? Math.round(FAKE_LISTINGS.reduce((s, l) => s + (l.price || 0), 0) / FAKE_LISTINGS.length)
+  const avgPrice        = LISTINGS.length
+    ? Math.round(LISTINGS.reduce((s, l) => s + (l.price || 0), 0) / LISTINGS.length)
     : 0;
 
   // ── Stat Cards ───────────────────────────────────────────────────────────────
@@ -81,7 +96,7 @@
   // Pulong Buhangin probably winning again, let's be real
   // ══════════════════════════════════════════════════════════════════════════
   const barangayCounts = {};
-  FAKE_LISTINGS.forEach(l => { barangayCounts[l.barangay] = (barangayCounts[l.barangay] || 0) + 1; });
+  LISTINGS.forEach(l => { barangayCounts[l.barangay] = (barangayCounts[l.barangay] || 0) + 1; });
   const topAreasMonthly = Object.entries(barangayCounts).sort((a, b) => b[1] - a[1]).slice(0, 6);
 
   const demandData = {
@@ -253,9 +268,9 @@
     </div>`).join('');
 
   // ── Barangay Table ───────────────────────────────────────────────────────────
-  const barangays = [...new Set(FAKE_LISTINGS.map(l => l.barangay))].sort();
+  const barangays = [...new Set(LISTINGS.map(l => l.barangay))].sort();
   document.getElementById('barangayTable').innerHTML = barangays.map(b => {
-    const bl = FAKE_LISTINGS.filter(l => l.barangay === b);
+    const bl = LISTINGS.filter(l => l.barangay === b);
     const total    = bl.length;
     const approvedB = bl.filter(l => l.status === 'approved').length;
     const pendingB  = bl.filter(l => l.status === 'pending').length;
@@ -274,8 +289,8 @@
   // ── Export CSV ───────────────────────────────────────────────────────────────
   window.exportCSV = function () {
     const headers = ['ID','Title','Type','For','Barangay','Price','Status','Seller','Posted'];
-    const rows = FAKE_LISTINGS.map(l => {
-      const seller = FAKE_USERS.find(u => u.id === l.sellerId);
+    const rows = LISTINGS.map(l => {
+      const seller = USERS.find(u => u.id === l.sellerId);
       return [l.id, `"${l.title}"`, l.type, l.listingFor, l.barangay, l.price,
         l.status, seller ? `"${seller.firstName} ${seller.lastName}"` : 'Unknown', l.postedAt].join(',');
     });
@@ -292,7 +307,7 @@
     const data = {
       exportedAt: new Date().toISOString(),
       summary: { totalListings, approved, pending, forRent, forSale, totalUsers, totalSellers, verifiedSellers },
-      listings: FAKE_LISTINGS,
+      listings: LISTINGS,
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url  = URL.createObjectURL(blob);

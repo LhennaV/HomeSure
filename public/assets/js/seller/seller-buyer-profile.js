@@ -1,3 +1,4 @@
+(async function () {
 
   const user = getSession();
   if (!user || user.role !== 'seller') window.location.href = '../../auth/signin.html';
@@ -28,7 +29,8 @@
 
   // ── Load buyer ─────────────────────────────────────────────────────────────
   const params = new URLSearchParams(window.location.search);
-  const buyer = FAKE_USERS.find(u => u.id === params.get('id') && u.role === 'buyer');
+  const buyerId = params.get('id');
+  const buyer = buyerId ? await HS.profiles.publicById(buyerId) : null;
   const wrap   = document.getElementById('profileContent');
 
   if (!buyer) {
@@ -40,7 +42,7 @@
     const savedCount    = buyer.savedListings ? buyer.savedListings.length : 0;
 
     // ── Ratings & Reviews ──────────────────────────────────────────────────────
-    const buyerReviews = FAKE_REVIEWS.filter(r => r.type === 'seller-to-buyer' && r.buyerId === buyer.id);
+    const buyerReviews = await HS.reviews.about(buyer.id).catch(() => []);
     const reviewCount   = buyerReviews.length;
     const avgRating     = reviewCount > 0
       ? (buyerReviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount).toFixed(1)
@@ -86,7 +88,7 @@
         </div>
         <div class="reviews-list">
           ${buyerReviews.sort((a,b) => new Date(b.reviewDate) - new Date(a.reviewDate)).map(rev => {
-            const seller = FAKE_USERS.find(u => u.id === rev.sellerId);
+            const seller = rev.reviewer;
             const sellerName = seller ? `${seller.firstName} ${seller.lastName}` : 'Anonymous';
             const sellerInitials = seller ? seller.firstName[0] + seller.lastName[0] : '?';
             const reviewDate = new Date(rev.reviewDate).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -156,3 +158,5 @@
       </div>
     `;
   }
+
+})();

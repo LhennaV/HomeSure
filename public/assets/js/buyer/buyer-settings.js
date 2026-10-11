@@ -83,19 +83,26 @@
     label.textContent   = texts[score] || '';
   }
 
-  function savePassword() {
+  async function savePassword() {
     const cur = document.getElementById('currentPw').value;
     const nw  = document.getElementById('newPw').value;
     const cf  = document.getElementById('confirmPw').value;
-    const fullUser = FAKE_USERS.find(u => u.id === user.id);
 
     if (!cur || !nw || !cf) { showToast('Please fill in all password fields.', 'error'); return; }
-    if (fullUser && cur !== fullUser.password) { showToast('Current password is incorrect.', 'error'); return; }
     if (nw.length < 8)          { showToast('Password must be at least 8 characters.', 'error'); return; }
     if (!/[A-Z]/.test(nw))      { showToast('Password must include an uppercase letter.', 'error'); return; }
     if (!/[0-9]/.test(nw))      { showToast('Password must include a number.', 'error'); return; }
     if (!/[^A-Za-z0-9]/.test(nw)) { showToast('Password must include a special character.', 'error'); return; }
     if (nw !== cf) { showToast('New passwords do not match.', 'error'); return; }
+
+    // Supabase verifies the current password by re-signing in, then sets the new one.
+    // Nothing here ever sees a stored password.
+    try {
+      await HS.auth.changePassword(cur, nw);
+    } catch (err) {
+      showToast(err.message, 'error');
+      return;
+    }
 
     document.getElementById('pwForm').classList.remove('open');
     document.getElementById('changePwBtn').innerHTML =

@@ -16,7 +16,12 @@ WITH state AS (
     EXISTS (SELECT 1 FROM pg_enum e JOIN pg_type t ON t.oid = e.enumtypid
             WHERE t.typname = 'user_role' AND e.enumlabel = 'superadmin')                              AS has_superadmin_role,
     EXISTS (SELECT 1 FROM information_schema.columns
-            WHERE table_schema = 'public' AND table_name = 'properties' AND column_name = 'lifecycle_status') AS has_fe_columns
+            WHERE table_schema = 'public' AND table_name = 'properties' AND column_name = 'lifecycle_status') AS has_fe_columns,
+    to_regclass('public.security_deposits') IS NOT NULL AS has_deposits,
+    EXISTS (SELECT 1 FROM information_schema.columns
+            WHERE table_schema = 'public' AND table_name = 'payments' AND column_name = 'due_date')          AS has_payment_columns,
+    EXISTS (SELECT 1 FROM information_schema.columns
+            WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'payment_methods')   AS has_payment_methods
 )
 SELECT * FROM (
   SELECT 1 AS n, '001_initial_schema'          AS migration,
@@ -42,4 +47,9 @@ SELECT * FROM (
   SELECT 6, '006_frontend_alignment',
          CASE WHEN has_fe_columns AND has_new_tables THEN 'APPLIED' ELSE 'RUN THIS' END,
          'moderation columns, messages/reviews/…, RLS fixes' FROM state
+  UNION ALL
+  SELECT 7, '007_payments_and_deposits',
+         CASE WHEN has_deposits AND has_payment_columns AND has_payment_methods
+              THEN 'APPLIED' ELSE 'RUN THIS' END,
+         'payment periods + proofs, security deposits, seller payment details' FROM state
 ) rows ORDER BY n;

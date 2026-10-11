@@ -1,7 +1,12 @@
 // FILE: assets/js/seller/seller-payments.js
 // HomeSure – Seller Payment Management
+//
+// The payments are the real rows on this seller's own listings — the "Sellers read payments on own
+// properties" policy is what limits them, not any filter written here. Confirming or rejecting one
+// goes through /api/payments/confirm, because end users have no UPDATE policy on payments: the
+// server checks that the caller really is the landowner before it writes.
 
-(function () {
+(async function () {
   const user = getSession();
   if (!user || user.role !== 'seller') {
     window.location.href = '../../auth/signin.html';
@@ -11,74 +16,38 @@
   HomeSureSidebar.init({ activePage: 'payments' });
   HomeSureTopbar.init({ placeholder: 'Payment Management' });
 
-  // ── Fake Data ─────────────────────────────────────────────────────────────────
-  const PENDING = [
-    {
-      id: 'PAY-101', tenantName: 'Maria Santos', initials: 'MS', color: '#0f766e',
-      listingTitle: '2BR Apartment — Poblacion', amount: 15000, period: 'June 2026',
-      paymentType: 'rent', paidDate: '2026-05-28', method: 'GCash', reference: 'GC-78452'
-    },
-    {
-      id: 'PAY-102', tenantName: 'Juan Cruz', initials: 'JC', color: '#7c3aed',
-      listingTitle: 'Studio Unit — Bagbaguin', amount: 8000, period: 'June 2026',
-      paymentType: 'rent', paidDate: '2026-05-30', method: 'Bank Transfer', reference: 'BT-98765'
-    },
-    {
-      id: 'PAY-103', tenantName: 'Ana Lim', initials: 'AL', color: '#b45309',
-      listingTitle: '3BR House — Guyong', amount: 22000, period: 'June 2026',
-      paymentType: 'both', paidDate: '2026-06-01', method: 'GCash', reference: 'GC-11111'
-    },
-  ];
-
-  const ALL_PAYMENTS = [
-    ...PENDING.map(p => ({ ...p, status: 'pending_confirmation' })),
-    {
-      id: 'PAY-091', tenantName: 'Maria Santos', initials: 'MS', color: '#0f766e',
-      listingTitle: '2BR Apartment — Poblacion', amount: 15000, period: 'May 2026',
-      paymentType: 'rent', paidDate: '2026-04-29', method: 'GCash', reference: 'GC-54321', status: 'confirmed'
-    },
-    {
-      id: 'PAY-092', tenantName: 'Juan Cruz', initials: 'JC', color: '#7c3aed',
-      listingTitle: 'Studio Unit — Bagbaguin', amount: 8000, period: 'May 2026',
-      paymentType: 'security', paidDate: '2026-04-30', method: 'Cash', reference: '—', status: 'confirmed'
-    },
-  ];
-
-  const DEPOSITS = [
-    {
-      id: 'DEP-001', tenantName: 'Maria Santos', initials: 'MS', color: '#0f766e',
-      listingTitle: '2BR Apartment — Poblacion', amount: 30000, status: 'active',
-      deductions: [{ reason: 'Broken cabinet door', cost: 2500, date: '2026-05-15', id: 'DMG-001' }]
-    },
-    {
-      id: 'DEP-002', tenantName: 'Juan Cruz', initials: 'JC', color: '#7c3aed',
-      listingTitle: 'Studio Unit — Bagbaguin', amount: 16000, status: 'active', deductions: []
-    },
-    {
-      id: 'DEP-003', tenantName: 'Ana Lim', initials: 'AL', color: '#b45309',
-      listingTitle: '3BR House — Guyong', amount: 44000, status: 'active',
-      deductions: [{ reason: 'Cracked bathroom tile', cost: 5000, date: '2026-05-20', id: 'DMG-002' }]
-    },
-  ];
+  let ALL_PAYMENTS = [];
+  let DEPOSITS = [];
+  let LISTINGS = [];
 
   // Track which deposit a damage modal is targeting
   let activeDamageDepositId = null;
 
   // ── Helpers ───────────────────────────────────────────────────────────────────
+  function esc(s) {
+    return String(s === null || s === undefined ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
   function fmtMoney(n) {
+    if (n === null || n === undefined || n === '') return '—';
     return '₱' + Number(n).toLocaleString('en-PH');
   }
 
   function fmtDate(d) {
     if (!d) return '—';
-    return new Date(d + 'T00:00:00').toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+    return new Date(String(d).slice(0, 10) + 'T00:00:00')
+      .toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
   function formatPaymentType(type) {
     const typeMap = {
       security: 'Security Deposit',
       rent: 'Rent Payment',
-      both: 'Security + Rent'
+      both: 'Security + Rent',
+      reservation: 'Reservation Fee',
+      sale: 'Purchase',
     };
     return typeMap[type] || 'Payment';
   }
@@ -88,21 +57,75 @@
       confirmed: { cls: 'badge-confirmed', label: 'Confirmed' },
       pending_confirmation: { cls: 'badge-pending_confirmation', label: 'Pending' },
       pending: { cls: 'badge-pending', label: 'Pending' },
+      rejected: { cls: 'badge-overdue', label: 'Rejected' },
       overdue: { cls: 'badge-overdue', label: 'Overdue' },
     };
     const s = map[status] || { cls: 'badge-pending', label: status };
-    return `<span class="badge ${s.cls}">${s.label}</span>`;
+    return `<span class="badge ${s.cls}">${esc(s.label)}</span>`;
+  }
+
+  function initials(name) {
+    return String(name || '?').trim().split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
+  }
+
+  // Same name, same colour, every time — so a tenant looks like themselves across the page.
+  const AVATAR_COLORS = ['#0f766e', '#7c3aed', '#b45309', '#1d4ed8', '#be123c', '#047857'];
+  function avatarColor(name) {
+    let hash = 0;
+    for (const ch of String(name || '')) hash = (hash * 31 + ch.charCodeAt(0)) % 9973;
+    return AVATAR_COLORS[hash % AVATAR_COLORS.length];
+  }
+
+  const pending = () => ALL_PAYMENTS.filter((p) => p.status === 'pending_confirmation');
+
+  // ── Load ──────────────────────────────────────────────────────────────────────
+  async function load() {
+    const results = await Promise.allSettled([
+      HS.payments.forMyListings(),
+      HS.deposits.list(),
+      HS.listings.mine(),
+    ]);
+
+    if (results[0].status === 'fulfilled') {
+      ALL_PAYMENTS = await HS.payments.payerNames(results[0].value);
+      ALL_PAYMENTS.forEach((p) => {
+        p.initials = initials(p.tenantName);
+        p.color = avatarColor(p.tenantName);
+      });
+    } else {
+      console.error('Could not load payments:', results[0].reason);
+      showToast('Could not load your payments. Please refresh.');
+    }
+
+    if (results[1].status === 'fulfilled') {
+      DEPOSITS = await HS.deposits.tenantNames(results[1].value.filter((d) => d.sellerId === user.id));
+      DEPOSITS.forEach((d) => {
+        d.initials = initials(d.tenantName);
+        d.color = avatarColor(d.tenantName);
+      });
+    } else {
+      console.error('Could not load deposits:', results[1].reason);
+    }
+
+    // Only needed to decide which modal follows a confirmed payment.
+    LISTINGS = results[2].status === 'fulfilled' ? results[2].value : [];
+  }
+
+  function renderAll() {
+    renderStats();
+    renderPending();
+    fillTenantFilter();
   }
 
   // ── Render Stats ──────────────────────────────────────────────────────────────
   function renderStats() {
     const totalReceived = ALL_PAYMENTS
-      .filter(p => p.status === 'confirmed')
-      .reduce((s, p) => s + p.amount, 0);
-    const pendingCount = PENDING.length;
-    const depositsHeld = DEPOSITS.reduce((s, d) => s + d.amount, 0);
-    const damageDeductions = DEPOSITS.reduce((s, d) =>
-      s + d.deductions.reduce((a, x) => a + x.cost, 0), 0);
+      .filter((p) => p.status === 'confirmed')
+      .reduce((s, p) => s + Number(p.amount || 0), 0);
+    const pendingCount = pending().length;
+    const activeDeposits = DEPOSITS.filter((d) => d.status === 'held' || d.status === 'partially_refunded');
+    const depositsHeld = activeDeposits.reduce((s, d) => s + d.amount, 0);
+    const damageDeductions = DEPOSITS.reduce((s, d) => s + d.totalDeductions, 0);
 
     document.getElementById('statRow').innerHTML = `
       <div class="stat-card">
@@ -110,7 +133,7 @@
           <div style="font-size:24px;font-weight:600;">₱</div>
         </div>
         <div class="stat-label">Total Received</div>
-        <div class="stat-value">${fmtMoney(452000)}</div>
+        <div class="stat-value">${fmtMoney(totalReceived)}</div>
         <div class="stat-hint">All-time confirmed</div>
       </div>
       <div class="stat-card">
@@ -127,7 +150,7 @@
         </div>
         <div class="stat-label">Deposits Held</div>
         <div class="stat-value">${fmtMoney(depositsHeld)}</div>
-        <div class="stat-hint">${DEPOSITS.length} active tenants</div>
+        <div class="stat-hint">${activeDeposits.length} active tenant${activeDeposits.length === 1 ? '' : 's'}</div>
       </div>
       <div class="stat-card">
         <div class="stat-icon red">
@@ -142,21 +165,23 @@
 
   // ── Render Pending Tab ────────────────────────────────────────────────────────
   function renderPending() {
+    const list = pending();
+
     const badge = document.getElementById('pendingBadge');
-    if (badge) badge.textContent = PENDING.length > 0 ? PENDING.length : '';
+    if (badge) badge.textContent = list.length > 0 ? list.length : '';
 
     const container = document.getElementById('pendingContainer');
-    if (!PENDING.length) {
+    if (!list.length) {
       container.innerHTML = `<div class="pending-empty">No pending payments to review. All caught up!</div>`;
       return;
     }
 
-    container.innerHTML = PENDING.map(p => `
-      <div class="pending-card" id="pcard-${p.id}">
-        <div class="avatar" style="background:${p.color}">${p.initials}</div>
+    container.innerHTML = list.map((p) => `
+      <div class="pending-card" id="pcard-${esc(p.id)}">
+        <div class="avatar" style="background:${p.color}">${esc(p.initials)}</div>
         <div class="pending-info">
-          <div class="pending-name">${p.tenantName}</div>
-          <div class="pending-property">${p.listingTitle}</div>
+          <div class="pending-name">${esc(p.tenantName)}</div>
+          <div class="pending-property">${esc(p.listingTitle)}</div>
           <div class="pending-meta">
             <div class="pending-meta-item">
               <span class="pending-meta-label">Type</span>
@@ -164,7 +189,7 @@
             </div>
             <div class="pending-meta-item">
               <span class="pending-meta-label">Period</span>
-              <span class="pending-meta-value">${p.period}</span>
+              <span class="pending-meta-value">${esc(p.period) || '—'}</span>
             </div>
             <div class="pending-meta-item">
               <span class="pending-meta-label">Date Paid</span>
@@ -172,21 +197,25 @@
             </div>
             <div class="pending-meta-item">
               <span class="pending-meta-label">Method</span>
-              <span class="pending-meta-value">${p.method}</span>
+              <span class="pending-meta-value">${esc(p.method) || '—'}</span>
             </div>
             <div class="pending-meta-item">
               <span class="pending-meta-label">Reference</span>
-              <span class="pending-meta-value" style="font-family:monospace;font-size:12px">${p.reference}</span>
+              <span class="pending-meta-value" style="font-family:monospace;font-size:12px">${esc(p.reference) || '—'}</span>
             </div>
           </div>
+          ${p.proofPath
+            ? `<button class="btn-ghost" style="margin-top:8px;padding:6px 12px;font-size:12px;"
+                       onclick="viewProof('${esc(p.id)}')">View proof</button>`
+            : `<div class="pending-meta-label" style="margin-top:8px;">No proof was attached.</div>`}
         </div>
         <div class="pending-amount">${fmtMoney(p.amount)}</div>
         <div class="pending-actions">
-          <button class="action-btn confirm" onclick="markReceived('${p.id}')">
+          <button class="action-btn confirm" onclick="markReceived('${esc(p.id)}')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg>
             Mark Received
           </button>
-          <button class="action-btn reject" onclick="openRejectPaymentModal('${p.id}')">
+          <button class="action-btn reject" onclick="openRejectPaymentModal('${esc(p.id)}')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             Reject
           </button>
@@ -195,49 +224,59 @@
     `).join('');
   }
 
-  // ── Mark Received ─────────────────────────────────────────────────────────────
-  window.markReceived = function (id) {
-    const idx = PENDING.findIndex(p => p.id === id);
-    if (idx === -1) return;
-    const [payment] = PENDING.splice(idx, 1);
-    payment.status = 'confirmed';
+  // The buyer's screenshot is in a private bucket; a seller may read only the proof attached to a
+  // payment on one of their own listings, and the link lasts an hour.
+  window.viewProof = async function (paymentId) {
+    const payment = ALL_PAYMENTS.find((p) => p.id === paymentId);
+    if (!payment || !payment.proofPath) return;
+    try {
+      const url = await HS.payments.proofUrl(payment.proofPath);
+      window.open(url, '_blank', 'noopener');
+    } catch (err) {
+      showToast('Could not open that file: ' + err.message);
+    }
+  };
 
-    // Update in ALL_PAYMENTS if exists, else add
-    const allIdx = ALL_PAYMENTS.findIndex(p => p.id === id);
-    if (allIdx !== -1) ALL_PAYMENTS[allIdx].status = 'confirmed';
-    else ALL_PAYMENTS.unshift(payment);
+  // ── Mark Received ─────────────────────────────────────────────────────────────
+  window.markReceived = async function (id) {
+    const payment = ALL_PAYMENTS.find((p) => p.id === id);
+    if (!payment) return;
+
+    const card = document.getElementById('pcard-' + id);
+    card?.querySelectorAll('button').forEach((b) => { b.disabled = true; });
+
+    try {
+      const updated = await HS.payments.confirm(id);
+      payment.status = updated.status;
+      payment.confirmedAt = updated.confirmedAt;
+    } catch (err) {
+      card?.querySelectorAll('button').forEach((b) => { b.disabled = false; });
+      showToast('Could not confirm that payment: ' + err.message);
+      return;
+    }
 
     renderStats();
     renderPending();
     showToast(`Payment from ${payment.tenantName} marked as received.`);
 
-    // ══════════════════════════════════════════════════════════════════════════════
-    // TRIGGER MODAL after 1 second: Adjust Availability OR Close Listing
-    // ══════════════════════════════════════════════════════════════════════════════
+    // A confirmed payment usually means a unit just went. Ask what happened to the listing.
+    const listing = LISTINGS.find((l) => l.id === payment.listingId);
     setTimeout(() => {
-      // Get listing ID from payment (you may need to adjust based on your data structure)
-      const listingId = 'prop-001'; // In production, get from payment data
-      const listing = FAKE_LISTINGS.find(l => l.id === listingId);
-
       if (listing && listing.hasMultipleUnits && listing.availableUnits > 0) {
-        // Multi-unit property with available units → show adjust availability modal
         AdjustAvailabilityModal.open({
           listingId: listing.id,
           listingTitle: listing.title,
           totalUnits: listing.totalUnits,
           availableUnits: listing.availableUnits,
-          onConfirm: (newAvailable) => {
-            console.log(`✅ Availability updated after payment: ${newAvailable} units remaining`);
-          }
+          onConfirm: async () => { await load(); renderAll(); },
         });
       } else {
-        // Single unit OR no units left → show close listing modal
         CloseListingModal.openModal({
-          listingId: listingId,
+          listingId: payment.listingId,
           listingTitle: payment.listingTitle,
           tenantName: payment.tenantName,
           period: payment.period,
-          amount: payment.amount
+          amount: payment.amount,
         });
       }
     }, 1000);
@@ -246,69 +285,89 @@
   // ── Reject Payment Modal ──────────────────────────────────────────────────────
   let pendingRejectPaymentId = null;
 
-  window.openRejectPaymentModal = function(id) {
+  window.openRejectPaymentModal = function (id) {
+    const payment = ALL_PAYMENTS.find((p) => p.id === id);
+    if (!payment) return;
+
     pendingRejectPaymentId = id;
+    document.getElementById('rejectTenantName').textContent = payment.tenantName;
+    document.getElementById('rejectAmount').textContent = fmtMoney(payment.amount);
+    document.getElementById('rejectReason').value = '';
     document.getElementById('rejectPaymentModal').style.display = 'flex';
   };
 
-  window.closeRejectPaymentModal = function() {
+  window.closeRejectPaymentModal = function () {
     document.getElementById('rejectPaymentModal').style.display = 'none';
     pendingRejectPaymentId = null;
   };
 
-  window.confirmRejectPayment = function() {
-    if (pendingRejectPaymentId) {
-      rejectPayment(pendingRejectPaymentId);
-    }
+  window.confirmRejectPayment = async function () {
+    if (!pendingRejectPaymentId) return;
+
+    const id = pendingRejectPaymentId;
+    const reason = (document.getElementById('rejectReason').value || '').trim();
+    const payment = ALL_PAYMENTS.find((p) => p.id === id);
     closeRejectPaymentModal();
-  };
 
-  function rejectPayment(id) {
-    const idx = PENDING.findIndex(p => p.id === id);
-    if (idx === -1) return;
-    const [payment] = PENDING.splice(idx, 1);
-
-    // Remove from ALL_PAYMENTS too
-    const allIdx = ALL_PAYMENTS.findIndex(p => p.id === id);
-    if (allIdx !== -1) ALL_PAYMENTS.splice(allIdx, 1);
+    try {
+      const updated = await HS.payments.reject(id, reason);
+      if (payment) payment.status = updated.status;
+    } catch (err) {
+      showToast('Could not reject that payment: ' + err.message);
+      return;
+    }
 
     renderStats();
     renderPending();
-    showToast(`Payment from ${payment.tenantName} has been rejected.`);
-  }
+    showToast(`Payment from ${payment ? payment.tenantName : 'the buyer'} has been rejected.`);
+  };
 
   // ── Render All Payments Tab ───────────────────────────────────────────────────
+  function fillTenantFilter() {
+    const select = document.getElementById('tenantFilter');
+    if (!select) return;
+
+    const names = [...new Set(ALL_PAYMENTS.map((p) => p.tenantName).filter(Boolean))].sort();
+    const chosen = select.value;
+    select.innerHTML = `<option value="">All Tenants</option>` +
+      names.map((n) => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
+    if (names.includes(chosen)) select.value = chosen;
+  }
+
   window.renderAllPayments = function () {
     const tenantFilter = document.getElementById('tenantFilter')?.value || '';
     const q = (document.getElementById('allSearch')?.value || '').toLowerCase().trim();
 
     let list = [...ALL_PAYMENTS];
-    if (tenantFilter) list = list.filter(p => p.tenantName === tenantFilter);
-    if (q) list = list.filter(p =>
-      p.reference.toLowerCase().includes(q) ||
-      p.period.toLowerCase().includes(q) ||
-      p.method.toLowerCase().includes(q)
-    );
+    if (tenantFilter) list = list.filter((p) => p.tenantName === tenantFilter);
+    if (q) {
+      list = list.filter((p) =>
+        String(p.reference || '').toLowerCase().includes(q) ||
+        String(p.period || '').toLowerCase().includes(q) ||
+        String(p.method || '').toLowerCase().includes(q) ||
+        String(p.listingTitle || '').toLowerCase().includes(q)
+      );
+    }
 
     const tbody = document.getElementById('allPaymentsBody');
     if (!list.length) {
-      tbody.innerHTML = `<tr class="table-empty"><td colspan="6">No payment records found.</td></tr>`;
+      tbody.innerHTML = `<tr class="table-empty"><td colspan="7">No payment records found.</td></tr>`;
       return;
     }
 
-    tbody.innerHTML = list.map(p => `
+    tbody.innerHTML = list.map((p) => `
       <tr>
         <td>
           <div class="tenant-cell">
-            <div class="avatar-sm" style="background:${p.color}">${p.initials}</div>
-            ${p.tenantName}
+            <div class="avatar-sm" style="background:${p.color}">${esc(p.initials)}</div>
+            ${esc(p.tenantName)}
           </div>
         </td>
-        <td>${p.listingTitle}</td>
+        <td>${esc(p.listingTitle)}</td>
         <td>${formatPaymentType(p.paymentType)}</td>
-        <td>${p.period}</td>
+        <td>${esc(p.period) || '—'}</td>
         <td class="amount-cell">${fmtMoney(p.amount)}</td>
-        <td>${p.method}</td>
+        <td>${esc(p.method) || '—'}</td>
         <td>${statusBadge(p.status)}</td>
       </tr>
     `).join('');
@@ -317,24 +376,40 @@
   // ── Render Deposits Tab ───────────────────────────────────────────────────────
   function renderDeposits() {
     const tbody = document.getElementById('depositsBody');
-    tbody.innerHTML = DEPOSITS.map(d => {
-      const totalDeductions = d.deductions.reduce((s, x) => s + x.cost, 0);
-      const refundable = d.amount - totalDeductions;
+
+    if (!DEPOSITS.length) {
+      tbody.innerHTML = `<tr class="table-empty"><td colspan="7">No security deposits on record yet.</td></tr>`;
+      renderDamageReports();
+      return;
+    }
+
+    const STATUS = {
+      held: { cls: 'badge-active', label: 'Active' },
+      partially_refunded: { cls: 'badge-pending', label: 'Partly refunded' },
+      refunded: { cls: 'badge-confirmed', label: 'Refunded' },
+      forfeited: { cls: 'badge-overdue', label: 'Forfeited' },
+    };
+
+    tbody.innerHTML = DEPOSITS.map((d) => {
+      const s = STATUS[d.status] || { cls: 'badge-pending', label: d.status };
+      const settled = d.status === 'refunded' || d.status === 'forfeited';
       return `
         <tr>
           <td>
             <div class="tenant-cell">
-              <div class="avatar-sm" style="background:${d.color}">${d.initials}</div>
-              ${d.tenantName}
+              <div class="avatar-sm" style="background:${d.color}">${esc(d.initials)}</div>
+              ${esc(d.tenantName)}
             </div>
           </td>
-          <td>${d.listingTitle}</td>
+          <td>${esc(d.listingTitle)}</td>
           <td class="amount-cell">${fmtMoney(d.amount)}</td>
-          <td style="color: var(--red); font-weight:600">−${fmtMoney(totalDeductions)}</td>
-          <td><span class="refund-chip">${fmtMoney(refundable)}</span></td>
-          <td><span class="badge badge-active">Active</span></td>
+          <td style="color: var(--red); font-weight:600">−${fmtMoney(d.totalDeductions)}</td>
+          <td><span class="refund-chip">${fmtMoney(d.refundable)}</span></td>
+          <td><span class="badge ${s.cls}">${esc(s.label)}</span></td>
           <td>
-            <button class="btn-file-damage" onclick="openDamageModal('${d.id}')">File Damage</button>
+            ${settled
+              ? '<span class="pending-meta-label">Closed</span>'
+              : `<button class="btn-file-damage" onclick="openDamageModal('${esc(d.id)}')">File Damage</button>`}
           </td>
         </tr>
       `;
@@ -346,12 +421,12 @@
   // ── Render Damage Reports ─────────────────────────────────────────────────────
   function renderDamageReports() {
     const all = [];
-    DEPOSITS.forEach(d => {
-      d.deductions.forEach(x => {
+    DEPOSITS.forEach((d) => {
+      d.deductions.forEach((x) => {
         all.push({ ...x, tenantName: d.tenantName, listingTitle: d.listingTitle });
       });
     });
-    all.sort((a, b) => new Date(b.date) - new Date(a.date));
+    all.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
 
     const container = document.getElementById('damageReportsList');
     if (!all.length) {
@@ -359,13 +434,13 @@
       return;
     }
 
-    container.innerHTML = `<div class="damage-list">${all.map(r => `
+    container.innerHTML = `<div class="damage-list">${all.map((r) => `
       <div class="damage-card">
         <div class="damage-card-info">
-          <div class="damage-card-tenant">${r.tenantName}</div>
-          <div class="damage-card-property">${r.listingTitle}</div>
-          <div class="damage-card-reason">${r.reason}</div>
-          <div class="damage-card-date">${fmtDate(r.date)} &middot; ${r.id}</div>
+          <div class="damage-card-tenant">${esc(r.tenantName)}</div>
+          <div class="damage-card-property">${esc(r.listingTitle)}</div>
+          <div class="damage-card-reason">${esc(r.reason)}</div>
+          <div class="damage-card-date">${fmtDate(r.date)}</div>
         </div>
         <div class="damage-card-right">
           <span class="cost-chip">−${fmtMoney(r.cost)}</span>
@@ -376,10 +451,10 @@
 
   // ── Damage Modal ──────────────────────────────────────────────────────────────
   window.openDamageModal = function (depositId) {
-    activeDamageDepositId = depositId;
-    const dep = DEPOSITS.find(d => d.id === depositId);
+    const dep = DEPOSITS.find((d) => d.id === depositId);
     if (!dep) return;
 
+    activeDamageDepositId = depositId;
     document.getElementById('dTenant').value = dep.tenantName;
     document.getElementById('dDescription').value = '';
     document.getElementById('dCost').value = '';
@@ -398,23 +473,38 @@
     if (e.target === document.getElementById('damageModal')) closeDamageModal();
   };
 
-  window.submitDamage = function (e) {
+  window.submitDamage = async function (e) {
     e.preventDefault();
     if (!activeDamageDepositId) return;
 
-    const dep = DEPOSITS.find(d => d.id === activeDamageDepositId);
+    const dep = DEPOSITS.find((d) => d.id === activeDamageDepositId);
     if (!dep) return;
 
     const reason = document.getElementById('dDescription').value.trim();
-    const cost   = parseInt(document.getElementById('dCost').value, 10);
-    const date   = document.getElementById('dDate').value;
+    const cost = Number(document.getElementById('dCost').value);
+    const date = document.getElementById('dDate').value;
 
     if (!reason || !cost || !date) return;
+    if (cost > dep.refundable) {
+      showToast(`That is more than the ${fmtMoney(dep.refundable)} left on this deposit.`);
+      return;
+    }
 
-    const newId = 'DMG-' + Date.now();
-    dep.deductions.push({ id: newId, reason, cost, date });
+    const id = activeDamageDepositId;
+    const submit = e.target.querySelector('[type="submit"]');
+    if (submit) submit.disabled = true;
+
+    try {
+      await HS.deposits.addDeduction(id, { reason, cost, date });
+    } catch (err) {
+      if (submit) submit.disabled = false;
+      showToast('Could not file that: ' + err.message);
+      return;
+    }
+    if (submit) submit.disabled = false;
 
     closeDamageModal();
+    await load();
     renderDeposits();
     renderStats();
     showToast('Damage report filed and deduction applied to deposit.');
@@ -422,20 +512,22 @@
 
   // ── Tab Switching ─────────────────────────────────────────────────────────────
   window.switchTab = function (tab) {
-    document.querySelectorAll('.tab-btn').forEach(b => {
+    document.querySelectorAll('.tab-btn').forEach((b) => {
       b.classList.toggle('active', b.dataset.tab === tab);
     });
-    document.querySelectorAll('.tab-content').forEach(el => {
+    document.querySelectorAll('.tab-content').forEach((el) => {
       el.style.display = el.id === 'tab-' + tab ? '' : 'none';
     });
     if (tab === 'all') renderAllPayments();
     if (tab === 'deposits') renderDeposits();
+    if (tab === 'settings') loadPaymentMethodsPay();
   };
 
   // ── Toast ─────────────────────────────────────────────────────────────────────
   let toastTimer = null;
   function showToast(msg) {
     const toast = document.getElementById('toast');
+    if (!toast) return;
     document.getElementById('toastMsg').textContent = msg;
     toast.classList.add('show');
     if (toastTimer) clearTimeout(toastTimer);
@@ -443,177 +535,105 @@
   }
 
   // ══════════════════════════════════════════════════════════════════════════════
-  // QRPH INTEGRATION - Show received payments
+  // PAYMENT SETTINGS TAB — how this seller wants to be paid
+  //
+  // This used to be written into the browser session, so it vanished on sign-out and no buyer ever
+  // saw it. It lives on the profile now, and a buyer reads it through get_seller_payment_methods().
   // ══════════════════════════════════════════════════════════════════════════════
 
-  function loadQRPHTransactions() {
-    // Get transactions from QRPH integration
-    const allTransactions = PaymentIntegration.getTransactions({
-      landlordId: user.id  // Filter by current seller
-    });
-
-    console.log('📊 QRPH Transactions for Seller:', allTransactions);
-
-    // Add real QRPH transactions to the display
-    if (allTransactions && allTransactions.length > 0) {
-      // Clear fake data and show real data
-      PENDING.length = 0;
-      ALL_PAYMENTS.length = 0;
-
-      allTransactions.forEach(tx => {
-        const payment = {
-          id: tx.id,
-          tenantName: tx.tenantName,
-          initials: tx.tenantName.split(' ').map(n => n[0]).join(''),
-          color: '#00c9a7',
-          listingTitle: tx.listingTitle,
-          amount: tx.amount,
-          period: tx.period,
-          paidDate: tx.paidDate,
-          method: tx.method === 'gcash' ? 'GCash' :
-                  tx.method === 'paymaya' ? 'Maya' : 'Card',
-          reference: tx.reference,
-          status: tx.status
-        };
-
-        ALL_PAYMENTS.push(payment);
-
-        if (tx.status === 'pending' || tx.status === 'pending_confirmation') {
-          PENDING.push(payment);
-        }
-      });
-
-      // Re-render with real data
-      renderStats();
-      renderPending();
-    }
-  }
-
-  // Load QRPH transactions after short delay (ensure PaymentIntegration is ready)
-  setTimeout(loadQRPHTransactions, 500);
-
-  // ── Init ──────────────────────────────────────────────────────────────────────
-  renderStats();
-  renderPending();
-})();
-
-// ══════════════════════════════════════════════════════════════════════════
-// PAYMENT SETTINGS TAB
-// Configure payment methods once, use everywhere
-// ══════════════════════════════════════════════════════════════════════════
-
-function togglePaymentMethodPay(method, isEnabled) {
-  const fieldsId = method + 'FieldsPay';
-  const fields = document.getElementById(fieldsId);
-  
-  if (isEnabled) {
-    fields.style.display = 'grid';
-  } else {
-    fields.style.display = 'none';
-  }
-}
-
-function savePaymentMethodsPay() {
-  const user = getSession();
-  if (!user) return;
-
-  const paymentMethods = {
-    gcash: {
-      enabled: document.getElementById('enableGcashPay').checked,
-      number: document.getElementById('gcashNumberPay').value.trim(),
-      name: document.getElementById('gcashNamePay').value.trim()
-    },
-    maya: {
-      enabled: document.getElementById('enableMayaPay').checked,
-      number: document.getElementById('mayaNumberPay').value.trim(),
-      name: document.getElementById('mayaNamePay').value.trim()
-    },
-    bank: {
-      enabled: document.getElementById('enableBankPay').checked,
-      bankName: document.getElementById('bankNamePay').value.trim(),
-      accountNumber: document.getElementById('bankAccountPay').value.trim(),
-      accountName: document.getElementById('bankAccountNamePay').value.trim()
-    }
+  window.togglePaymentMethodPay = function (method, isEnabled) {
+    const fields = document.getElementById(method + 'FieldsPay');
+    if (fields) fields.style.display = isEnabled ? 'grid' : 'none';
   };
 
-  // Validate enabled methods have all required fields
-  if (paymentMethods.gcash.enabled && (!paymentMethods.gcash.number || !paymentMethods.gcash.name)) {
-    alert('Please fill in all GCash fields');
-    return;
-  }
-  if (paymentMethods.maya.enabled && (!paymentMethods.maya.number || !paymentMethods.maya.name)) {
-    alert('Please fill in all Maya fields');
-    return;
-  }
-  if (paymentMethods.bank.enabled && (!paymentMethods.bank.bankName || !paymentMethods.bank.accountNumber || !paymentMethods.bank.accountName)) {
-    alert('Please fill in all Bank Transfer fields');
-    return;
-  }
+  window.savePaymentMethodsPay = async function () {
+    const methods = {
+      gcash: {
+        enabled: document.getElementById('enableGcashPay').checked,
+        number: document.getElementById('gcashNumberPay').value.trim(),
+        name: document.getElementById('gcashNamePay').value.trim(),
+      },
+      maya: {
+        enabled: document.getElementById('enableMayaPay').checked,
+        number: document.getElementById('mayaNumberPay').value.trim(),
+        name: document.getElementById('mayaNamePay').value.trim(),
+      },
+      bank: {
+        enabled: document.getElementById('enableBankPay').checked,
+        bankName: document.getElementById('bankNamePay').value.trim(),
+        accountNumber: document.getElementById('bankAccountPay').value.trim(),
+        accountName: document.getElementById('bankAccountNamePay').value.trim(),
+      },
+    };
 
-  // Save to user object
-  user.paymentMethods = paymentMethods;
-  updateSession(user);
-
-  showSuccessToast('Payment methods saved successfully!');
-}
-
-function loadPaymentMethodsPay() {
-  const user = getSession();
-  if (!user || !user.paymentMethods) return;
-
-  const pm = user.paymentMethods;
-
-  // Load GCash
-  if (pm.gcash) {
-    document.getElementById('enableGcashPay').checked = pm.gcash.enabled || false;
-    document.getElementById('gcashNumberPay').value = pm.gcash.number || '';
-    document.getElementById('gcashNamePay').value = pm.gcash.name || '';
-    if (pm.gcash.enabled) {
-      document.getElementById('gcashFieldsPay').style.display = 'grid';
+    if (methods.gcash.enabled && (!methods.gcash.number || !methods.gcash.name)) {
+      showToast('Please fill in all GCash fields.');
+      return;
     }
-  }
-
-  // Load Maya
-  if (pm.maya) {
-    document.getElementById('enableMayaPay').checked = pm.maya.enabled || false;
-    document.getElementById('mayaNumberPay').value = pm.maya.number || '';
-    document.getElementById('mayaNamePay').value = pm.maya.name || '';
-    if (pm.maya.enabled) {
-      document.getElementById('mayaFieldsPay').style.display = 'grid';
+    if (methods.maya.enabled && (!methods.maya.number || !methods.maya.name)) {
+      showToast('Please fill in all Maya fields.');
+      return;
     }
-  }
-
-  // Load Bank
-  if (pm.bank) {
-    document.getElementById('enableBankPay').checked = pm.bank.enabled || false;
-    document.getElementById('bankNamePay').value = pm.bank.bankName || '';
-    document.getElementById('bankAccountPay').value = pm.bank.accountNumber || '';
-    document.getElementById('bankAccountNamePay').value = pm.bank.accountName || '';
-    if (pm.bank.enabled) {
-      document.getElementById('bankFieldsPay').style.display = 'grid';
+    if (methods.bank.enabled && (!methods.bank.bankName || !methods.bank.accountNumber || !methods.bank.accountName)) {
+      showToast('Please fill in all Bank Transfer fields.');
+      return;
     }
+
+    try {
+      await HS.profiles.savePaymentMethods(methods);
+    } catch (err) {
+      showToast('Could not save that: ' + err.message);
+      return;
+    }
+    showToast('Payment methods saved.');
+  };
+
+  let paymentMethodsLoaded = false;
+  async function loadPaymentMethodsPay() {
+    if (paymentMethodsLoaded) return;
+
+    let pm;
+    try {
+      pm = await HS.profiles.myPaymentMethods();
+    } catch (err) {
+      console.error('Could not load your payment methods:', err);
+      return;
+    }
+    paymentMethodsLoaded = true;
+
+    const fill = (key, fields) => {
+      const saved = pm[key];
+      if (!saved) return;
+      document.getElementById(fields.toggle).checked = !!saved.enabled;
+      Object.keys(fields.inputs).forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.value = saved[fields.inputs[id]] || '';
+      });
+      if (saved.enabled) {
+        const box = document.getElementById(fields.box);
+        if (box) box.style.display = 'grid';
+      }
+    };
+
+    fill('gcash', {
+      toggle: 'enableGcashPay', box: 'gcashFieldsPay',
+      inputs: { gcashNumberPay: 'number', gcashNamePay: 'name' },
+    });
+    fill('maya', {
+      toggle: 'enableMayaPay', box: 'mayaFieldsPay',
+      inputs: { mayaNumberPay: 'number', mayaNamePay: 'name' },
+    });
+    fill('bank', {
+      toggle: 'enableBankPay', box: 'bankFieldsPay',
+      inputs: {
+        bankNamePay: 'bankName',
+        bankAccountPay: 'accountNumber',
+        bankAccountNamePay: 'accountName',
+      },
+    });
   }
-}
 
-function showSuccessToast(message) {
-  // Simple toast notification
-  const toast = document.createElement('div');
-  toast.textContent = message;
-  toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#00c9a7;color:#051226;padding:14px 20px;border-radius:10px;font-weight:700;font-size:13px;z-index:9999;animation:slideIn 0.3s;';
-  document.body.appendChild(toast);
-  
-  setTimeout(() => {
-    toast.style.animation = 'slideOut 0.3s';
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
-}
-
-// Load payment methods when switching to settings tab
-const originalSwitchTab = window.switchTab;
-window.switchTab = function(tab) {
-  originalSwitchTab(tab);
-  if (tab === 'settings') {
-    setTimeout(loadPaymentMethodsPay, 50);
-  }
-};
-
+  // ── Init ──────────────────────────────────────────────────────────────────────
+  await load();
+  renderAll();
+})();

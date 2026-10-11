@@ -7,12 +7,13 @@
   HomeSureSidebar.init({ activePage: 'viewing-requests' });
   HomeSureTopbar.init({ placeholder: 'Search...' });
 
-  // ── Get seller's viewing requests ───────────────────────────────────────────
+  // ── Viewing requests (from the database; RLS only returns ones you are part of) ──
   let currentFilter = 'all';
   let currentRequestId = null;
+  let requests = [];
 
   function getSellerRequests() {
-    return FAKE_VIEWING_REQUESTS.filter(r => r.sellerId === session.id);
+    return requests.filter(r => r.sellerId === session.id);
   }
 
   function formatDate(dateStr) {
@@ -158,7 +159,7 @@
   // ── Open response modal ─────────────────────────────────────────────────────
   window.openResponseModal = function(requestId) {
     currentRequestId = requestId;
-    const request = FAKE_VIEWING_REQUESTS.find(r => r.id === requestId);
+    const request = requests.find(r => r.id === requestId);
     if (!request) return;
 
     // Populate modal
@@ -208,14 +209,16 @@
   };
 
   // ── Respond to request ──────────────────────────────────────────────────────
-  window.respondToRequest = function(action) {
-    const request = FAKE_VIEWING_REQUESTS.find(r => r.id === currentRequestId);
+  window.respondToRequest = async function(action) {
+    const request = requests.find(r => r.id === currentRequestId);
     if (!request) return;
 
+    const patch = { status: action };
+    let successMsg;
+
     if (action === 'counter-proposed') {
-      // Validate counter-proposal
-      const counterDate = document.getElementById('counterDate').value;
-      const counterTime = document.getElementById('counterTime').value;
+      const counterDate  = document.getElementById('counterDate').value;
+      const counterTime  = document.getElementById('counterTime').value;
       const counterNotes = document.getElementById('counterNotes').value;
 
       if (!counterDate || !counterTime) {
@@ -223,36 +226,52 @@
         return;
       }
 
-      // Update request
-      request.status = 'counter-proposed';
-      request.proposedDate = counterDate;
-      request.proposedTime = counterTime;
-      request.sellerNotes = counterNotes || null;
-      request.updatedAt = new Date().toISOString();
-
-      alert(`✅ Counter-Proposal Sent!\n\nYou proposed: ${formatDate(counterDate)} at ${formatTime(counterTime)}\n\nThe buyer will be notified and can accept your proposal.`);
+      patch.proposedDate = counterDate;
+      patch.proposedTime = counterTime;
+      patch.sellerNotes  = counterNotes || null;
+      successMsg = `✅ Counter-Proposal Sent!\n\nYou proposed: ${formatDate(counterDate)} at ${formatTime(counterTime)}\n\nThe buyer will be notified and can accept your proposal.`;
 
     } else if (action === 'confirmed') {
-      request.status = 'confirmed';
-      request.updatedAt = new Date().toISOString();
-
-      alert(`✅ Viewing Confirmed!\n\nDate: ${formatDate(request.requestedDate)}\nTime: ${formatTime(request.requestedTime)}\n\nThe buyer has been notified.`);
+      successMsg = `✅ Viewing Confirmed!\n\nDate: ${formatDate(request.requestedDate)}\nTime: ${formatTime(request.requestedTime)}\n\nThe buyer has been notified.`;
 
     } else if (action === 'declined') {
-      if (!confirm('Are you sure you want to decline this viewing request?')) {
-        return;
-      }
-
-      request.status = 'declined';
-      request.updatedAt = new Date().toISOString();
-
-      alert('❌ Viewing Request Declined\n\nThe buyer has been notified.');
+      if (!confirm('Are you sure you want to decline this viewing request?')) return;
+      successMsg = '❌ Viewing Request Declined\n\nThe buyer has been notified.';
     }
+
+    // Save, and mirror the reply into the chat with the buyer.
+    let updated;
+    try {
+      updated = await HS.viewing.respond(request.id, patch);
+    } catch (err) {
+      alert('Could not send your response: ' + err.message);
+      return;
+    }
+
+    Object.assign(request, updated, {
+      other: request.other, listing: request.listing,
+      buyerName: request.buyerName, sellerName: request.sellerName,
+      listingTitle: request.listingTitle,
+    });
 
     closeResponseModal();
     renderRequests();
+    alert(successMsg);
   };
 
   // ── Init ────────────────────────────────────────────────────────────────────
-  renderRequests();
+  async function loadRequests() {
+    const listContainer = document.getElementById('requestsList');
+    listContainer.innerHTML = '<div class="empty-state"><div class="empty-title">Loading…</div></div>';
+    try {
+      requests = await HS.viewing.list();
+    } catch (err) {
+      console.error('Failed to load viewing requests:', err);
+      listContainer.innerHTML = '<div class="empty-state"><div class="empty-title">Could not load your viewing requests</div><div class="empty-sub">Please try again.</div></div>';
+      return;
+    }
+    renderRequests();
+  }
+
+  loadRequests();
 

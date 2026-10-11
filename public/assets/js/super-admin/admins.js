@@ -6,7 +6,7 @@ if (!user || user.role !== 'superadmin') window.location.href = '../../auth/sign
 HomeSureSidebar.init({ activePage: 'admins' });
 HomeSureTopbar.init({ placeholder: 'Search admins...', onSearch: function() { searchQuery = (document.getElementById('hsSearch')||{}).value?.trim() || ''; renderAdminTable(); } });
 
-let adminList   = [...FAKE_ADMINS];
+let adminList   = [];        // loaded from profiles (role admin / superadmin)
 let filterState = 'all';
 let searchQuery = '';
 
@@ -144,4 +144,11 @@ function showToast(msg) {
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-renderAdminTable();
+(async function loadAdmins() {
+  try {
+    adminList = await HS.admin.admins();
+  } catch (err) {
+    console.error('Could not load admin accounts:', err);
+  }
+  renderAdminTable();
+})();
