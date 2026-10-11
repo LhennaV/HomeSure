@@ -10,6 +10,37 @@ after pulling.
 
 ## 2026-10-11
 
+### One user interface, not two
+
+**Backend**
+
+The repo carried two front ends for overlapping work: the pages in `public/module/` and a second
+React dashboard under `src/app/dashboard/`. Removed the React one.
+
+It was never reachable — nothing in the site linked to `/dashboard` — it had **no super-admin
+role at all** against seven such pages in `public/`, and only the pages in `public/` were wired
+to the live database.
+
+Gone with it:
+
+- `src/app/auth/login/` and `src/app/auth/signup/` — the front end has its own at `public/auth/`
+- `src/app/page.tsx` — a listings page `/` never reached, since `next.config.mjs` redirects `/`
+  to `/index.html`
+- `src/app/notes/` — a "Notes CRUD" tutorial scaffold
+- `src/components/` — five components only those pages used
+- `src/lib/auth.ts` and `src/lib/supabase/service.ts` — no importers left
+
+`middleware.ts` was guarding `/dashboard` and the React login pages with a cookie session. With
+those gone its only job is CORS for `/api/*`; it dropped from 85.5 kB to 26.7 kB. The front end
+keeps its session in localStorage and sends a Bearer token, which each route verifies itself.
+
+`/api/auth/callback` now returns to `public/auth/signin.html` instead of the deleted React page.
+Nothing uses OAuth yet, but the code exchange is kept so enabling it later is a provider setting
+rather than new work.
+
+**Nothing in `public/` changed, and all 12 API routes still answer.** Git keeps the removed files
+if any turns out to be wanted again.
+
 ### Email confirmation now comes from HomeSure
 
 **Front end · Backend · Database**

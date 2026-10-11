@@ -5,9 +5,13 @@ One repo, one server. `npm run dev` serves the front end **and** the API on `htt
 | Path | What it is |
 |---|---|
 | `public/` | The front end — static HTML/CSS/JS (`index.html`, `browse.html`, `auth/`, `module/`, `assets/`, `components/`). Next.js serves this at the site root. |
-| `src/app/api/` | The API — payments, refunds, OCR, Xendit webhook. Needs secrets, so it runs server-side. |
-| `src/app/dashboard/`, `src/app/auth/` | A separate Next.js admin dashboard (Choya's). Independent of the front end above. |
+| `src/app/api/` | The API — sign-up, email confirmation, payments, refunds, OCR, the Xendit webhook. Needs secrets, so it runs server-side. |
 | `supabase/migrations/` | The database definition. |
+
+`src/` is the backend and nothing else. A second React dashboard used to live there; it was
+removed once the pages in `public/` covered the same ground against the live database. See
+[ARCHITECTURE.md](ARCHITECTURE.md) for the full map and [CHANGELOG.md](CHANGELOG.md) for what
+changed when.
 
 The front end is the source of truth for what the app does. The database keeps its own column names
 (`property_type`, `listing_type`, `latitude`, `floor_area_sqm`, `barangay_id`, `saved_properties`, …)
@@ -29,7 +33,6 @@ npm run dev          # http://localhost:3000
 | `localhost:3000/auth/signin.html` | sign in |
 | `localhost:3000/module/buyer/buyer.html` | buyer dashboard |
 | `localhost:3000/api/*` | the API |
-| `localhost:3000/dashboard` | Choya's Next.js dashboard |
 
 Secrets live in `.env.local` (never committed). `SUPABASE_SERVICE_ROLE_KEY` is required for payments
 and refunds. The front end's Supabase URL and anon key are in `public/assets/js/config.js` — the anon

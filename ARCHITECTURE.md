@@ -96,9 +96,6 @@ src/
 │   ├── webhooks/xendit      Xendit calls this; it is what marks a charge paid
 │   └── analytics/gsc-sync   Search Console metrics
 │
-├── app/dashboard/           a second, React dashboard — see "Two dashboards" below
-├── app/auth/                React login and signup pages — same note
-│
 ├── lib/
 │   ├── api.ts               guardApi() — authenticates a request, optionally by role
 │   ├── email.ts             SMTP sending and the confirmation email template
@@ -106,7 +103,7 @@ src/
 │   ├── payments.ts          what a payment costs, computed server-side
 │   └── supabase/            server-client (caller's identity) · admin-client (service role)
 │
-└── middleware.ts            refreshes the session cookie on /api and /dashboard
+└── middleware.ts            CORS for /api — nothing else needs it
 ```
 
 ### Why some things cannot be done from the browser
@@ -192,26 +189,23 @@ buyer who uploaded it, the seller of that one listing, and an admin — nobody e
 
 ---
 
-## Two dashboards
+## One user interface
 
-This is the one piece of genuine duplication in the repo, and it is worth deciding on rather than
-leaving.
+There used to be two: the pages in `public/module/` and a second React dashboard under
+`src/app/dashboard/`, covering some of the same ground in a different technology. The React one
+was removed on 2026-10-11 — nothing linked to it, it had no super-admin role at all, and only the
+pages in `public/` were wired to the live database.
 
-| | `public/module/` | `src/app/dashboard/` |
-|---|---|---|
-| Built with | HTML + JS, reads `HS.*` | React server components |
-| Buyer pages | 12 | — |
-| Seller pages | 14 | — |
-| Admin pages | 11 | 8 (index, properties ×3, payments, verifications, refunds, analytics) |
-| Super-admin pages | 7 | **0** — the role does not exist there |
-| Reachable from the site | yes | **no** — nothing links to `/dashboard` |
+Removed with it: the React login and sign-up pages (the front end has its own at
+`public/auth/`), `src/app/page.tsx` (a listings page that `/` never reached, because
+`next.config.mjs` redirects `/` to `/index.html`), a "Notes CRUD" tutorial scaffold, and the five
+components only those pages used.
 
-`src/app/page.tsx` is in the same position: a working listings page that `/` never reaches,
-because `next.config.mjs` redirects `/` to `/index.html`.
+So `src/` is now the backend and nothing else: 12 API routes, the libraries they share, and a
+middleware whose only remaining job is CORS. Next.js still needs `app/layout.tsx` to exist, so it
+stays, but no page uses it.
 
-Neither is deleted here. They are someone's work and removing them is a decision for the team, not
-a tidy-up. But only `public/module/` is wired to the live database and only it covers
-super-admin, so that is the one the application actually uses.
+Git keeps all of it if any turns out to be wanted again.
 
 ---
 

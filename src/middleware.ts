@@ -1,7 +1,8 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-// Origins of the static front end that may call /api/*. Override with FRONTEND_ORIGINS (comma separated).
+// Origins of the front end that may call /api/*. With one server — the normal setup — the pages and
+// the API share an origin and this never comes into play. Override with FRONTEND_ORIGINS
+// (comma separated) only when the front end is hosted somewhere else.
 const DEFAULT_FRONTEND_ORIGINS = [
   "http://localhost:5500",
   "http://127.0.0.1:5500",
@@ -26,59 +27,27 @@ function corsHeaders(origin: string | null): Record<string, string> {
   };
 }
 
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+/**
+ * The only job left here is CORS for the API.
+ *
+ * Routes authenticate themselves — guardApi() verifies the Bearer token the front end sends — and
+ * answer 401 as JSON. They must never be redirected to an HTML login page, which is what a fetch()
+ * caller would choke on.
+ */
+export function middleware(request: NextRequest) {
+  const cors = corsHeaders(request.headers.get("origin"));
 
-  // API routes authenticate themselves (Bearer token from the static front end, or cookies from the
-  // Next dashboard) and answer 401 JSON. They must never be redirected to an HTML login page.
-  if (pathname.startsWith("/api/")) {
-    const cors = corsHeaders(request.headers.get("origin"));
-    if (request.method === "OPTIONS") return new NextResponse(null, { status: 204, headers: cors });
-
-    const response = NextResponse.next();
-    Object.entries(cors).forEach(([key, value]) => response.headers.set(key, value));
-    return response;
+  if (request.method === "OPTIONS") {
+    return new NextResponse(null, { status: 204, headers: cors });
   }
 
-  const isProtected = pathname.startsWith("/dashboard");
-  // Exact match on purpose: the static front end has its own /auth/signup.html and /auth/signin.html,
-  // and startsWith() would hijack them.
-  const isAuthPage = pathname === "/auth/login" || pathname === "/auth/signup";
-  if (!isProtected && !isAuthPage) return NextResponse.next();
-
-  // Cookie session for the Next dashboard (standard @supabase/ssr middleware pattern).
-  let response = NextResponse.next({ request });
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
-        },
-      },
-    }
-  );
-
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user && isProtected) {
-    return NextResponse.redirect(new URL("/auth/login", request.url));
-  }
-  if (user && isAuthPage) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
-
+  const response = NextResponse.next();
+  Object.entries(cors).forEach(([key, value]) => response.headers.set(key, value));
   return response;
 }
 
 export const config = {
-  // Only these paths need middleware. Everything else (the static front end in public/) is served
-  // straight from disk, so no HTML or asset request pays for it.
-  matcher: ["/api/:path*", "/dashboard/:path*", "/auth/login", "/auth/signup"],
+  // Only the API needs this. The front end in public/ is served straight from disk, so no page or
+  // asset request pays for middleware.
+  matcher: ["/api/:path*"],
 };
