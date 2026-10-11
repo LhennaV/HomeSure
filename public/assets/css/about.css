@@ -321,7 +321,7 @@ footer {
 /* ── Light mode ── */
 [data-theme="light"] body { background: #f8fafc; color: #0f172a; }
 [data-theme="light"] ::-webkit-scrollbar-track { background: #f1f5f9; }
-[data-theme="light"] nav { background: rgba(248,250,252,0.92); border-bottom-color: rgba(0,0,0,0.08); }
+[data-theme="light"] nav { border-bottom-color: rgba(0,0,0,0.08); }
 [data-theme="light"] .nav-logo { color: #0f172a; }
 [data-theme="light"] .nav-logo-divider { background: rgba(0,0,0,0.12); }
 [data-theme="light"] .nav-theme-btn { background: #f1f5f9; border-color: #cbd5e1; color: #475569; }

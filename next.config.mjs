@@ -1,7 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  output: "standalone",
+  output: "standalone",	
+async redirects() {
+    return [
+      { source: "/", destination: "/index.html", permanent: false },
+    ];
+  },
   images: {
     remotePatterns: [
       {

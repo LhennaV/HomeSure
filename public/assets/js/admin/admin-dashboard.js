@@ -1,4 +1,4 @@
-(function () {
+(async function () {
   const user = getSession();
   if (!user || user.role !== 'admin') {
     window.location.href = '../../auth/signin.html';
@@ -7,32 +7,41 @@
 
   HomeSureSidebar.init({ activePage: 'dashboard' });
   HomeSureTopbar.init({ placeholder: 'Search...' });
-
+  let LISTINGS, USERS, openReports;
+  try {
+	  conts[listings, users, reports] = await Promise.all([HS.listings.all(), HS.admin.users(), HS.admin.openReportsCount()]);
+	  LISTINGS = await HS.listings.withSellers(listings.filter(1=>1.status !== 'draft'));
+	  USERS = users;
+	  openReports = reports;
+  } catch (err) {
+	  console.error('Failed to load dashboard: ', err);
+	  hsToast('Could not load the dashboard data. Please refresh.', 'error);
+	  return;
+  }
+  
   // ── Stat counts ───────────────────────────────────────────────────────────
-  const allUsers        = FAKE_USERS.filter(u => ['buyer','seller'].includes(u.role));
-  const verifiedSellers = FAKE_USERS.filter(u => u.role === 'seller' && u.accountStatus === 'verified');
-  const pendingSellers  = FAKE_USERS.filter(u => u.role === 'seller' && u.accountStatus === 'pending');
-  const openReports     = FAKE_REPORTS ? FAKE_REPORTS.filter(r => r.status === 'pending').length : 3;
+  const allUsers        = USERS.filter(u => ['buyer','seller'].includes(u.role));
+  const verifiedSellers = USERS.filter(u => u.role === 'seller' && u.accountStatus === 'verified');
+  const pendingSellers  = USERS.filter(u => u.role === 'seller' && (u.accountStatus === 'pending' || u.accountStatus === 'reverification'));
 
-  document.getElementById('totalListings').textContent    = FAKE_LISTINGS.length;
+  document.getElementById('totalListings').textContent    = LISTINGS.length;
   document.getElementById('totalUsers').textContent       = allUsers.length;
   document.getElementById('verifiedSellers').textContent  = verifiedSellers.length;
   document.getElementById('pendingSellers').textContent   = pendingSellers.length;
 
   // ── Recent Listings ───────────────────────────────────────────────────────
-  const recentListings = [...FAKE_LISTINGS]
+  const recentListings = [...LISTINGS]
     .sort((a, b) => new Date(b.postedAt) - new Date(a.postedAt))
     .slice(0, 5);
 
   document.getElementById('recentListings').innerHTML = recentListings.map(l => {
-    const seller = FAKE_USERS.find(u => u.id === l.sellerId);
-    const sellerName = seller ? seller.firstName + ' ' + seller.lastName : 'Unknown';
+	const sellerName = l.seller ? l.seller.name : 'Unknown';
     const price = l.listingFor === 'rent'
       ? '₱' + l.price.toLocaleString('en-PH') + '/mo'
       : '₱' + l.price.toLocaleString('en-PH');
     return `
       <div class="listing-row">
-        <img class="listing-thumb" src="${l.images[0]}" alt="${l.title}" />
+        <img class="listing-thumb" src="${HS.cover(1)}" alt="${l.title}" />
         <div class="listing-info">
           <div class="listing-title">${l.title}</div>
           <div class="listing-meta">${sellerName} · ${l.barangay} · ${price}</div>
@@ -69,7 +78,7 @@
       </div>
       <div class="action-body">
         <div class="action-title">Pending Listings</div>
-        <div class="action-desc">${FAKE_LISTINGS.filter(l => l.status === 'pending').length} awaiting approval</div>
+        <div class="action-desc">${LISTINGS.filter(l => l.status === 'pending').length} awaiting approval</div>
       </div>
       <span class="action-badge review">Review</span>
     </div>
@@ -79,18 +88,18 @@
       </div>
       <div class="action-body">
         <div class="action-title">Rejected Listings</div>
-        <div class="action-desc">${FAKE_LISTINGS.filter(l => l.status === 'rejected').length} rejected — may need follow-up</div>
+        <div class="action-desc">${LISTINGS.filter(l => l.status === 'rejected').length} rejected — may need follow-up</div>
       </div>
       <span class="action-badge review">Review</span>
     </div>
   `;
 
   // ── Recent Seller Registrations ───────────────────────────────────────────
-  const sellers = FAKE_USERS.filter(u => u.role === 'seller')
-    .sort((a, b) => new Date(b.joinedAt) - new Date(a.joinedAt));
-
+  const sellers = USERS.filter(u => u.role === 'seller')
+    .sort((a, b) => new Date(b.joinedAt) - new Date(a.joinedAt))
+    .slice(0, 8);
   document.getElementById('recentSellers').innerHTML = sellers.map(s => {
-    const initials = (s.firstName[0] + s.lastName[0]).toUpperCase();
+	const initials = (((s.firstName || '')[0] || '') + ((s.lastName || '')[0] || '')).toUpperCase() || '?';
     const statusClass = s.accountStatus === 'verified' ? 'verified'
       : s.accountStatus === 'pending' ? 'pending' : 'unverified';
     const statusLabel = s.accountStatus
@@ -108,12 +117,12 @@
   }).join('');
 
   // ── Listing Breakdown ─────────────────────────────────────────────────────
-  const approved = FAKE_LISTINGS.filter(l => l.status === 'approved').length;
-  const pending  = FAKE_LISTINGS.filter(l => l.status === 'pending').length;
-  const rejected = FAKE_LISTINGS.filter(l => l.status === 'rejected').length;
-  const forRent  = FAKE_LISTINGS.filter(l => l.listingFor === 'rent').length;
-  const forSale  = FAKE_LISTINGS.filter(l => l.listingFor === 'sale').length;
-  const total    = FAKE_LISTINGS.length || 1;
+  const approved = LISTINGS.filter(l => l.status === 'approved').length;
+  const pending  = LISTINGS.filter(l => l.status === 'pending').length;
+  const rejected = LISTINGS.filter(l => l.status === 'rejected').length;
+  const forRent  = LISTINGS.filter(l => l.listingFor === 'rent').length;
+  const forSale  = LISTINGS.filter(l => l.listingFor === 'sale').length;
+  const total    = LISTINGS.length || 1;
 
   const breakdown = [
     { label: 'Approved', count: approved, color: '#00c9a7', pct: Math.round(approved / total * 100) },
