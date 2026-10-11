@@ -11,7 +11,7 @@
   HomeSureTopbar.init({ placeholder: 'Search users...', onSearch: renderUsers });
 
   // Only buyers and sellers are shown here
-  let users = FAKE_USERS.filter(u => u.role === 'buyer' || u.role === 'seller');
+  let users = [];
   let activeFilter = 'all';
 
   const avatarColors = {
@@ -23,10 +23,10 @@
     const q = (document.getElementById('hsSearch') || {}).value?.toLowerCase() || '';
     const filtered = users.filter(u => {
       const matchRole   = activeFilter === 'all' || activeFilter === u.role ||
-                          (activeFilter === 'pending' && u.accountStatus === 'pending');
+                          (activeFilter === 'pending' && (u.accountStatus === 'pending' || u.accountStatus === 'reverification'));
       const matchSearch = !q ||
         (u.firstName + ' ' + u.lastName).toLowerCase().includes(q) ||
-        u.email.toLowerCase().includes(q);
+        (u.email || '' ).toLowerCase().includes(q);
       return matchRole && matchSearch;
     });
 
@@ -37,21 +37,17 @@
     }
 
     tbody.innerHTML = filtered.map(u => {
-      const initials  = (u.firstName[0] + u.lastName[0]).toUpperCase();
+	  const initials = (((u.firstName || '')[0] || '') + ((u.lastName || '')[0] || '')).toUpperCase() || '?';
       const avatarBg  = avatarColors[u.role] || '#6b7280';
       const roleBadge = u.role === 'buyer'
         ? `<span class="badge buyer-role">Buyer</span>`
         : `<span class="badge seller-role">Seller</span>`;
 
-      let statusBadge;
-      if (u.role === 'buyer') {
-        statusBadge = `<span class="badge active">Active</span>`;
-      } else {
-        const s = u.accountStatus || 'unverified';
-        statusBadge = `<span class="badge ${s}">${s.charAt(0).toUpperCase() + s.slice(1)}</span>`;
-      }
+      const s = u.accountStatus || 'unverified';
+      const statusBadge = `<span class="badge ${s}">${s.charAt(0).toUpperCase() + s.slice(1)}</span>`;
 
-      const actionBtns = u.role === 'seller' && u.accountStatus === 'pending'
+      const needsReview = u.accountStatus === 'pending' || u.accountStatus === 'reverification';
+      const actionBtns = needsReview
         ? `<button class="btn-sm approve" onclick="window.location.href='user-detail.html?id=${u.id}'">Review</button>`
         : `<button class="btn-sm btn-icon" onclick="window.location.href='user-detail.html?id=${u.id}'" title="View">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -83,7 +79,20 @@
         </tr>`;
     }).join('');
   }
-  renderUsers();
+  async function loadUsers() {
+    document.getElementById('usersBody').innerHTML =
+      '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted)">Loading…</td></tr>';
+    try {
+      users = (await HS.admin.users()).filter(u => u.role === 'buyer' || u.role === 'seller');
+    } catch (err) {
+      console.error('Failed to load users:', err);
+      document.getElementById('usersBody').innerHTML =
+        '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted)">Could not load users. Please try again.</td></tr>';
+      return;
+    }
+    renderUsers();
+  }
+  loadUsers();
 
   // ── Filter Tabs ──────────────────────────────────────────────────────────────
   document.getElementById('filterTabs').addEventListener('click', e => {
@@ -99,9 +108,10 @@
   // ── Verification Modal ───────────────────────────────────────────────────────
   let _currentUserId = null;
 
-  window.openVerifModal = function (id) {
-    const u = FAKE_USERS.find(x => x.id === id);
+  window.openVerifModal = async function (id) {
+    const u = users.find(x => x.id === id);
     if (!u) return;
+    const docs = await HS.storage.resolveDocs(u.newVerificationDocs.length ? u.newVerificationDocs : u.verificationDocs);
     _currentUserId = id;
 
     document.getElementById('verif-name').textContent  = u.firstName + ' ' + u.lastName;
@@ -128,11 +138,11 @@
     // Documents
     let docsHtml = '';
     if (u.role === 'seller') {
-      if (u.verificationDocs && u.verificationDocs.length) {
+      if (docs.length) {
         docsHtml = `
           <div class="docs-section-title">Submitted Documents</div>
           <div class="docs-grid">
-            ${u.verificationDocs.map(d => `
+            ${docs.map(d => `
               <a href="${d.url}" target="_blank" class="doc-card">
                 <img src="${d.url}" alt="${d.label}" />
                 <span>${d.label}</span>
@@ -178,19 +188,23 @@
     if (e.target === document.getElementById('verifModal')) closeVerifModal();
   });
 
-  window.resolveVerif = function (decision, reason) {
-    const u = FAKE_USERS.find(x => x.id === _currentUserId);
+  window.resolveVerif = async function (decision, reason) {
+    const u = users.find(x => x.id === _currentUserId);
     if (!u) return;
-    if (decision === 'approved') {
-      u.accountStatus = 'verified';
-      u.verifiedAt    = new Date().toISOString().split('T')[0];
-      const expiry    = new Date(); expiry.setFullYear(expiry.getFullYear() + 1);
-      u.verificationExpiry = expiry.toISOString().split('T')[0];
-      showToast(`${u.firstName} ${u.lastName} has been verified.`);
-    } else {
-      u.accountStatus      = 'unverified';
-      u.verificationRejectReason = reason || null;
-      showToast(`${u.firstName} ${u.lastName}'s verification was rejected.`, 'error');
+    try {
+      if (decision === 'approved') {
+        await HS.admin.approveVerification(u.id);
+        HS.audit.log('Verified ' + u.role, 'user', u.name + ' (' + u.email + ')');
+        showToast(`${u.firstName} ${u.lastName} has been verified.`);
+      } else {
+        await HS.admin.rejectVerification(u.id, reason);
+        HS.audit.log('Rejected verification', 'user', u.name + ' – ' + (reason || ''));
+        showToast(`${u.firstName} ${u.lastName}'s verification was rejected.`, 'error');
+      }
+      Object.assign(u, await HS.admin.user(u.id));
+    } catch (err) {
+      showToast('Could not update the account: ' + err.message, 'error');
+      return;
     }
     closeVerifModal();
     renderUsers();

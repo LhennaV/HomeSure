@@ -10,56 +10,33 @@
   HomeSureSidebar.init({ activePage: 'reports' });
   HomeSureTopbar.init({ placeholder: 'Search reports...', onSearch: () => window.renderReports && window.renderReports() });
 
-  // ── Fake report data ────────────────────────────────────────────────────────
-  const REPORTS = [
-    {
-      id: 'rpt-001', type: 'listing', severity: 'high',
-      subject: 'Fake listing with misleading photos',
-      description: 'The property photos do not match the actual unit. The seller is using stock photos and the listed price is significantly lower than market value to attract buyers.',
-      listingId: 'prop-004', reportedBy: 'usr-001',
-      status: 'pending', actionTaken: null, submittedAt: '2026-03-28',
-      comments: []
-    },
-    {
-      id: 'rpt-002', type: 'seller', severity: 'high',
-      subject: 'Seller demanding payment outside platform',
-      description: 'Seller contacted me via private message asking for a reservation fee through GCash before any formal agreement was signed.',
-      listingId: 'prop-005', reportedBy: 'usr-002',
-      status: 'pending', actionTaken: null, submittedAt: '2026-03-27',
-      comments: [
-        { text: 'Contacted seller for clarification', by: 'Admin User', at: '2026-03-27 14:30' }
-      ]
-    },
-    {
-      id: 'rpt-003', type: 'listing', severity: 'medium',
-      subject: 'Property details are inaccurate',
-      description: 'The listing states 3 bedrooms but the actual unit only has 2. Floor area is also overstated by approximately 20 sqm.',
-      listingId: 'prop-009', reportedBy: 'usr-001',
-      status: 'pending', actionTaken: null, submittedAt: '2026-03-25',
-      comments: []
-    },
-    {
-      id: 'rpt-004', type: 'seller', severity: 'low',
-      subject: 'Unresponsive seller',
-      description: 'I have sent multiple messages to the seller over the past week and have not received any response.',
-      listingId: 'prop-002', reportedBy: 'usr-002',
-      status: 'resolved', actionTaken: 'warning_issued', submittedAt: '2026-03-20',
-      comments: [
-        { text: 'Verified with seller - was on vacation', by: 'Admin User', at: '2026-03-21 09:15' },
-        { text: 'Issued warning for future responsiveness', by: 'Admin User', at: '2026-03-21 09:20' }
-      ]
-    },
-    {
-      id: 'rpt-005', type: 'listing', severity: 'medium',
-      subject: 'Duplicate listing',
-      description: 'This property appears to be listed twice under different prices. One listing shows ₱8,000/month and another shows ₱9,500/month for what appears to be the same unit.',
-      listingId: 'prop-003', reportedBy: 'usr-001',
-      status: 'rejected', actionTaken: 'report_rejected', submittedAt: '2026-03-15',
-      comments: [
-        { text: 'Checked - these are different units in the same building', by: 'Admin User', at: '2026-03-16 11:00' }
-      ]
-    },
-  ];
+let REPORTS = [];
+
+  const SEVERITY_BY_CATEGORY = {
+    fraudulent: 'high', scam: 'high', fake: 'high',
+    misleading: 'medium', incorrect: 'medium', price: 'medium', sold: 'medium',
+    inappropriate: 'high', spam: 'low', duplicate: 'low', other: 'low',
+  };
+
+  function toPageShape(r) {
+    return {
+      id: r.id,
+      type: 'listing',
+      severity: SEVERITY_BY_CATEGORY[r.category] || 'low',
+      subject: r.category ? r.category.charAt(0).toUpperCase() + r.category.slice(1).replace(/_/g, ' ') : 'Report',
+      description: r.reason || '',
+      listingId: r.listingId,
+      listingTitle: r.listingTitle,
+      reportedBy: r.reportedBy,
+      reporterName: r.reporterName,
+      sellerName: r.sellerName,
+      status: r.status === 'dismissed' ? 'rejected' : r.status,
+      actionTaken: r.actionTaken,
+      adminNotes: r.adminNotes,
+      submittedAt: (r.reportedAt || '').slice(0, 10),
+      comments: r.adminNotes ? [{ text: r.adminNotes, by: 'Admin', at: (r.resolvedAt || r.reportedAt || '').slice(0, 16).replace('T', ' ') }] : [],
+    };
+  }
 
   const ACTION_LABELS = {
     listing_removed:       'Listing Removed',
@@ -109,9 +86,8 @@
     }
 
     container.innerHTML = filtered.map(r => {
-      const reporter = FAKE_USERS.find(u => u.id === r.reportedBy);
-      const reporterName = reporter ? reporter.firstName + ' ' + reporter.lastName : 'Unknown';
-      const listing = FAKE_LISTINGS.find(l => l.id === r.listingId);
+      const reporterName = r.reporterName || 'HomeSure user';
+      const listing = r.listingTitle ? { title: r.listingTitle } : null;
       const { cls, svg } = severityIcon(r.severity);
 
       let actionBtns = '';
@@ -140,9 +116,18 @@
   };
 
   // ── Mark Under Review ───────────────────────────────────────────────────────
-  window.markUnderReview = function (id) {
+  window.markUnderReview = async function (id) {
     const r = REPORTS.find(x => x.id === id);
-    if (r) { r.status = 'under_review'; renderReports(); }
+    if (!r) return;
+    try {
+      await HS.reports.resolve(id, { status: 'under_review' });
+      r.status = 'under_review';
+      HS.audit.log('Marked report under review', 'report', r.subject + ' – ' + r.listingTitle);
+    } catch (err) {
+      showToast('Could not update the report: ' + err.message);
+      return;
+    }
+    renderReports();
   };
 
   // ── Add comment ─────────────────────────────────────────────────────────────
@@ -155,38 +140,48 @@
       showToast('Please enter a comment');
       return;
     }
-    const now = new Date();
-    const timestamp = now.toISOString().slice(0, 16).replace('T', ' ');
-    r.comments.push({
-      text: text,
-      by: 'Admin User', // Would be current logged-in admin
-      at: timestamp
-    });
+     try {
+      await HS.reports.resolve(id, { status: r.status === 'rejected' ? 'dismissed' : r.status, adminNotes: text });
+    } catch (err) {
+      showToast('Could not save your note: ' + err.message);
+      return;
+    }
+    const at = new Date().toISOString().slice(0, 16).replace('T', ' ');
+    r.adminNotes = text;
+    r.comments = [{ text, by: 'Admin', at }];
     textarea.value = '';
     openModal(id); // Refresh modal
-    showToast('Comment added');
+    showToast('Note Saved');
   };
 
   // ── Take action (resolve) ───────────────────────────────────────────────────
-  window.takeAction = function (id, action) {
+  window.takeAction = async function (id, action) {
     const r = REPORTS.find(x => x.id === id);
     if (!r) return;
+     const dbStatus = action === 'report_rejected' ? 'dismissed' : 'resolved';
+    const label = ACTION_LABELS[action] || action;
+
+    try {
+      await HS.reports.resolve(id, { status: dbStatus, actionTaken: action });
+      HS.audit.log('Resolved report', 'report', r.subject + ' – ' + label);
+    } catch (err) {
+      showToast('Could not record your action: ' + err.message);
+      return;
+    }
     r.actionTaken = action;
-    r.status = action === 'report_rejected' ? 'rejected' : 'resolved';
+    r.status = dbStatus === 'dismissed' ? 'rejected' : 'resolved';
     renderReports();
     closeModal();
-    const label = ACTION_LABELS[action] || action;
     showToast(`Action taken: ${label}. Reporter has been notified.`);
   };
 
   // ── Modal ───────────────────────────────────────────────────────────────────
-  window.openModal = function (id) {
+  window.openModal = async function (id) {
     const r = REPORTS.find(x => x.id === id);
     if (!r) return;
-    const reporter = FAKE_USERS.find(u => u.id === r.reportedBy);
-    const reporterName = reporter ? reporter.firstName + ' ' + reporter.lastName : 'Unknown';
-    const listing = FAKE_LISTINGS.find(l => l.id === r.listingId);
-    const seller = listing ? FAKE_USERS.find(u => u.id === listing.sellerId) : null;
+    const reporterName = r.reporterName || 'HomeSure user';
+    const listing = r.listingTitle ? { title: r.listingTitle } : null;
+    const seller = r.sellerName ? { firstName: r.sellerName, lastName: '' } : null;
     const { cls, svg } = severityIcon(r.severity);
 
     const isActionable = r.status === 'pending' || r.status === 'under_review';

@@ -79,20 +79,25 @@
     label.textContent = texts[score] || '';
   }
 
-  function savePassword() {
+  async function savePassword() {
     const cur = document.getElementById('currentPw').value;
     const nw  = document.getElementById('newPw').value;
     const cf  = document.getElementById('confirmPw').value;
-    const fullUser = FAKE_USERS.find(u => u.id === user.id);
 
     if (!cur || !nw || !cf) { showToast('Please fill in all password fields.', 'error'); return; }
-    if (fullUser && cur !== fullUser.password) { showToast('Current password is incorrect.', 'error'); return; }
     if (nw.length < 8)             { showToast('Password must be at least 8 characters.', 'error'); return; }
     if (!/[A-Z]/.test(nw))        { showToast('Password must include an uppercase letter.', 'error'); return; }
     if (!/[0-9]/.test(nw))        { showToast('Password must include a number.', 'error'); return; }
     if (!/[^A-Za-z0-9]/.test(nw)) { showToast('Password must include a special character.', 'error'); return; }
     if (nw !== cf)                 { showToast('New passwords do not match.', 'error'); return; }
 
+    try {
+      await HS.auth.changePassword(cur, nw);
+    } catch (err) {
+      showToast(err.message, 'error');
+      return;
+    }
+    
     document.getElementById('pwForm').classList.remove('open');
     document.getElementById('changePwBtn').innerHTML =
       `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Change Password`;

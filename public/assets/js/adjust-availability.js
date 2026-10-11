@@ -127,7 +127,7 @@ const AdjustAvailabilityModal = (function() {
   // CONFIRM
   // ═══════════════════════════════════════════════════════════════════════════
 
-  function confirm() {
+  async function confirm() {
     if (!currentListing) return;
 
     const input = document.getElementById('newAvailableUnits');
@@ -139,20 +139,11 @@ const AdjustAvailabilityModal = (function() {
       return;
     }
 
-    // Update listing in FAKE_LISTINGS
-    const listing = window.FAKE_LISTINGS?.find(l => l.id === currentListing.listingId);
-    if (listing) {
-      listing.availableUnits = newAvailable;
-
-      // Update status based on availability
-      if (newAvailable === 0) {
-        listing.status = 'occupied';
-      } else if (listing.status === 'occupied') {
-        listing.status = 'approved'; // Reopen if was occupied
-      }
-
-      console.log(`✅ Availability updated for ${currentListing.listingId}: ${newAvailable} units available`);
-    }
+    try {
+      await HS.listings.update(currentListing.listingId, { availableUnits: newAvailable });
+    } catch (err) {
+      alert('Could not update availability: ' + err.message);
+      return;
 
     // Show success state
     showSuccess(newAvailable);
