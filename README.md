@@ -1,43 +1,44 @@
 # HomeSure
 
-One repo, two parts:
+One repo, one server. `npm run dev` serves the front end **and** the API on `http://localhost:3000`.
 
-| Folder | What it is |
+| Path | What it is |
 |---|---|
-| `/` (`index.html`, `auth/`, `module/`, `assets/`, `components/`) | The front end — static HTML/CSS/JS. Talks to Supabase directly (auth, listings, saved, …). |
-| `backend/` | Next.js API (payments, refunds, OCR, webhooks) **and** the database definition (`backend/supabase/migrations`). |
+| `public/` | The front end — static HTML/CSS/JS (`index.html`, `browse.html`, `auth/`, `module/`, `assets/`, `components/`). Next.js serves this at the site root. |
+| `src/app/api/` | The API — payments, refunds, OCR, Xendit webhook. Needs secrets, so it runs server-side. |
+| `src/app/dashboard/`, `src/app/auth/` | A separate Next.js admin dashboard (Choya's). Independent of the front end above. |
+| `supabase/migrations/` | The database definition. |
 
-The front end is the source of truth for what the app does; the database was reshaped to fit it.
+The front end is the source of truth for what the app does. The database keeps its own column names
+(`property_type`, `listing_type`, `latitude`, `floor_area_sqm`, `barangay_id`, `saved_properties`, …)
+and the code was adapted to them — see `006_frontend_alignment.sql`.
 
-## Run it locally
+## Run it
 
-**Setting this up for the first time? Follow [SETUP.md](SETUP.md)** — step by step, with a check at each stage.
-The short version:
-
-**1. Database** — run `backend/supabase/migrations/000_check_state.sql` to see what is missing, then run the
-migrations it marks `RUN THIS`, in numeric order. (`001`–`003` are probably already applied.)
-
-**2. Backend**
+**Setting up for the first time? Follow [SETUP.md](SETUP.md)** — step by step, with a check at each stage.
 
 ```bash
-cd backend
 npm install
-cp .env.example .env.local     # fill in the values; SUPABASE_SERVICE_ROLE_KEY is required for payments/refunds
-npm run dev                    # http://localhost:3000
+npm run dev          # http://localhost:3000
 ```
 
-**3. Front end** — serve the repo root over HTTP (VS Code *Live Server* on port 5500 works out of the box):
+| URL | Page |
+|---|---|
+| `localhost:3000/` | the front end home (redirects to `/index.html`) |
+| `localhost:3000/browse.html` | public listings |
+| `localhost:3000/auth/signin.html` | sign in |
+| `localhost:3000/module/buyer/buyer.html` | buyer dashboard |
+| `localhost:3000/api/*` | the API |
+| `localhost:3000/dashboard` | Choya's Next.js dashboard |
 
-```bash
-npx serve -l 5500 .
-```
-
-If you serve it from another origin, add it to `FRONTEND_ORIGINS` in `backend/.env.local` (CORS).
-Supabase URL / anon key / backend URL for the front end live in `assets/js/config.js`.
+Secrets live in `.env.local` (never committed). `SUPABASE_SERVICE_ROLE_KEY` is required for payments
+and refunds. The front end's Supabase URL and anon key are in `public/assets/js/config.js` — the anon
+key is meant to be public; Row Level Security decides what anyone can actually read or write.
 
 ## First admin
 
-Roles are `buyer`, `seller`, `admin`, `superadmin`. Users cannot change their own role. After signing up normally, promote the account in the SQL editor:
+Roles are `buyer`, `seller`, `admin`, `superadmin`. Nobody can change their own role — not even an
+admin. Sign up normally, then promote the account in the Supabase SQL editor:
 
 ```sql
 update profiles set role = 'superadmin' where email = 'you@example.com';
@@ -46,14 +47,26 @@ update profiles set role = 'superadmin' where email = 'you@example.com';
 ## How the front end reads data
 
 ```
-config.js  → Supabase client (sb)
-session.js → cached profile (getSession) + sign-out / guards
-data.js    → HS.*  the only place that talks to the database; returns the shapes the pages already use
+config.js   → Supabase client (sb)
+session.js  → cached profile (getSession) + sign-out + guards
+data.js     → HS.*  the only place that talks to the database
 ```
 
-Pages call `HS.listings…`, `HS.favorites…`, `HS.admin…` instead of reading `FAKE_*` arrays.
-`assets/js/fake-data.js` is being retired: a page still loads it only if its script still uses sample data.
+Pages call `HS.listings…`, `HS.favorites…`, `HS.admin…` rather than reading sample data. `data.js`
+maps the database's snake_case columns to the camelCase shape the pages already used, so no page had
+to change its markup.
 
-**Still on sample data:** messages, viewing requests (seller side), reviews, payments/transactions, notifications,
-reports, analytics, profile & settings pages, MOA, and the super-admin pages. The tables for them already exist
-(`messages`, `viewing_requests`, `reviews`, `listing_reports`, `notifications`, `audit_logs`, `payments`).
+**Still on sample data** (`public/assets/js/fake-data.js`): messages, viewing requests (seller side),
+reviews, payments/transactions, notifications, reports, analytics, profile & settings, MOA, and the
+super-admin pages. Their tables already exist (`messages`, `viewing_requests`, `reviews`,
+`listing_reports`, `notifications`, `audit_logs`, `payments`) — the page scripts just need pointing at
+`HS.*`. A page loads `fake-data.js` only while its script still needs it; remove that one `<script>`
+line when you convert a page.
+
+## Payments
+
+The `payments` table carries **both** providers' columns on purpose: PayMongo (`paymongo_source_id`,
+`paymongo_reference`, `webhook_payload`) was already in the database, and the API routes under
+`src/app/api/payments` and `src/app/api/webhooks/xendit` are written against **Xendit**
+(`xendit_charge_id`, `xendit_qr_string`). Neither side's work was thrown away; settle on one provider
+and use its columns.

@@ -4,7 +4,7 @@ Follow this once. It takes about 20 minutes. Do the steps in order; each one say
 
 > ### How to run a `.sql` file in the SQL Editor
 >
-> The editor runs **SQL text**, not file paths. Typing `backend/supabase/migrations/000_check_state.sql`
+> The editor runs **SQL text**, not file paths. Typing `supabase/migrations/000_check_state.sql`
 > into it gives you `ERROR: 42601: syntax error at or near "backend"`. For every `.sql` file below:
 >
 > 1. Open the file in VS Code (click its name in the Explorer).
@@ -20,7 +20,7 @@ Follow this once. It takes about 20 minutes. Do the steps in order; each one say
 
 Open Supabase Studio for your project (`https://srv1824055.hstgr.cloud`) → **SQL Editor**.
 
-Run `backend/supabase/migrations/000_check_state.sql` (copy its contents in, as described in the box above).
+Run `supabase/migrations/000_check_state.sql` (copy its contents in, as described in the box above).
 
 It changes nothing. It prints six rows:
 
@@ -38,7 +38,7 @@ It changes nothing. It prints six rows:
 
 ## Step 2 — Run the migrations that say RUN THIS
 
-For each one, in numeric order: open the file in `backend/supabase/migrations/`, **Ctrl+A → Ctrl+C**, then in
+For each one, in numeric order: open the file in `supabase/migrations/`, **Ctrl+A → Ctrl+C**, then in
 the SQL Editor **Ctrl+A → Ctrl+V → Run** (see the box at the top). Finish one before starting the next.
 
 ```
@@ -93,14 +93,15 @@ signed links, and only the owner and admins can read them.
 
 ## Step 4 — Fill in the backend's secrets
 
-Your `backend/.env.local` already has the Supabase URL, the anon key, and the Xendit keys. Three are missing:
+Your `.env.local` already has the Supabase URL, the anon key, and the Xendit keys. Three are missing:
 
 ```ini
 # Supabase Studio → Settings → API → "service_role" secret. Server-side only.
 # Payments, refunds, the Xendit webhook and analytics do not work without it.
 SUPABASE_SERVICE_ROLE_KEY=paste-the-service-role-key-here
 
-# Where you serve the front end from. Browser calls to /api/* are blocked otherwise (CORS).
+# Only needed if you ever serve the front end from a different origin than the API.
+# With one server (the normal setup) you can leave this out entirely.
 FRONTEND_ORIGINS=http://localhost:5500,http://127.0.0.1:5500
 
 # Only needed for the OCR title check. Leave it out and that one feature returns a clear error.
@@ -112,36 +113,38 @@ security rule in the database.
 
 ---
 
-## Step 5 — Start the backend
+## Step 5 — Start the app
+
+One server now runs both halves: the front end and the API.
 
 ```bash
-cd backend
 npm install
 npm run dev
 ```
 
-**How to tell it worked:** `http://localhost:3000` opens, and the terminal shows no red errors.
+**How to tell it worked:** the terminal says `Ready in …` and `Local: http://localhost:3000`.
+Leave that terminal open — closing it stops the app.
 
 ---
 
-## Step 6 — Serve the front end
+## Step 6 — Open it
 
-The front end must be served over HTTP, **not** opened as a `file://` path (the Supabase library needs an origin).
+Go to **http://localhost:3000/browse.html**
 
-Easiest: in VS Code, right-click `index.html` → **Open with Live Server** (it uses port 5500, which is already
-in `FRONTEND_ORIGINS` above).
+| What you see | What it means |
+|---|---|
+| Your listings (or "0 properties found") | It works. The front end is talking to the real database. |
+| "Could not load listings" | Press **F12** → **Console** tab and read the red text. Usually `SUPABASE_URL` / `SUPABASE_ANON_KEY` in `public/assets/js/config.js`. |
 
-Or:
+There is no second server and no Live Server any more. Everything is on port 3000:
 
-```bash
-npx serve -l 5500 .
-```
-
-**How to tell it worked:** open `http://localhost:5500/browse.html`. It should say "0 properties found"
-(not "Could not load listings"). Zero is correct — the database is empty at this point.
-
-If it says *Could not load listings*, open the browser console (F12). Check `assets/js/config.js` has the right
-`SUPABASE_URL` and `SUPABASE_ANON_KEY`.
+| URL | Page |
+|---|---|
+| `localhost:3000/` | home |
+| `localhost:3000/browse.html` | public listings |
+| `localhost:3000/auth/signin.html` | sign in |
+| `localhost:3000/module/buyer/buyer.html` | buyer dashboard |
+| `localhost:3000/api/*` | the API |
 
 ---
 
@@ -204,7 +207,7 @@ remove that one `<script>` line.
 
 ## Secrets
 
-`backend/.env.local` is never committed (`.gitignore` covers `.env*`). It holds the Supabase anon and
+`.env.local` is never committed (`.gitignore` covers `.env*`). It holds the Supabase anon and
 service-role keys. The Xendit and Google entries are still the example placeholders — fill them in when
 those integrations are actually wired up.
 

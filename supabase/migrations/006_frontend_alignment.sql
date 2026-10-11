@@ -495,6 +495,17 @@ CREATE TABLE IF NOT EXISTS refunds (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
+-- Written by the admin LRA verification screen (src/components/verification-table.tsx).
+CREATE TABLE IF NOT EXISTS lra_audit_logs (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  property_id uuid NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
+  admin_id uuid NOT NULL REFERENCES profiles(id),
+  action text NOT NULL,
+  notes text,
+  ref_no text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS search_demand_logs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
@@ -833,6 +844,12 @@ CREATE POLICY "Admins write audit logs" ON audit_logs FOR INSERT
 CREATE POLICY "Super admins read audit logs" ON audit_logs FOR SELECT USING (public.is_superadmin());
 
 -- analytics ---------------------------------------------------------------------
+ALTER TABLE lra_audit_logs ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Admins insert audit" ON lra_audit_logs;
+DROP POLICY IF EXISTS "Admins read audit" ON lra_audit_logs;
+CREATE POLICY "Admins insert audit" ON lra_audit_logs FOR INSERT WITH CHECK (public.is_admin());
+CREATE POLICY "Admins read audit"   ON lra_audit_logs FOR SELECT USING (public.is_admin());
+
 ALTER TABLE search_demand_logs ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users insert own log" ON search_demand_logs;
 DROP POLICY IF EXISTS "Admins read all logs" ON search_demand_logs;
@@ -882,6 +899,7 @@ CREATE INDEX IF NOT EXISTS idx_reviews_reviewee          ON reviews(reviewee_id)
 CREATE INDEX IF NOT EXISTS idx_listing_reports_status    ON listing_reports(status);
 CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON notifications(user_id, read);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_created        ON audit_logs(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_lra_audit_property       ON lra_audit_logs(property_id);
 CREATE INDEX IF NOT EXISTS idx_payments_property         ON payments(property_id);
 CREATE INDEX IF NOT EXISTS idx_payments_user             ON payments(user_id);
 

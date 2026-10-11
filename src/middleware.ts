@@ -41,7 +41,9 @@ export async function middleware(request: NextRequest) {
   }
 
   const isProtected = pathname.startsWith("/dashboard");
-  const isAuthPage = pathname.startsWith("/auth/login") || pathname.startsWith("/auth/signup");
+  // Exact match on purpose: the static front end has its own /auth/signup.html and /auth/signin.html,
+  // and startsWith() would hijack them.
+  const isAuthPage = pathname === "/auth/login" || pathname === "/auth/signup";
   if (!isProtected && !isAuthPage) return NextResponse.next();
 
   // Cookie session for the Next dashboard (standard @supabase/ssr middleware pattern).
@@ -76,5 +78,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
+  // Only these paths need middleware. Everything else (the static front end in public/) is served
+  // straight from disk, so no HTML or asset request pays for it.
+  matcher: ["/api/:path*", "/dashboard/:path*", "/auth/login", "/auth/signup"],
 };
