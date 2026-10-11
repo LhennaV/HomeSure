@@ -40,6 +40,33 @@ ALTER TABLE payments
   ADD COLUMN IF NOT EXISTS confirmed_by     uuid REFERENCES profiles(id),
   ADD COLUMN IF NOT EXISTS rejection_reason text;
 
+-- A database built from 001 has neither of the next two, because 001's payments table was
+-- written before any of this existed. The live database has both already. Add what is missing so
+-- the same migration works either way — that is what lets a second deployment start from nothing.
+
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS purpose text;
+
+-- 001 declares status as the enum payment_status (pending, paid, failed, expired); the live
+-- database uses plain text. Where it is an enum, the two words this flow adds have to be taught
+-- to it, or every manual payment fails on insert.
+DO $$
+DECLARE enum_name text;
+BEGIN
+  SELECT t.typname INTO enum_name
+  FROM pg_attribute a
+  JOIN pg_class c ON c.oid = a.attrelid
+  JOIN pg_namespace n ON n.oid = c.relnamespace
+  JOIN pg_type t ON t.oid = a.atttypid
+  WHERE n.nspname = 'public' AND c.relname = 'payments' AND a.attname = 'status'
+    AND t.typtype = 'e';
+
+  IF enum_name IS NOT NULL THEN
+    EXECUTE format('ALTER TYPE public.%I ADD VALUE IF NOT EXISTS %L', enum_name, 'pending_confirmation');
+    EXECUTE format('ALTER TYPE public.%I ADD VALUE IF NOT EXISTS %L', enum_name, 'rejected');
+    RAISE NOTICE 'payments.status is the enum %, added pending_confirmation and rejected', enum_name;
+  END IF;
+END $$;
+
 -- The status vocabulary used from here on:
 --   pending              invoice raised / rent due, nothing received
 --   pending_confirmation buyer submitted proof of a manual payment, the seller has not acted
