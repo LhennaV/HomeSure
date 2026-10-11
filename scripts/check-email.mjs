@@ -91,7 +91,18 @@ try {
   bad(`Could not connect to ${env.SMTP_HOST}:${port}`);
   note(err.message);
   const text = String(err.message).toLowerCase();
-  if (text.includes("auth") || text.includes("credentials") || text.includes("535")) {
+  if (text.includes("unauthorized ip") || text.includes("525")) {
+    note("Your credentials are fine. The provider is refusing this machine's IP address.");
+    note("Brevo blocks SMTP from any IP not on its allowlist, and home connections change IP");
+    note("whenever the router restarts.");
+    try {
+      const res = await fetch("https://api.ipify.org", { signal: AbortSignal.timeout(8000) });
+      if (res.ok) note(`This machine is currently ${(await res.text()).trim()}.`);
+    } catch {
+      note("Search \"what is my ip\" to find this machine's address.");
+    }
+    note("In Brevo: SMTP & API -> Authorised IPs. Add it, or turn the restriction off.");
+  } else if (text.includes("auth") || text.includes("credentials") || text.includes("535")) {
     note("That is a login problem: check SMTP_USER and SMTP_PASSWORD.");
     note('On Brevo the user is a login like "8a1b2c001@smtp-brevo.com", not your email address.');
     note("On Gmail the password must be an App Password, not your normal one.");

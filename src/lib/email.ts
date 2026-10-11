@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import nodemailer, { type Transporter } from "nodemailer";
 
 /**
@@ -67,8 +69,11 @@ function getTransporter(config: SmtpConfig): Transporter {
   return transporter;
 }
 
-export async function sendMail({ to, subject, html, text }: {
-  to: string; subject: string; html: string; text: string;
+/** An image sent with the message and referenced as cid:<cid> from the HTML. */
+export type InlineImage = { filename: string; path: string; cid: string };
+
+export async function sendMail({ to, subject, html, text, images }: {
+  to: string; subject: string; html: string; text: string; images?: InlineImage[];
 }): Promise<void> {
   const settings = smtpConfig();
   if (!settings.ok) {
@@ -81,7 +86,22 @@ export async function sendMail({ to, subject, html, text }: {
     subject,
     text,
     html,
+    // Attached rather than linked. A linked image needs a public URL, and on localhost there is
+    // none — the logo would be a broken box for everyone but the sender.
+    attachments: images?.map((img) => ({
+      filename: img.filename,
+      path: img.path,
+      cid: img.cid,
+      contentDisposition: "inline" as const,
+    })),
   });
+}
+
+/** The HomeSure mark, attached to every message so it renders with no public URL. */
+export function brandImages(): InlineImage[] {
+  const logo = path.join(process.cwd(), "public", "assets", "img", "image.png");
+  if (!fs.existsSync(logo)) return [];
+  return [{ filename: "homesure.png", path: logo, cid: "homesure-logo" }];
 }
 
 /** The address the verification link points back at. */
@@ -96,65 +116,186 @@ export function appOrigin(request: Request): string {
   return `${proto}://${host}`;
 }
 
-const BRAND = "#00c9a7";
+// Brand colours, matching the site.
+const TEAL = "#00c9a7";
+const NAVY = "#0d1b2a";
+const INK = "#0f172a";
+const MUTED = "#64748b";
 
+/**
+ * The confirmation email.
+ *
+ * Built with tables and inline styles on purpose. Mail clients are roughly fifteen years behind
+ * browsers: Gmail strips <style> blocks, Outlook renders through Word, and flexbox and grid are
+ * not available in either. Tables are the only layout that survives all of them.
+ */
 export function verificationEmail({ firstName, link }: { firstName: string; link: string }) {
   const hello = firstName ? `Hi ${escapeHtml(firstName)},` : "Hi,";
 
   const text = [
-    firstName ? `Hi ${firstName},` : "Hi,",
+    firstName ? `Hi ${firstName}, welcome to HomeSure.` : "Welcome to HomeSure.",
     "",
-    "Confirm your email address to finish setting up your HomeSure account:",
+    "We are glad you are here. One tap on the link below confirms your email, and your account is",
+    "ready to use:",
     "",
     link,
     "",
-    "This link works for 24 hours. If you did not sign up for HomeSure, you can ignore this message — no account will be activated.",
+    "After that you can browse listings, message sellers and save the places you like.",
     "",
-    "— HomeSure, Sta. Maria, Bulacan",
+    "The link lasts 24 hours. If it expires, ask for a new one from the sign-in page.",
+    "",
+    "Not you? Nothing to do. Ignore this and no account will be created.",
+    "",
+    "See you soon,",
+    "The HomeSure team",
+    "Sta. Maria, Bulacan",
   ].join("\n");
 
   const html = `<!doctype html>
-<html>
-  <body style="margin:0;padding:24px;background:#f1f5f9;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(15,23,42,0.08);">
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>Confirm your HomeSure email</title>
+  </head>
+  <body style="margin:0;padding:0;background:#eef2f6;">
+    <!-- Shown in the inbox list under the subject, before anyone opens it. -->
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;">
+      One tap and you are in. Your HomeSure account is almost ready.
+    </div>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#eef2f6;">
       <tr>
-        <td style="padding:28px 32px 8px;">
-          <div style="font-size:20px;font-weight:800;color:#0f172a;letter-spacing:-0.3px;">HomeSure</div>
-          <div style="font-size:12px;color:#64748b;margin-top:2px;">Sta. Maria, Bulacan</div>
-        </td>
-      </tr>
-      <tr>
-        <td style="padding:16px 32px 0;">
-          <p style="font-size:15px;color:#0f172a;margin:0 0 12px;">${hello}</p>
-          <p style="font-size:14px;color:#334155;line-height:1.65;margin:0 0 24px;">
-            Confirm your email address to finish setting up your account. You will not be able to
-            sign in until you do.
-          </p>
-          <a href="${escapeHtml(link)}"
-             style="display:inline-block;background:${BRAND};color:#04221d;text-decoration:none;
-                    font-weight:700;font-size:14px;padding:13px 28px;border-radius:9px;">
-            Confirm my email
-          </a>
-          <p style="font-size:12px;color:#64748b;line-height:1.6;margin:24px 0 0;">
-            Or paste this into your browser:<br>
-            <span style="color:#334155;word-break:break-all;">${escapeHtml(link)}</span>
-          </p>
-        </td>
-      </tr>
-      <tr>
-        <td style="padding:24px 32px 28px;">
-          <hr style="border:none;border-top:1px solid #e2e8f0;margin:0 0 16px;">
-          <p style="font-size:11.5px;color:#94a3b8;line-height:1.6;margin:0;">
-            This link works for 24 hours. If you did not sign up for HomeSure you can ignore this
-            message — no account will be activated.
-          </p>
+        <td align="center" style="padding:32px 16px;">
+
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"
+                 style="width:600px;max-width:100%;background:#ffffff;border-radius:16px;overflow:hidden;
+                        box-shadow:0 2px 16px rgba(15,23,42,0.08);">
+
+            <!-- Header -->
+            <tr>
+              <td style="background:${NAVY};padding:32px 40px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="padding-right:12px;vertical-align:middle;">
+                      <img src="cid:homesure-logo" width="40" height="40" alt=""
+                           style="display:block;width:40px;height:40px;border:0;">
+                    </td>
+                    <td style="vertical-align:middle;">
+                      <div style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:22px;
+                                  font-weight:800;color:#ffffff;letter-spacing:-0.4px;line-height:1;">
+                        HomeSure
+                      </div>
+                      <div style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;
+                                  color:rgba(255,255,255,0.55);margin-top:4px;letter-spacing:0.3px;">
+                        Sta. Maria, Bulacan
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Teal rule under the header -->
+            <tr><td style="height:4px;background:${TEAL};font-size:0;line-height:0;">&nbsp;</td></tr>
+
+            <!-- Body -->
+            <tr>
+              <td style="padding:40px 40px 8px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
+                <div style="font-size:26px;font-weight:800;color:${INK};letter-spacing:-0.5px;margin-bottom:18px;">
+                  Welcome to HomeSure
+                </div>
+                <p style="font-size:15.5px;color:${INK};line-height:1.7;margin:0 0 14px;">${hello}</p>
+                <p style="font-size:15.5px;color:#334155;line-height:1.75;margin:0 0 14px;">
+                  We are glad you are here. One tap below confirms your email, and your account is
+                  ready to use.
+                </p>
+                <p style="font-size:15.5px;color:#334155;line-height:1.75;margin:0 0 30px;">
+                  After that you can browse listings, message sellers directly, and save the places
+                  you want to come back to.
+                </p>
+              </td>
+            </tr>
+
+            <!-- Button -->
+            <tr>
+              <td align="center" style="padding:0 40px 32px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td align="center" style="background:${TEAL};border-radius:10px;">
+                      <a href="${escapeHtml(link)}"
+                         style="display:inline-block;padding:15px 40px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;
+                                font-size:15px;font-weight:700;color:#04221d;text-decoration:none;letter-spacing:0.2px;">
+                        Yes, this is me
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Fallback link -->
+            <tr>
+              <td style="padding:0 40px 32px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
+                <div style="border-top:1px solid #e2e8f0;padding-top:20px;">
+                  <div style="font-size:12px;color:${MUTED};margin-bottom:6px;">
+                    Button not working? Paste this into your browser:
+                  </div>
+                  <div style="font-size:12px;color:#334155;word-break:break-all;line-height:1.5;">
+                    ${escapeHtml(link)}
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            <!-- What HomeSure is, for anyone who does not recognise the name -->
+            <tr>
+              <td style="padding:0 40px 36px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                       style="background:#f1f5f9;border-radius:12px;">
+                  <tr>
+                    <td style="padding:18px 20px;">
+                      <div style="font-size:13.5px;font-weight:700;color:${INK};margin-bottom:7px;">
+                        You are dealing with real people here
+                      </div>
+                      <div style="font-size:13px;color:#475569;line-height:1.65;">
+                        We check identity documents and land titles before any listing goes live. No
+                        ghost listings, no sellers who cannot prove the property is theirs.
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:24px 40px;
+                         font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
+                <div style="font-size:12px;color:#64748b;line-height:1.7;">
+                  The link lasts 24 hours. If it expires, just ask for a new one from the sign-in page.
+                </div>
+                <div style="font-size:12px;color:#94a3b8;line-height:1.7;margin-top:10px;">
+                  Not you? Nothing to do — ignore this and no account will be created.
+                </div>
+                <div style="font-size:12px;color:#94a3b8;margin-top:16px;">
+                  See you soon,<br>
+                  <span style="color:#64748b;font-weight:600;">The HomeSure team</span><br>
+                  <span style="color:#cbd5e1;">Sta. Maria, Bulacan</span>
+                </div>
+              </td>
+            </tr>
+
+          </table>
+
         </td>
       </tr>
     </table>
   </body>
 </html>`;
 
-  return { subject: "Confirm your HomeSure email", text, html };
+  return { subject: "Confirm your HomeSure email", text, html, images: brandImages() };
 }
 
 function escapeHtml(value: string): string {
