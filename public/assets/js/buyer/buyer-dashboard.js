@@ -21,12 +21,13 @@
   // All 16 barangays of Valenzuela, alphabetically sorted
   // (because chaos is not an option here)
   // ──────────────────────────────────────────────────────────────────────────
-  const approved = FAKE_LISTINGS.filter(l => l.status === 'approved');
-  const barangays = [...new Set(approved.map(l => l.barangay))].sort();
-  const barSel = document.getElementById('filterBarangay');
-  barangays.forEach(b => {
-    const o = document.createElement('option'); o.value = b; o.textContent = b; barSel.appendChild(o);
-  });
+  let approved = [];
+  function fillBarangays() {
+    const barSel = document.getElementById('filterBarangay');
+    [...new Set(approved.map(l => l.barangay))].filter(Boolean).sort().forEach(b => {
+      const o = document.createElement('option'); o.value = b; o.textContent = b; barSel.appendChild(o);
+    });
+  }
 
   // ══════════════════════════════════════════════════════════════════════════
   // Property Icons
@@ -76,14 +77,12 @@
     const maxP     = parseFloat(document.getElementById('filterMax').value) || Infinity;
 
     const qLow = q.toLowerCase();
-    const list = FAKE_LISTINGS.filter(l => {
-      if (l.status !== 'approved') return false;
+    const list = approved.filter(l => {
       if (barangay && l.barangay !== barangay) return false;
       if (type     && l.type     !== type)     return false;
       if (l.price < minP || l.price > maxP)    return false;
       if (q) {
-        const seller = FAKE_USERS.find(u => u.id === l.sellerId);
-        const sellerName = seller ? (seller.firstName + ' ' + seller.lastName).toLowerCase() : '';
+        const sellerName = l.seller ? l.seller.name.toLowerCase() : '';
         if (!l.title.toLowerCase().includes(qLow) &&
             !l.address.toLowerCase().includes(qLow) &&
             !sellerName.includes(qLow)) return false;
@@ -109,16 +108,15 @@
         : `<span class="badge-tl badge-sale">For Sale</span>`;
       const rightBadge = `<span class="badge-tr">${l.images.length} Photo${l.images.length !== 1 ? 's' : ''}</span>`;
       const verifiedBadge = `<span class="verified-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>`;
-      const bedsLabel  = l.bedrooms === 0 ? 'Studio' : l.bedrooms;
+      const bedsLabel = l.bedrooms === 0 ? 'Studio' : (l.bedrooms ?? '–');
       const price      = '₱' + l.price.toLocaleString('en-PH');
       const priceSub   = isRent ? '<span class="prop-price-per"> / month</span>' : '';
-      const seller     = FAKE_USERS.find(u => u.id === l.sellerId);
-      const sellerName = seller ? seller.firstName + ' ' + seller.lastName : '';
+      const sellerName = l.seller ? l.seller.name : '';
 
       return `
         <div class="prop-card" onclick="window.location.href='listing.html?id=${l.id}'">
           <div class="prop-img-wrap">
-            <img src="${l.images[0]}" alt="${l.title}" loading="lazy" />
+            <img src="${HS.cover(l)}" alt="${l.title}" loading="lazy" />
             ${typeBadge}
             ${rightBadge}
           </div>
@@ -127,8 +125,8 @@
             <div class="prop-address">${iconPin} ${l.address}</div>
             <div class="prop-amenities">
               <span class="amenity">${iconBed} ${bedsLabel}</span>
-              <span class="amenity">${iconBath} ${l.bathrooms}</span>
-              <span class="amenity">${iconArea} ${l.floorArea} sqm</span>
+              <span class="amenity">${iconBath} ${l.bathrooms ?? '–'}</span>
+              <span class="amenity">${iconArea} ${l.floorArea || l.lotArea || '–'} sqm</span>
             </div>
             <div class="prop-footer">
               <div class="prop-price">${price}${priceSub}</div>
@@ -140,4 +138,18 @@
     }).join('');
   }
 
-  renderListings();
+  async function loadListings() {
+    const grid = document.getElementById('listingsGrid');
+    grid.innerHTML = '<div class="empty-state">Loading properties…</div>';
+    try {
+      approved = await HS.listings.withSellers(await HS.listings.approved());
+    } catch (err) {
+      console.error('Failed to load listings:', err);
+      grid.innerHTML = '<div class="empty-state">Could not load properties. Please try again.</div>';
+      return;
+    }
+    fillBarangays();
+    renderListings();
+  }
+
+  loadListings();
