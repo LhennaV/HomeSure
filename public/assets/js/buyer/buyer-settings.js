@@ -291,7 +291,7 @@
 
   // ── Theme Toggle ─────────────────────────────────────────────────────────
   function getTheme() {
-    return localStorage.getItem('hs-theme') || 'light';
+    return localStorage.getItem('hs-theme') || 'dark';
   }
 
   function applyTheme(mode) {

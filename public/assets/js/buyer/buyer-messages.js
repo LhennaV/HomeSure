@@ -82,6 +82,11 @@
     return m.text || '';
   }
 
+
+  // Only the search box uses this. filterConvs() itself stays immediate, so the first render and
+  // every call from code are unaffected.
+  window.filterConvsSoon = hsDebounce(() => window.filterConvs(), 200);
+
   window.filterConvs = function () {
     const box = document.getElementById('convSearch');
     renderConvList(box ? box.value : '');

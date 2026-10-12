@@ -8,7 +8,7 @@
   }
 
   function getTheme() {
-    return localStorage.getItem('hs-theme') || 'light';
+    return localStorage.getItem('hs-theme') || 'dark';
   }
 
   window.toggleTheme = function () {
@@ -34,6 +34,32 @@
     });
   }
 
+  // The landing page map links straight to a barangay: browse.html?barangay=Poblacion.
+  //
+  // The dropdown above is built from the barangays that actually have listings, so a link to a
+  // barangay with none would set a value no <option> carries. A <select> ignores that and keeps
+  // showing "All", which would quietly list every property in the municipality — the opposite of
+  // what the visitor clicked. Adding the option means they get an honest "0 properties found"
+  // with the barangay still named in the filter.
+  function applyBarangayFromURL() {
+    const wanted = new URLSearchParams(window.location.search).get('barangay');
+    if (!wanted) return;
+
+    const select = document.getElementById('filterBarangay');
+    const match = [...select.options].find(
+      o => o.value.toLowerCase() === wanted.toLowerCase());
+
+    if (match) {
+      select.value = match.value;
+    } else {
+      const option = document.createElement('option');
+      option.value = wanted;
+      option.textContent = wanted;
+      select.appendChild(option);
+      select.value = wanted;
+    }
+  }
+
   async function loadListings() {
     try {
       allListings = await HS.listings.approved();
@@ -43,6 +69,7 @@
       return;
     }
     fillBarangays();
+    applyBarangayFromURL();
     applyFilters();
   }
 
@@ -99,6 +126,11 @@
   }
 
   // ── Filter & render ─────────────────────────────────────────────────────────
+
+  // Only the search box uses this. applyFilters() itself stays immediate, so the first render and
+  // every call from code are unaffected.
+  window.applyFiltersSoon = hsDebounce(() => window.applyFilters(), 200);
+
   window.applyFilters = function () {
     const typeFilter = document.getElementById('filterType').value;
     const forFilter = document.getElementById('filterFor').value;

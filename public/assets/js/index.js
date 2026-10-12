@@ -114,26 +114,38 @@ const categories = [
   },
 ];
 
+// Each step is paired with the screen it describes, drawn the way the real page draws it — the
+// same listing card browse.html renders, the same chat bubbles and payment card. They hold
+// example content rather than live rows, because this runs before anyone has signed in, but the
+// shapes are the application's own.
 const steps = [
   {
-    num: "1",
+    num: "01",
+    label: "Account",
     title: "Create an Account",
-    desc: "Sign up as a buyer or seller. Verify your identity to build trust.",
+    desc: "Sign up as a buyer or seller. Verify your identity so the person on the other side knows who they are dealing with.",
+    screen: "verification",
   },
   {
-    num: "2",
+    num: "02",
+    label: "Discover",
     title: "Browse or List",
-    desc: "Search properties by barangay, budget, and type — or post your listing.",
+    desc: "Search by barangay, budget and property type across Sta. Maria — or post your own listing and let buyers come to you.",
+    screen: "listing",
   },
   {
-    num: "3",
-    title: "Connect Directly",
-    desc: "Message verified sellers securely within the platform.",
+    num: "03",
+    label: "Connect",
+    title: "Message the Owner",
+    desc: "Talk to the seller inside HomeSure. Arrange a viewing, ask about the place, and keep the whole conversation in one thread.",
+    screen: "messages",
   },
   {
-    num: "4",
-    title: "Close the Deal",
-    desc: "Agree on terms confidently with full transparency on both sides.",
+    num: "04",
+    label: "Payment",
+    title: "Pay and Move In",
+    desc: "Pay through the platform or upload proof of a direct payment. The seller confirms it, and both of you keep a record.",
+    screen: "payment",
   },
 ];
 
@@ -155,307 +167,21 @@ const features = [
   },
 ];
 
+// Counted from the database when the section comes into view. The numbers below are only what is
+// shown if that query fails — so they are the ones that are true regardless: the municipality has
+// 24 barangays, no listing goes live unverified, and messaging is in-platform for everyone.
+//
+// "1,200+ Verified Sellers" used to sit here. Nobody could have said where it came from.
 const statsData = [
-  { end: 24, suffix: "", label: "Barangays Covered" },
-  { end: 1200, suffix: "+", label: "Verified Sellers" },
-  { end: 0, suffix: "", label: "Unverified Listings" },
-  { end: 100, suffix: "%", label: "Secure Messaging" },
+  { key: "barangays",       end: 24,  suffix: "",  label: "Barangays Covered" },
+  { key: "listings",        end: 0,   suffix: "",  label: "Listings Live" },
+  { key: "verifiedSellers", end: 0,   suffix: "",  label: "Verified Sellers" },
+  { key: null,              end: 0,   suffix: "",  label: "Unverified Listings" },
 ];
 
-// ══════════════════════════════════════════════════════════════════════════════
-// UNUSED CODE - Property Card System (Replaced by simple markers)
-// ══════════════════════════════════════════════════════════════════════════════
-/*
-const propertyPins = [
-  { id: 1, title: 'House for Sale', price: '₱10,000', period: '/month', location: 'Pulong Buhangin, Sta. Maria, Bulacan', position: { x: 78, y: 18 }, image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=400&q=80', verified: true },
-  { id: 2, title: 'Cozy Studio Apartment', price: '₱8,000', period: '/month', location: 'Poblacion, Sta. Maria, Bulacan', position: { x: 42, y: 58 }, image: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=400&q=80', verified: true },
-  { id: 3, title: 'Modern 2BR Apartment', price: '₱12,000', period: '/month', location: 'Bagbaguin, Sta. Maria, Bulacan', position: { x: 25, y: 65 }, image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&q=80', verified: true },
-  { id: 4, title: 'Spacious Family Home', price: '₱15,000', period: '/month', location: 'Guyong, Sta. Maria, Bulacan', position: { x: 48, y: 48 }, image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=400&q=80', verified: true },
-  { id: 5, title: 'Studio Loft Unit', price: '₱6,500', period: '/month', location: 'Tumana, Sta. Maria', position: { x: 50, y: 68 }, image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&q=80', verified: false },
-];
-*/
-
-// ══════════════════════════════════════════════════════════════════════════════
-// UNUSED CODE - 3D Barangay Polygon Data (Was for MapLibre 3D extrusion attempt)
-// ══════════════════════════════════════════════════════════════════════════════
-/*
-const barangayGeoJSON_OLD = {
-  type: 'FeatureCollection',
-  features: [
-    // ── SILANGAN – northern irregular shape (purple on map) ───────────────────
-    { type:'Feature', properties:{ name:'Silangan', count:12 }, geometry:{ type:'Polygon', coordinates:[[
-      [120.956,14.887],[120.964,14.889],[120.972,14.888],[120.978,14.886],
-      [120.982,14.883],[120.984,14.878],[120.982,14.872],[120.978,14.868],
-      [120.972,14.865],[120.965,14.864],[120.958,14.865],[120.952,14.868],
-      [120.948,14.872],[120.946,14.877],[120.948,14.882],[120.952,14.885],
-      [120.956,14.887]
-    ]] } },
-    // ── MAG-ASAWANG SAPA – northwest irregular (yellow on map) ────────────────
-    { type:'Feature', properties:{ name:'Mag-asawang Sapa', count:8 }, geometry:{ type:'Polygon', coordinates:[[
-      [120.920,14.886],[120.928,14.888],[120.936,14.887],[120.944,14.885],
-      [120.950,14.882],[120.954,14.878],[120.956,14.873],[120.954,14.867],
-      [120.950,14.862],[120.944,14.858],[120.936,14.856],[120.928,14.856],
-      [120.920,14.858],[120.914,14.862],[120.910,14.867],[120.908,14.872],
-      [120.908,14.878],[120.912,14.882],[120.920,14.886]
-    ]] } },
-    // ── PULONG BUHANGIN – large northeast (purple on map) ─────────────────────
-    { type:'Feature', properties:{ name:'Pulong Buhangin', count:15 }, geometry:{ type:'Polygon', coordinates:[[
-      [120.972,14.889],[120.984,14.890],[120.995,14.888],[121.003,14.884],
-      [121.008,14.878],[121.010,14.870],[121.008,14.862],[121.003,14.856],
-      [120.995,14.852],[120.984,14.850],[120.972,14.850],[120.964,14.852],
-      [120.956,14.856],[120.952,14.862],[120.950,14.870],[120.952,14.878],
-      [120.956,14.884],[120.964,14.887],[120.972,14.889]
-    ]] } },
-    // ── CAY POMBO – central small (yellow on map) ─────────────────────────────
-    { type:'Feature', properties:{ name:'Cay Pombo', count:6 }, geometry:{ type:'Polygon', coordinates:[[
-      [120.950,14.870],[120.956,14.872],[120.962,14.871],[120.966,14.868],
-      [120.968,14.864],[120.966,14.860],[120.962,14.857],[120.956,14.856],
-      [120.950,14.857],[120.946,14.860],[120.944,14.864],[120.946,14.868],
-      [120.950,14.870]
-    ]] } },
-    // ── CAYSIO – west of center (yellow on map) ───────────────────────────────
-    { type:'Feature', properties:{ name:'Caysio', count:9 }, geometry:{ type:'Polygon', coordinates:[[
-      [120.920,14.878],[120.928,14.880],[120.936,14.879],[120.944,14.876],
-      [120.950,14.872],[120.952,14.867],[120.950,14.862],[120.944,14.858],
-      [120.936,14.856],[120.928,14.856],[120.920,14.858],[120.914,14.862],
-      [120.912,14.867],[120.914,14.872],[120.920,14.878]
-    ]] } },
-    // ── MANGGAHAN – far west (yellow on map) ──────────────────────────────────
-    { type:'Feature', properties:{ name:'Manggahan', count:11 }, geometry:{ type:'Polygon', coordinates:[[
-      [120.910,14.852],[120.916,14.854],[120.922,14.853],[120.926,14.850],
-      [120.928,14.846],[120.926,14.842],[120.922,14.840],[120.916,14.840],
-      [120.910,14.842],[120.906,14.846],[120.908,14.850],[120.910,14.852]
-    ]] } },
-    // ── BALASING – east (green on map) ────────────────────────────────────────
-    { type:'Feature', properties:{ name:'Balasing', count:7 }, geometry:{ type:'Polygon', coordinates:[[
-      [120.968,14.865],[120.978,14.867],[120.988,14.865],[120.996,14.860],
-      [121.002,14.853],[121.004,14.845],[121.002,14.837],[120.996,14.830],
-      [120.988,14.826],[120.978,14.825],[120.968,14.826],[120.962,14.830],
-      [120.960,14.837],[120.962,14.845],[120.966,14.853],[120.968,14.860],
-      [120.968,14.865]
-    ]] } },
-    // ── BULAC – far east (yellow on map) ──────────────────────────────────────
-    { type:'Feature', properties:{ name:'Bulac', count:5 }, geometry:{ type:'Polygon', coordinates:[[
-      [120.992,14.856],[121.000,14.858],[121.008,14.856],[121.012,14.850],
-      [121.014,14.842],[121.012,14.834],[121.006,14.828],[121.000,14.824],
-      [120.992,14.822],[120.986,14.824],[120.982,14.830],[120.982,14.837],
-      [120.984,14.844],[120.988,14.850],[120.992,14.856]
-    ]] } },
-    // ── GUYONG – large central (beige on map) ─────────────────────────────────
-    { type:'Feature', properties:{ name:'Guyong', count:18 }, geometry:{ type:'Polygon', coordinates:[[
-      [120.930,14.854],[120.940,14.856],[120.950,14.854],[120.958,14.850],
-      [120.964,14.844],[120.966,14.837],[120.964,14.830],[120.958,14.825],
-      [120.950,14.822],[120.940,14.822],[120.930,14.825],[120.924,14.830],
-      [120.922,14.837],[120.924,14.844],[120.928,14.850],[120.930,14.854]
-    ]] } },
-    // ── SANTA CRUZ – west central (yellow on map) ─────────────────────────────
-    { type:'Feature', properties:{ name:'Santa Cruz', count:14 }, geometry:{ type:'Polygon', coordinates:[[
-      [120.914,14.866],[120.922,14.868],[120.930,14.867],[120.938,14.864],
-      [120.944,14.860],[120.946,14.855],[120.944,14.850],[120.938,14.847],
-      [120.930,14.846],[120.922,14.847],[120.914,14.850],[120.910,14.855],
-      [120.910,14.860],[120.912,14.864],[120.914,14.866]
-    ]] } },
-    // ── CATMON – east central (yellow on map) ─────────────────────────────────
-    { type:'Feature', properties:{ name:'Catmon', count:13 }, geometry:{ type:'Polygon', coordinates:[[
-      [120.964,14.858],[120.974,14.860],[120.984,14.858],[120.992,14.854],
-      [120.998,14.848],[121.000,14.840],[120.998,14.832],[120.992,14.826],
-      [120.984,14.822],[120.974,14.820],[120.964,14.820],[120.958,14.824],
-      [120.956,14.830],[120.958,14.837],[120.962,14.844],[120.966,14.850],
-      [120.964,14.858]
-    ]] } },
-    // ── SANTA CLARA – west (yellow on map) ────────────────────────────────────
-    { type:'Feature', properties:{ name:'Santa Clara', count:10 }, geometry:{ type:'Polygon', coordinates:[[
-      [120.910,14.840],[120.916,14.842],[120.922,14.842],[120.928,14.839],
-      [120.930,14.835],[120.928,14.831],[120.922,14.829],[120.916,14.829],
-      [120.910,14.831],[120.906,14.835],[120.908,14.839],[120.910,14.840]
-    ]] } },
-    // ── SAN JOSE PATAG – central (purple on map) ──────────────────────────────
-    { type:'Feature', properties:{ name:'San Jose Patag', count:16 }, geometry:{ type:'Polygon', coordinates:[[
-      [120.930,14.834],[120.938,14.836],[120.946,14.835],[120.954,14.832],
-      [120.960,14.827],[120.962,14.822],[120.960,14.817],[120.954,14.814],
-      [120.946,14.812],[120.938,14.812],[120.930,14.814],[120.924,14.818],
-      [120.922,14.823],[120.924,14.828],[120.928,14.832],[120.930,14.834]
-    ]] } },
-    // ── POBLACION – town center (purple on map) ───────────────────────────────
-    { type:'Feature', properties:{ name:'Poblacion', count:45 }, geometry:{ type:'Polygon', coordinates:[[
-      [120.928,14.823],[120.934,14.825],[120.940,14.824],[120.946,14.821],
-      [120.950,14.817],[120.950,14.812],[120.946,14.808],[120.940,14.806],
-      [120.934,14.806],[120.928,14.808],[120.924,14.812],[120.924,14.817],
-      [120.926,14.821],[120.928,14.823]
-    ]] } },
-    // ── BAGBAGUIN – southwest (yellow on map) ─────────────────────────────────
-    { type:'Feature', properties:{ name:'Bagbaguin', count:22 }, geometry:{ type:'Polygon', coordinates:[[
-      [120.916,14.816],[120.924,14.818],[120.932,14.817],[120.940,14.814],
-      [120.946,14.809],[120.948,14.803],[120.946,14.797],[120.940,14.793],
-      [120.932,14.791],[120.924,14.791],[120.916,14.793],[120.910,14.797],
-      [120.908,14.803],[120.910,14.809],[120.914,14.813],[120.916,14.816]
-    ]] } },
-    // ── TUMANA – south central (purple on map) ────────────────────────────────
-    { type:'Feature', properties:{ name:'Tumana', count:19 }, geometry:{ type:'Polygon', coordinates:[[
-      [120.944,14.816],[120.952,14.818],[120.960,14.817],[120.968,14.814],
-      [120.974,14.809],[120.976,14.803],[120.974,14.797],[120.968,14.793],
-      [120.960,14.791],[120.952,14.791],[120.944,14.793],[120.938,14.797],
-      [120.936,14.803],[120.938,14.809],[120.942,14.813],[120.944,14.816]
-    ]] } },
-    // ── PARADA – south central (purple on map) ────────────────────────────────
-    { type:'Feature', properties:{ name:'Parada', count:17 }, geometry:{ type:'Polygon', coordinates:[[
-      [120.964,14.822],[120.972,14.824],[120.980,14.823],[120.988,14.820],
-      [120.994,14.815],[120.996,14.809],[120.994,14.803],[120.988,14.799],
-      [120.980,14.797],[120.972,14.797],[120.964,14.799],[120.958,14.803],
-      [120.956,14.809],[120.958,14.815],[120.962,14.820],[120.964,14.822]
-    ]] } },
-    // ── SAN VICENTE – large southeast (purple on map) ─────────────────────────
-    { type:'Feature', properties:{ name:'San Vicente', count:14 }, geometry:{ type:'Polygon', coordinates:[[
-      [120.978,14.836],[120.990,14.838],[121.002,14.836],[121.012,14.831],
-      [121.018,14.824],[121.020,14.815],[121.018,14.806],[121.012,14.799],
-      [121.002,14.794],[120.990,14.792],[120.978,14.792],[120.970,14.796],
-      [120.964,14.802],[120.962,14.810],[120.964,14.818],[120.970,14.826],
-      [120.976,14.832],[120.978,14.836]
-    ]] } },
-    // ── LALAKHAN – far west (yellow on map) ───────────────────────────────────
-    { type:'Feature', properties:{ name:'Lalakhan', count:8 }, geometry:{ type:'Polygon', coordinates:[[
-      [120.906,14.826],[120.912,14.828],[120.918,14.827],[120.922,14.824],
-      [120.924,14.820],[120.922,14.816],[120.918,14.814],[120.912,14.814],
-      [120.906,14.816],[120.904,14.820],[120.906,14.824],[120.906,14.826]
-    ]] } },
-    // ── TABING BAKOD – southwest (yellow on map) ──────────────────────────────
-    { type:'Feature', properties:{ name:'Tabing Bakod', count:12 }, geometry:{ type:'Polygon', coordinates:[[
-      [120.916,14.813],[120.924,14.815],[120.932,14.814],[120.938,14.810],
-      [120.942,14.805],[120.942,14.799],[120.938,14.794],[120.932,14.791],
-      [120.924,14.790],[120.916,14.791],[120.910,14.795],[120.908,14.800],
-      [120.910,14.806],[120.914,14.810],[120.916,14.813]
-    ]] } },
-    // ── SAN GABRIEL – south (yellow on map) ───────────────────────────────────
-    { type:'Feature', properties:{ name:'San Gabriel', count:15 }, geometry:{ type:'Polygon', coordinates:[[
-      [120.930,14.798],[120.938,14.800],[120.946,14.799],[120.954,14.795],
-      [120.960,14.789],[120.962,14.782],[120.960,14.775],[120.954,14.770],
-      [120.946,14.768],[120.938,14.768],[120.930,14.770],[120.924,14.775],
-      [120.922,14.782],[120.924,14.789],[120.928,14.795],[120.930,14.798]
-    ]] } },
-    // ── BUENAVISTA – south (purple on map) ────────────────────────────────────
-    { type:'Feature', properties:{ name:'Buenavista', count:11 }, geometry:{ type:'Polygon', coordinates:[[
-      [120.942,14.798],[120.950,14.800],[120.958,14.799],[120.966,14.795],
-      [120.972,14.789],[120.974,14.782],[120.972,14.775],[120.966,14.770],
-      [120.958,14.768],[120.950,14.768],[120.942,14.770],[120.936,14.775],
-      [120.934,14.782],[120.936,14.789],[120.940,14.795],[120.942,14.798]
-    ]] } },
-    // ── CAMANGYANAN – south (purple on map) ───────────────────────────────────
-    { type:'Feature', properties:{ name:'Camangyanan', count:13 }, geometry:{ type:'Polygon', coordinates:[[
-      [120.960,14.812],[120.970,14.814],[120.980,14.812],[120.988,14.808],
-      [120.994,14.802],[120.996,14.795],[120.994,14.788],[120.988,14.783],
-      [120.980,14.780],[120.970,14.780],[120.960,14.782],[120.952,14.786],
-      [120.948,14.792],[120.950,14.799],[120.954,14.806],[120.960,14.812]
-    ]] } },
-    // ── MAHABANG PARANG – far southwest (yellow on map) ───────────────────────
-    { type:'Feature', properties:{ name:'Mahabang Parang', count:6 }, geometry:{ type:'Polygon', coordinates:[[
-      [120.908,14.796],[120.916,14.798],[120.924,14.797],[120.932,14.793],
-      [120.938,14.788],[120.940,14.781],[120.938,14.774],[120.932,14.769],
-      [120.924,14.767],[120.916,14.767],[120.908,14.769],[120.902,14.774],
-      [120.900,14.781],[120.902,14.788],[120.906,14.793],[120.908,14.796]
-    ]] } },
-  ]
-};
-*/
-
-// Exact 24 barangays of Sta. Maria, Bulacan
-const STA_MARIA_BARANGAYS = new Set([
-  'Bagbaguin','Balasing','Buenavista','Bulac','Camangyanan','Catmon',
-  'Cay Pombo','Caysio','Guyong','Lalakhan','Mag-asawang Sapa',
-  'Mahabang Parang','Manggahan','Parada','Poblacion','Pulong Buhangin',
-  'San Gabriel','San Jose Patag','San Vicente','Santa Clara','Santa Cruz',
-  'Silangan','Tabing Bakod','Tumana',
-]);
-
-// Name aliases — OSM may use these alternate spellings
-const BARANGAY_ALIAS = {
-  'Sta. Clara':'Santa Clara','Sta. Cruz':'Santa Cruz',
-  'Cay-Pombo':'Cay Pombo','Mag-Asawang Sapa':'Mag-asawang Sapa',
-  'Mahabang-Parang':'Mahabang Parang','Tabing-Bakod':'Tabing Bakod',
-  'San Jose-Patag':'San Jose Patag',
-};
-
-// Listing count per barangay — merged with Overpass API data
-const barangayListings = {
-  'Poblacion':12,'Guyong':9,'Santa Cruz':8,'Manggahan':7,'Bagbaguin':7,
-  'Mag-asawang Sapa':6,'Tumana':6,'Catmon':6,'Caysio':5,'Santa Clara':5,
-  'San Gabriel':5,'Camangyanan':5,'Parada':5,'Silangan':4,'San Jose Patag':4,
-  'San Vicente':4,'Buenavista':4,'Pulong Buhangin':20,'Cay Pombo':3,
-  'Balasing':3,'Lalakhan':3,'Tabing Bakod':3,'Bulac':2,'Mahabang Parang':2,
-};
-
-// Assemble ordered OSM way segments into a single closed ring
-function assembleRing(ways) {
-  if (!ways || !ways.length) return null;
-  if (ways.length === 1) {
-    const w = ways[0]; if (w.length < 3) return null;
-    const f = w[0], l = w[w.length-1];
-    return (f[0]===l[0]&&f[1]===l[1]) ? w : [...w, f];
-  }
-  let ring = [...ways[0]];
-  const rem = [...ways.slice(1)];
-  while (rem.length) {
-    const tail = ring[ring.length-1]; let found = false;
-    for (let i = 0; i < rem.length; i++) {
-      const w = rem[i];
-      if (Math.abs(w[0][0]-tail[0])<1e-7 && Math.abs(w[0][1]-tail[1])<1e-7)
-        { ring.push(...w.slice(1)); rem.splice(i,1); found=true; break; }
-      if (Math.abs(w[w.length-1][0]-tail[0])<1e-7 && Math.abs(w[w.length-1][1]-tail[1])<1e-7)
-        { ring.push(...[...w].reverse().slice(1)); rem.splice(i,1); found=true; break; }
-    }
-    if (!found) break;
-  }
-  if (ring.length < 4) return null;
-  const f = ring[0], l = ring[ring.length-1];
-  if (Math.abs(f[0]-l[0])>1e-7||Math.abs(f[1]-l[1])>1e-7) ring.push(f);
-  return ring;
-}
-
-// Convert any Overpass relation to GeoJSON (no name filter — used for municipality boundary)
-function relationToGeoJSON(osm) {
-  const features = [];
-  (osm.elements || []).forEach(el => {
-    if (el.type !== 'relation') return;
-    const outerWays = (el.members || [])
-      .filter(m => m.type === 'way' && m.role !== 'inner' && m.geometry && m.geometry.length > 1)
-      .map(m => m.geometry.map(g => [g.lon, g.lat]));
-    if (!outerWays.length) return;
-    const ring = assembleRing(outerWays);
-    if (!ring || ring.length < 4) return;
-    features.push({ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [ring] } });
-  });
-  return { type: 'FeatureCollection', features };
-}
-
-// Convert Overpass API `out geom` response to GeoJSON — only Sta. Maria barangays
-function overpassToGeoJSON(osm) {
-  const features = [];
-  (osm.elements || []).forEach(el => {
-    if (el.type !== 'relation') return;
-    let name = el.tags?.name || el.tags?.['name:en'] || ''; if (!name) return;
-    name = name.replace(/^(Barangay|Brgy\.?)\s+/i, '').trim();
-    if (BARANGAY_ALIAS[name]) name = BARANGAY_ALIAS[name];
-    if (!STA_MARIA_BARANGAYS.has(name)) return;
-
-    // `out geom` puts geometry directly on each member way; skip inner rings (holes)
-    const outerWays = (el.members || [])
-      .filter(m => m.type === 'way' && m.role !== 'inner' && m.geometry && m.geometry.length > 1)
-      .map(m => m.geometry.map(g => [g.lon, g.lat]));
-    if (!outerWays.length) return;
-
-    const ring = assembleRing(outerWays);
-    if (!ring || ring.length < 4) return;
-    features.push({
-      type: 'Feature',
-      properties: { name, count: barangayListings[name] || 2 },
-      geometry: { type: 'Polygon', coordinates: [ring] },
-    });
-  });
-  return { type: 'FeatureCollection', features };
-}
-
-// ── Theme init (read localStorage, default light) ──────────────────────────────
+// ── Theme init (read localStorage, default dark) ──────────────────────────────
 (function () {
-  const t = localStorage.getItem('hs-theme') || 'light';
+  const t = localStorage.getItem('hs-theme') || 'dark';
   document.documentElement.setAttribute('data-theme', t);
 })();
 
@@ -474,6 +200,37 @@ const LOGO_SRC = "assets/img/HomeSure_Logo.svg";
 // ── React Components ──────────────────────────────────────────────────────────
 
 const { useState, useEffect, useRef } = React;
+
+// How many live listings each barangay has, read once and shared.
+//
+// The pins on the hero map and the barangay list beneath it both need this, and they are separate
+// components, so the promise is cached at module level rather than fetched twice. null until it
+// arrives; {} is a real answer meaning "no listings anywhere yet".
+let barangayCountsPromise = null;
+
+function useBarangayCounts() {
+  const [counts, setCounts] = useState(null);
+
+  useEffect(() => {
+    if (typeof HS === 'undefined' || !HS.listingCountsByBarangay) return;
+    if (!barangayCountsPromise) barangayCountsPromise = HS.listingCountsByBarangay();
+
+    let cancelled = false;
+    barangayCountsPromise
+      .then((c) => { if (!cancelled) setCounts(c); })
+      .catch((err) => {
+        console.error('Could not load the listing count per barangay:', err);
+        barangayCountsPromise = null;  // let a later mount try again
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  return counts;
+}
+
+function browseBarangay(name) {
+  window.location.href = 'browse.html?barangay=' + encodeURIComponent(name);
+}
 
 function useReveal(threshold = 0.12) {
   const ref = useRef(null);
@@ -577,6 +334,7 @@ function HeroCards() {
 }
 
 function HeroMap() {
+  const counts = useBarangayCounts();
   const mapWrapRef = useRef(null);
   const containerRef = useRef(null);
   const [transform, setTransform] = useState({ scale: 1, x: 0, y: 0, rotate: 0 });
@@ -585,42 +343,81 @@ function HeroMap() {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [svgContent, setSvgContent] = useState('');
 
-  // Fetch SVG content
+  // Fetch the map artwork.
+  //
+  // responsive.css hides the map below 768px, but display:none does not stop a fetch — phones were
+  // downloading 140KB of SVG and parsing 47 paths to show none of it. The media query is the same
+  // one the stylesheet uses, so the two cannot drift apart silently: if one changes, the map either
+  // appears with no artwork or loads artwork it never draws, which is visible immediately.
   useEffect(() => {
+    if (window.matchMedia('(max-width: 768px)').matches) return;
+
+    let cancelled = false;
     fetch('assets/img/Sta. Maria Map.svg')
-      .then(res => res.text())
-      .then(svg => setSvgContent(svg));
+      .then((res) => res.text())
+      .then((svg) => { if (!cancelled) setSvgContent(svg); })
+      .catch((err) => console.error('Could not load the map:', err));
+    return () => { cancelled = true; };
   }, []);
 
-  // Add property markers
+  // Property markers.
+  //
+  // The positions are measured against this SVG, so only these six barangays can carry a pin —
+  // the artwork has no per-barangay ids to place the rest against. The barangay list under the map
+  // covers all 24, so nothing is hidden by that.
+  //
+  // The counts used to be written in by hand (Pulong Buhangin claimed 20). They come from the
+  // database now, and a barangay with nothing in it gets no pin rather than an invented one.
   useEffect(() => {
-    if (!containerRef.current || !svgContent) return;
+    if (!containerRef.current || !svgContent || !counts) return;
 
-    const markers = [
-      { x: 35, y: 68, count: 12, barangay: 'Poblacion' },
-      { x: 40, y: 58, count: 8, barangay: 'Guyong' },
-      { x: 25, y: 73, count: 15, barangay: 'Bagbaguin' },
-      { x: 45, y: 78, count: 10, barangay: 'Tumana' },
-      { x: 63, y: 58, count: 6, barangay: 'Catmon' },
-      { x: 63, y: 28, count: 20, barangay: 'Pulong Buhangin'}
+    const positions = [
+      { x: 35, y: 68, barangay: 'Poblacion' },
+      { x: 40, y: 58, barangay: 'Guyong' },
+      { x: 25, y: 73, barangay: 'Bagbaguin' },
+      { x: 45, y: 78, barangay: 'Tumana' },
+      { x: 63, y: 58, barangay: 'Catmon' },
+      { x: 63, y: 28, barangay: 'Pulong Buhangin' },
     ];
 
-    markers.forEach((marker, i) => {
-      const pin = document.createElement('div');
-      pin.className = 'property-marker';
-      pin.style.left = `${marker.x}%`;
-      pin.style.top = `${marker.y}%`;
-      pin.style.animationDelay = `${i * 0.3}s`;
-      pin.innerHTML = `
-        <div class="marker-pulse"></div>
-        <div class="marker-icon">
-          <img src="assets/img/House Icon.svg" alt="Property" />
-        </div>
-        <div class="marker-tooltip">${marker.count} properties in ${marker.barangay}</div>
-      `;
-      containerRef.current.appendChild(pin);
-    });
-  }, [svgContent]);
+    const pins = [];
+    positions
+      .filter((p) => (counts[p.barangay] || 0) > 0)
+      .forEach((p, i) => {
+        const n = counts[p.barangay];
+        const pin = document.createElement('div');
+        pin.className = 'property-marker';
+        pin.style.left = `${p.x}%`;
+        pin.style.top = `${p.y}%`;
+        pin.style.animationDelay = `${i * 0.3}s`;
+        pin.setAttribute('role', 'link');
+        pin.setAttribute('tabindex', '0');
+        pin.setAttribute('aria-label',
+          `${n} ${n === 1 ? 'property' : 'properties'} in ${p.barangay} — browse them`);
+        pin.innerHTML = `
+          <div class="marker-pulse"></div>
+          <div class="marker-icon">
+            <img src="assets/img/House Icon.svg" alt="" />
+          </div>
+          <div class="marker-tooltip">${n} ${n === 1 ? 'property' : 'properties'} in ${p.barangay}</div>
+        `;
+
+        // The map itself is drag-to-pan, so a pin must not open browse at the end of a drag.
+        const open = (e) => { e.stopPropagation(); browseBarangay(p.barangay); };
+        pin.addEventListener('click', open);
+        pin.addEventListener('mousedown', (e) => e.stopPropagation());
+        pin.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(e); }
+        });
+
+        containerRef.current.appendChild(pin);
+        pins.push(pin);
+      });
+
+    // The SVG is injected with dangerouslySetInnerHTML, so React does not own these nodes and
+    // will not clear them. Without this, a re-run leaves the old pins behind.
+    return () => pins.forEach((p) => p.remove());
+  }, [svgContent, counts]);
 
   useEffect(() => {
     if (!mapWrapRef.current) return;
@@ -789,6 +586,86 @@ function HeroBento() {
   );
 }
 
+// The three cards tilt toward the pointer, with the icon and the words standing off the surface
+// and a soft light following the cursor.
+//
+// Three things keep this cheap, because this page has been laggy on a mid-range machine before:
+//   • one listener on the grid rather than one per card;
+//   • pointer positions are stored and applied once per frame, not once per pointer event — a
+//     mouse can fire far more often than the screen refreshes;
+//   • only transform and opacity change, so the compositor handles it and nothing repaints. The
+//     light is a circle that gets moved, rather than a gradient redrawn at a new position.
+const TILT_DEGREES = 9;
+
+function useCardTilt(gridRef) {
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+
+    // A finger has no hover, and tilting under it would just fight the scroll. Someone who has
+    // asked for less motion should not get a card that moves at all.
+    const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (!fine.matches || still.matches) return;
+
+    grid.classList.add('tilt-on');
+
+    let frame = 0;
+    let pending = null;
+    let current = null;
+
+    function clear(card) {
+      if (!card) return;
+      card.classList.remove('is-tilting');
+      for (const prop of ['--rx', '--ry', '--gx', '--gy']) card.style.removeProperty(prop);
+    }
+
+    function apply() {
+      frame = 0;
+      if (!pending) return;
+      const { card, px, py, w, h } = pending;
+      // Away from the centre in each direction, as -0.5 to 0.5. Y drives rotateX and is negated,
+      // so pointing at the top of the card tips its top edge away from you.
+      card.style.setProperty('--rx', `${(0.5 - py / h) * TILT_DEGREES}deg`);
+      card.style.setProperty('--ry', `${(px / w - 0.5) * TILT_DEGREES}deg`);
+      card.style.setProperty('--gx', `${px}px`);
+      card.style.setProperty('--gy', `${py}px`);
+    }
+
+    function onMove(e) {
+      const card = e.target.closest && e.target.closest('.feature-card');
+      if (!card) { if (current) { clear(current); current = null; } return; }
+
+      // Moving straight from one card to the next never fires a leave on the grid, so the card
+      // being left has to be reset here or it stays frozen mid-tilt.
+      if (current && current !== card) clear(current);
+      if (current !== card) { card.classList.add('is-tilting'); current = card; }
+
+      const r = card.getBoundingClientRect();
+      pending = { card, px: e.clientX - r.left, py: e.clientY - r.top, w: r.width, h: r.height };
+      if (!frame) frame = requestAnimationFrame(apply);
+    }
+
+    function onLeave() {
+      if (frame) { cancelAnimationFrame(frame); frame = 0; }
+      pending = null;
+      clear(current);
+      current = null;
+    }
+
+    grid.addEventListener('pointermove', onMove);
+    grid.addEventListener('pointerleave', onLeave);
+
+    return () => {
+      grid.removeEventListener('pointermove', onMove);
+      grid.removeEventListener('pointerleave', onLeave);
+      if (frame) cancelAnimationFrame(frame);
+      clear(current);
+      grid.classList.remove('tilt-on');
+    };
+  }, []);
+}
+
 // Feature Highlights Section
 function FeatureHighlights() {
   const features = [
@@ -815,16 +692,26 @@ function FeatureHighlights() {
     },
   ];
 
+  const gridRef = useRef(null);
+  useCardTilt(gridRef);
+
   return React.createElement(
     'section',
     { className: 'feature-highlights' },
     React.createElement(
       'div',
-      { className: 'feature-grid' },
+      { className: 'feature-grid', ref: gridRef },
       ...features.map((feat, i) =>
         React.createElement(
           'div',
-          { key: i, className: 'feature-card', style: { '--feature-color': feat.color } },
+          { key: i, className: 'feature-card feature-3d', style: { '--feature-color': feat.color } },
+          // The decorative corner and the moving light live in their own layer. They have to be
+          // clipped to the card's rounded corners, and clipping the card itself would flatten it:
+          // any overflow other than visible forces transform-style back to flat, which would leave
+          // the icon and the words lying on the surface instead of standing off it.
+          React.createElement('div', { className: 'feature-card-bg', 'aria-hidden': 'true' },
+            React.createElement('span', { className: 'feature-card-glare' }),
+          ),
           React.createElement('div', {
             className: 'feature-card-icon',
             dangerouslySetInnerHTML: { __html: feat.icon }
@@ -996,10 +883,6 @@ function Hero() {
         React.createElement("span", { className: "hero-trust-item" },
           React.createElement("span", { className: "hero-trust-icon", dangerouslySetInnerHTML: { __html: shieldIcon } }),
           React.createElement("span", null, "Verified Listings"),
-        ),
-        React.createElement("span", { className: "hero-trust-item" },
-          React.createElement("span", { className: "hero-trust-icon", dangerouslySetInnerHTML: { __html: starIcon } }),
-          React.createElement("span", null, "4.8/5 Rating"),
         ),
         React.createElement("span", { className: "hero-trust-item" },
           React.createElement("span", { className: "hero-trust-icon", dangerouslySetInnerHTML: { __html: lockIcon } }),
@@ -1236,8 +1119,136 @@ function Carousel() {
 }
 
 // How It Works
+// The curve running down the timeline.
+//
+// It is measured rather than drawn to fixed coordinates: each step is as tall as its content, so
+// the dots are not evenly spaced and no hand-written path would sit on them. This reads the real
+// position of every .tl-dot and bends a cubic between each pair, alternating sides so the line
+// snakes. Because it measures, it stays correct when the text wraps differently or the window
+// changes width.
+// Where an element sits inside an ancestor, by layout rather than by what is on screen.
+//
+// getBoundingClientRect would be the obvious choice and it is the wrong one here: it reports the
+// painted position, which includes transforms. Each step comes in under
+// `transform: translateY(22px)` and animates to none, so measuring that way put every dot 22px
+// below where it settles — and because a transform changes nothing about layout, the container
+// never resized and the ResizeObserver never fired to correct it. offsetTop/offsetLeft ignore
+// transforms, so this reads the position the dot will actually rest at.
+function offsetWithin(el, root) {
+  let x = 0, y = 0;
+  for (let node = el; node && node !== root; node = node.offsetParent) {
+    x += node.offsetLeft;
+    y += node.offsetTop;
+  }
+  return { x, y };
+}
+
+function useCurvedSpine(containerRef, pathRef) {
+  useEffect(() => {
+    const box = containerRef.current;
+    const path = pathRef.current;
+    if (!box || !path) return;
+
+    // Below this width the steps stack into one column and the line belongs at the left edge,
+    // straight. That version is the ::before in the stylesheet, so there is nothing to draw.
+    const twoColumn = window.matchMedia('(min-width: 861px)');
+
+    function draw() {
+      const svg = path.parentNode;
+      if (!twoColumn.matches) { svg.style.display = 'none'; return; }
+      svg.style.display = '';
+
+      const rect = { width: box.offsetWidth, height: box.offsetHeight };
+      const dots = [...box.querySelectorAll('.tl-dot')].map((dot) => {
+        const at = offsetWithin(dot, box);
+        return { x: at.x + dot.offsetWidth / 2, y: at.y + dot.offsetHeight / 2 };
+      });
+      if (dots.length < 2) return;
+
+      svg.setAttribute('viewBox', `0 0 ${rect.width} ${rect.height}`);
+
+      // Everything below has to stay inside the middle column or the route slides under the
+      // preview windows. That column is 170px, plus 8px of padding each side, so there is 93px of
+      // clear space either way. A cubic bows out to about three quarters of its control offset,
+      // which is where these numbers come from.
+      const swoop = Math.min(78, rect.width * 0.085);
+
+      // The loop is a circle hung off the route: the line runs into it at one side, goes the long
+      // way round, and carries on from the other. A circle costs its radius plus the offset of its
+      // centre, which is 1.65 radii in all — much cheaper than tying the knot with a single curve,
+      // where most of the width goes on the approach and the curl ends up a third of the size.
+      const radius = Math.min(46, rect.width * 0.043);
+      const halfChord = radius * 0.76;                               // where the circle meets the line
+      const centreGap = Math.sqrt(radius * radius - halfChord * halfChord);
+
+      let d = `M ${dots[0].x} ${dots[0].y}`;
+
+      for (let i = 1; i < dots.length; i++) {
+        const a = dots[i - 1];
+        const b = dots[i];
+        const dy = b.y - a.y;
+        // Each segment leans the opposite way to the one before, so the route weaves.
+        const side = i % 2 ? 1 : -1;
+
+        if (i % 2) {
+          // A loop. Consecutive loops hang on opposite sides, so the route does not just curl the
+          // same way twice.
+          const loopSide = ((i - 1) / 2) % 2 ? -1 : 1;
+          const mid = (a.y + b.y) / 2;
+          const enter = mid - halfChord;
+          const leave = mid + halfChord;
+
+          // Into the loop, leaning out and coming back to meet the circle.
+          d += ` C ${a.x + swoop * loopSide * 0.45} ${a.y + dy * 0.26}, ${a.x} ${enter - dy * 0.2}, ${a.x} ${enter}`;
+          // The circle. large-arc takes the long way round rather than the short hop across the
+          // chord, which is the difference between a loop and a dent; sweep picks the side.
+          d += ` A ${radius} ${radius} 0 1 ${loopSide > 0 ? 1 : 0} ${a.x} ${leave}`;
+          // And out of it, down to the next dot.
+          d += ` C ${b.x} ${leave + dy * 0.2}, ${b.x + swoop * loopSide * 0.45} ${b.y - dy * 0.26}, ${b.x} ${b.y}`;
+        } else {
+          // A plain swoop between two loops. Both control points on the same side bow the segment
+          // that way, and the tangents still line up with the segments either side, so the route
+          // does not kink at the dot.
+          const reach = dy * 0.42;
+          d += ` C ${a.x + swoop * side} ${a.y + reach}, ${b.x + swoop * side} ${b.y - reach}, ${b.x} ${b.y}`;
+        }
+      }
+
+      path.setAttribute('d', d);
+    }
+
+    draw();
+
+    // Step heights change when the window resizes, when a font finishes loading, and when an
+    // image inside a preview settles — a ResizeObserver on the container catches all three.
+    //
+    // It is guarded because this runs in an effect, and an effect that throws takes the whole page
+    // down with it. A browser without ResizeObserver still gets the curve; it just redraws on
+    // resize alone, so the line can sit slightly off its dots until the next resize. That is a far
+    // better failure than a blank landing page.
+    let observer = null;
+    if (typeof ResizeObserver === 'function') {
+      observer = new ResizeObserver(draw);
+      observer.observe(box);
+    } else {
+      window.addEventListener('resize', draw);
+    }
+    twoColumn.addEventListener('change', draw);
+
+    return () => {
+      if (observer) observer.disconnect();
+      else window.removeEventListener('resize', draw);
+      twoColumn.removeEventListener('change', draw);
+    };
+  }, []);
+}
+
 function HowItWorks() {
   const [ref, visible] = useReveal();
+  const stepsRef = useRef(null);
+  const pathRef = useRef(null);
+  useCurvedSpine(stepsRef, pathRef);
+
   return React.createElement(
     "section",
     { className: `section reveal-section${visible ? ' in-view' : ''}`, ref },
@@ -1254,18 +1265,183 @@ function HowItWorks() {
     ),
     React.createElement(
       "div",
-      { className: "how-steps" },
+      { className: "how-steps", ref: stepsRef },
+      React.createElement(
+        'svg',
+        { className: 'tl-spine', preserveAspectRatio: 'none', 'aria-hidden': 'true' },
+        React.createElement(
+          'defs',
+          null,
+          React.createElement(
+            'linearGradient',
+            { id: 'tl-spine-fade', x1: '0', y1: '0', x2: '0', y2: '1' },
+            React.createElement('stop', { offset: '0', stopColor: 'rgba(0,201,167,0)' }),
+            React.createElement('stop', { offset: '0.09', stopColor: 'rgba(0,201,167,0.34)' }),
+            React.createElement('stop', { offset: '0.91', stopColor: 'rgba(0,201,167,0.34)' }),
+            React.createElement('stop', { offset: '1', stopColor: 'rgba(0,201,167,0)' }),
+          ),
+        ),
+        React.createElement('path', { className: 'tl-spine-path', ref: pathRef, fill: 'none' }),
+      ),
       steps.map((s, i) =>
+        // "how-step" is kept so the existing reveal animation still staggers these in.
         React.createElement(
           "div",
-          { key: i, className: "how-step" },
-          React.createElement("div", { className: "how-step-num" }, s.num),
-          React.createElement("div", { className: "how-step-title" }, s.title),
-          React.createElement("div", { className: "how-step-desc" }, s.desc),
+          { key: i, className: `how-step tl-step${i % 2 ? " tl-flip" : ""}` },
+          React.createElement("div", { className: "tl-preview" }, StepPreview(s.screen)),
+          React.createElement("div", { className: "tl-dot", "aria-hidden": "true" }),
+          React.createElement(
+            "div",
+            { className: "tl-text" },
+            React.createElement(
+              "div",
+              { className: "tl-head" },
+              React.createElement("span", { className: "tl-num" }, s.num),
+              React.createElement("span", { className: "tl-label" }, s.label),
+            ),
+            React.createElement("h3", { className: "tl-title" }, s.title),
+            React.createElement("p", { className: "tl-desc" }, s.desc),
+          ),
         ),
       ),
     ),
   );
+}
+
+const h = React.createElement;
+
+const tlCheck = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="16 10 11 15 8 12"/></svg>`;
+const tlShield = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
+const tlBed = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9V4a1 1 0 0 1 1-1h18a1 1 0 0 1 1 1v5"/><path d="M2 9h20v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/></svg>`;
+const tlBath = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6V2"/><path d="M4 6h16v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><line x1="4" y1="14" x2="20" y2="14"/></svg>`;
+const tlArea = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>`;
+
+/** The window frame every preview sits in. */
+function tlWindow(title, body) {
+  return h('div', { className: 'tl-window' },
+    h('div', { className: 'tl-window-bar' },
+      h('span', { className: 'tl-dot-r' }),
+      h('span', { className: 'tl-dot-y' }),
+      h('span', { className: 'tl-dot-g' }),
+      h('span', { className: 'tl-window-title' }, title),
+    ),
+    h('div', { className: 'tl-window-body' }, body),
+  );
+}
+
+/** Step 1 — the verification screen: two documents, then the badge it earns you. */
+function screenVerification() {
+  const doc = (name, meta) => h('div', { className: 'tl-doc' },
+    h('div', { className: 'tl-doc-thumb' },
+      h('span', { dangerouslySetInnerHTML: { __html: tlCheck } }),
+    ),
+    h('div', { className: 'tl-doc-info' },
+      h('div', { className: 'tl-doc-name' }, name),
+      h('div', { className: 'tl-doc-meta' }, meta),
+    ),
+    h('span', { className: 'tl-chip tl-chip-ok' }, 'Approved'),
+  );
+
+  return tlWindow('Verification', [
+    h('div', { key: 'd', className: 'tl-docs' },
+      doc('Valid ID', 'Driver\u2019s Licence \u00b7 front and back'),
+      doc('Selfie with ID', 'Taken in app'),
+    ),
+    h('div', { key: 'b', className: 'tl-verified' },
+      h('span', { className: 'tl-verified-icon', dangerouslySetInnerHTML: { __html: tlShield } }),
+      h('div', null,
+        h('div', { className: 'tl-verified-title' }, 'Verified Seller'),
+        h('div', { className: 'tl-verified-sub' }, 'Checked by a HomeSure admin'),
+      ),
+    ),
+  ]);
+}
+
+/** Step 2 — the card browse.html renders, at a smaller size. */
+function screenListing() {
+  return tlWindow('Browse', [
+    h('div', { key: 'f', className: 'tl-filters' },
+      h('span', { className: 'tl-filter' }, 'Poblacion'),
+      h('span', { className: 'tl-filter' }, 'Up to \u20b120,000'),
+      h('span', { className: 'tl-filter' }, 'Apartment'),
+    ),
+    h('div', { key: 'c', className: 'tl-listing' },
+      h('div', { className: 'tl-listing-img' },
+        h('span', { className: 'tl-listing-type' }, 'For Rent'),
+      ),
+      h('div', { className: 'tl-listing-body' },
+        h('div', { className: 'tl-listing-title' }, '2BR Apartment'),
+        h('div', { className: 'tl-listing-addr' }, 'Poblacion, Sta. Maria'),
+        h('div', { className: 'tl-listing-price' }, '\u20b115,000',
+          h('span', null, '/month')),
+        h('div', { className: 'tl-listing-specs' },
+          h('span', null, h('i', { dangerouslySetInnerHTML: { __html: tlBed } }), '2'),
+          h('span', null, h('i', { dangerouslySetInnerHTML: { __html: tlBath } }), '1'),
+          h('span', null, h('i', { dangerouslySetInnerHTML: { __html: tlArea } }), '48 sqm'),
+        ),
+      ),
+    ),
+  ]);
+}
+
+/** Step 3 — the thread, with the viewing request the chat can carry. */
+function screenMessages() {
+  return tlWindow('Messages', [
+    h('div', { key: 'a', className: 'tl-msg tl-msg-them' },
+      h('div', { className: 'tl-msg-bubble' }, 'Hi! Is the unit still available?'),
+      h('div', { className: 'tl-msg-time' }, '9:15 AM'),
+    ),
+    h('div', { key: 'b', className: 'tl-msg tl-msg-me' },
+      h('div', { className: 'tl-msg-bubble' }, 'Yes it is. Free this Saturday?'),
+      h('div', { className: 'tl-msg-time' }, '9:18 AM'),
+    ),
+    h('div', { key: 'c', className: 'tl-msg tl-msg-them' },
+      h('div', { className: 'tl-msg-bubble tl-msg-viewing' },
+        h('div', { className: 'tl-viewing-tag' }, 'Viewing Request'),
+        h('div', { className: 'tl-viewing-when' }, 'Sat, 14 June \u00b7 10:00 AM'),
+        h('div', { className: 'tl-viewing-state' }, 'Accepted'),
+      ),
+      h('div', { className: 'tl-msg-time' }, '9:22 AM'),
+    ),
+  ]);
+}
+
+/** Step 4 — the payment card, with the meta row the real page shows. */
+function screenPayment() {
+  const item = (label, value) => h('div', { className: 'tl-pay-item' },
+    h('span', { className: 'tl-pay-label' }, label),
+    h('span', { className: 'tl-pay-value' }, value),
+  );
+
+  return tlWindow('Payments', [
+    h('div', { key: 'p', className: 'tl-pay' },
+      h('div', { className: 'tl-pay-left' },
+        h('div', { className: 'tl-pay-property' }, '2BR Apartment \u2014 Poblacion'),
+        h('div', { className: 'tl-pay-meta' },
+          item('Type', 'Rent'),
+          item('Period', 'June 2026'),
+          item('Method', 'GCash'),
+          item('Reference', 'GC-78452'),
+        ),
+      ),
+      h('div', { className: 'tl-pay-right' },
+        h('div', { className: 'tl-pay-amount' }, '\u20b115,000'),
+        h('span', { className: 'tl-chip tl-chip-ok' }, 'Confirmed'),
+      ),
+    ),
+  ]);
+}
+
+const SCREENS = {
+  verification: screenVerification,
+  listing: screenListing,
+  messages: screenMessages,
+  payment: screenPayment,
+};
+
+function StepPreview(name) {
+  const render = SCREENS[name];
+  return render ? render() : null;
 }
 
 // Features
@@ -1315,8 +1491,17 @@ function Features() {
 // Animated counter hook
 function useCounter(end, duration, active) {
   const [val, setVal] = useState(0);
+
+  // `end` has to be a dependency, not just `active`.
+  //
+  // The figures in the Stats section arrive from the database after the page has mounted. With
+  // only [active] here, the count-up ran once against whatever `end` was at that moment — the
+  // fallback, which is 0 for the live figures — and never ran again when the real number landed.
+  // The section would sit on "0 Listings Live" with three listings in the database.
   useEffect(() => {
     if (!active) return;
+    if (end <= 0) { setVal(end); return; }
+
     let start = 0;
     const step = Math.ceil(end / (duration / 16));
     const timer = setInterval(() => {
@@ -1327,7 +1512,8 @@ function useCounter(end, duration, active) {
       } else setVal(start);
     }, 16);
     return () => clearInterval(timer);
-  }, [active]);
+  }, [active, end]);
+
   return val;
 }
 
@@ -1359,6 +1545,19 @@ function StatBox({ stat }) {
 
 function Stats() {
   const [ref, visible] = useReveal();
+  const [live, setLive] = useState(null);
+
+  // One request, once. If it fails the section still renders — the fallback figures above are
+  // true on their own, so a database that is briefly unreachable costs nothing on screen.
+  useEffect(() => {
+    if (typeof HS === 'undefined' || !HS.publicStats) return;
+    let cancelled = false;
+    HS.publicStats()
+      .then((s) => { if (!cancelled) setLive(s); })
+      .catch((err) => console.error('Could not load the public figures:', err));
+    return () => { cancelled = true; };
+  }, []);
+
   return React.createElement(
     "section",
     { className: `section reveal-section${visible ? ' in-view' : ''}`, ref },
@@ -1373,18 +1572,23 @@ function Stats() {
       React.createElement(
         "h2",
         { className: "section-title" },
-        "Trusted by Thousands",
+        "Where HomeSure Stands Today",
       ),
       React.createElement(
         "p",
         { className: "section-sub" },
-        "Building a safer housing marketplace for everyone in Sta. Maria",
+        "Counted live from the platform, not rounded up for a landing page",
       ),
       React.createElement(
         "div",
         { className: "stats-grid" },
         statsData.map((s, i) =>
-          React.createElement(StatBox, { key: i, stat: s }),
+          React.createElement(StatBox, {
+            key: i,
+            stat: live && s.key && live[s.key] !== undefined
+              ? { ...s, end: live[s.key] }
+              : s,
+          }),
         ),
       ),
     ),
@@ -1534,6 +1738,74 @@ function Footer() {
 
 // ── Root App ──────────────────────────────────────────────────────────────────
 
+// ── How We Verify ────────────────────────────────────────────────────────────
+// This replaced the testimonials block, which quoted people who do not exist yet.
+//
+// Every gate below is one the code actually enforces, and each is worth checking against:
+//   • email       — api/auth/signup creates the account unconfirmed and emails a hashed token
+//                   (migrations/008); the account cannot be used until that link is opened
+//   • identity    — module/seller/verification.html takes a government ID and a selfie from the
+//                   camera, and profiles.account_status stays 'pending' until an admin moves it
+//   • ownership   — module/seller/post.html requires photos of the Deed of Sale or TCT per listing
+//   • publication — RLS only returns properties with status 'approved', so an unreviewed listing
+//                   is not merely unlabelled, it is unreachable
+const verifySteps = [
+  {
+    tag: 'Step 1',
+    title: 'The email has to be real',
+    desc: 'Signing up does not get you in. We send a one-time link to the address given, and the account stays closed until it is opened. An address nobody can receive mail at never becomes an account.',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/></svg>`,
+  },
+  {
+    tag: 'Step 2',
+    title: 'A government ID and a live selfie',
+    desc: 'Sellers submit a valid ID and take a selfie through the camera, in the app — not a photo chosen from a gallery. An administrator compares the two before the account is marked verified.',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="9" cy="12" r="2.6"/><path d="M14.5 10h4M14.5 14h3"/></svg>`,
+  },
+  {
+    tag: 'Step 3',
+    title: 'Proof the property is theirs',
+    desc: 'Every listing carries photographs of its Deed of Sale or Transfer Certificate of Title, or a tax declaration. One per property — a verified seller still cannot post a house they cannot document.',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/></svg>`,
+  },
+  {
+    tag: 'Step 4',
+    title: 'Nothing is public until it is reviewed',
+    desc: 'A new listing is not hidden behind a label — it is not on the site at all. It appears in browse only after an administrator approves it, and it comes straight back down if a seller’s verification lapses.',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>`,
+  },
+];
+
+function HowWeVerify() {
+  const [ref, visible] = useReveal();
+
+  return React.createElement(
+    'section',
+    { className: `section reveal-section verify-section${visible ? ' in-view' : ''}`, ref, id: 'how-we-verify' },
+    React.createElement('span', { className: 'section-label' }, 'How We Verify'),
+    React.createElement('h2', { className: 'section-title' }, 'Four Things Nobody Gets Past'),
+    React.createElement('p', { className: 'section-sub' },
+      'Not a promise about how careful we are — four checks the platform refuses to skip'),
+    React.createElement('div', { className: 'verify-grid' },
+      verifySteps.map((s, i) =>
+        React.createElement('div', { key: i, className: 'verify-card' },
+          React.createElement('div', { className: 'verify-card-top' },
+            React.createElement('span', {
+              className: 'verify-icon',
+              dangerouslySetInnerHTML: { __html: s.icon },
+            }),
+            React.createElement('span', { className: 'verify-tag' }, s.tag),
+          ),
+          React.createElement('h3', { className: 'verify-title' }, s.title),
+          React.createElement('p', { className: 'verify-desc' }, s.desc),
+        ),
+      ),
+    ),
+    React.createElement('p', { className: 'verify-note' },
+      'Verification does not expire quietly. When a seller’s documents lapse they are moved back to re-verification, and their listings leave the site until the new ones are approved.'),
+  );
+}
+
 function App() {
   return React.createElement(
     React.Fragment,
@@ -1544,6 +1816,7 @@ function App() {
     React.createElement(TrustBanner),
     React.createElement(PlatformFeatures),
     React.createElement(HowItWorks),
+    React.createElement(HowWeVerify),
     React.createElement(Features),
     React.createElement(Stats),
     React.createElement(CTA),

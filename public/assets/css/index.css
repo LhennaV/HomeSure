@@ -94,18 +94,26 @@ nav {
   white-space: nowrap;
   flex-shrink: 0;
 }
-.nav-logo img {
+/* :not() on purpose. This rule also matched .nav-catstone-img and outranked it — (0,1,1) against
+   (0,1,0) — so the CatsTone mark was forced to 26x26 while keeping the margin: -15% that its own
+   rule pairs with a 130% size. That dragged it up and left, and its wrapper clips overflow, so the
+   left edge was sliced off. */
+.nav-logo img:not(.nav-catstone-img) {
+  width: 28px;
+  height: 28px;
   border-radius: 6px;
   display: block;
+  object-fit: contain;
 }
 .nav-logo span {
   display: inline-block;
 }
 .nav-logo-divider { width: 1px; height: 22px; background: var(--border); flex-shrink: 0; }
 .nav-catstone-wrap {
-  display: flex; align-items: center;
-  width: 38px; height: 38px;
+  display: flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px;
   overflow: hidden; flex-shrink: 0;
+  border-radius: 6px;
 }
 .nav-catstone-img {
   width: 130%; height: 130%;
@@ -162,12 +170,17 @@ nav {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 40px;
+  /* The vanishing point the cards rotate about. Without it they would turn flat, like a sheet of
+     paper seen from directly in front however far it spins. */
+  perspective: 1100px;
 }
 
 @media (max-width: 1024px) {
   .feature-grid { grid-template-columns: 1fr; gap: 30px; }
 }
 
+/* Shared with the "Why HomeSure" cards further down, which redefine most of it. The three tilting
+   cards take their own rules from .feature-3d at the end of this file. */
 .feature-card {
   position: relative;
   background: linear-gradient(135deg, var(--card) 0%, var(--card2) 100%);
@@ -411,7 +424,7 @@ nav {
 
 .hero {
   position: relative;
-  min-height: calc(100vh - 62px);
+  min-height: 100vh;
   display: flex;
   align-items: center;
   overflow: visible;
@@ -430,6 +443,9 @@ nav {
     radial-gradient(circle at 2px 2px, rgba(0,201,167,0.08) 1px, transparent 1px);
   background-size: 100% 100%, 100% 100%, 40px 40px;
   animation: particleFloat 20s ease-in-out infinite;
+  /* Promote it once rather than letting the browser rediscover on every frame that this
+     full-screen layer is moving. */
+  will-change: opacity, transform;
 }
 
 @keyframes particleFloat {
@@ -440,7 +456,8 @@ nav {
   position: relative;
   z-index: 2;
   display: flex; flex-direction: column; gap: 28px;
-  padding: 80px 52px;
+  /* Extra top padding so the headline clears the floating bar. */
+  padding: 128px 52px 80px;
   flex: 1;
   max-width: 50%;
 }
@@ -448,7 +465,7 @@ nav {
 .hero-right {
   position: relative;
   flex: 1;
-  min-height: calc(100vh - 62px);
+  min-height: 100vh;
   z-index: 1;
 }
 
@@ -670,14 +687,21 @@ nav {
 
 /* Barangay hover effects */
 .hero-map-svg path {
-  transition: all 0.3s ease;
+  /* Named properties rather than "all".
+     With "all", the drop-shadow below was transitioned too — and a drop-shadow on a 450-point
+     polygon is a per-pixel blur of that whole outline, recomputed every frame for 0.3s. Crossing
+     the map set that running on one barangay after another. fill and stroke-width are the only
+     things that actually change, and both are cheap. */
+  transition: fill 0.3s ease, stroke-width 0.3s ease;
   cursor: pointer;
 }
 
 .hero-map-svg path:hover {
   fill: rgba(0,201,167,0.3) !important;
-  filter: drop-shadow(0 0 20px rgba(0,201,167,0.8));
   stroke-width: 3;
+  /* The glow still appears, it just arrives at once instead of being blurred into place frame by
+     frame. At 0.3s nobody could see the difference anyway. */
+  filter: drop-shadow(0 0 12px rgba(0,201,167,0.75));
 }
 
 /* Property Markers */
@@ -1071,9 +1095,12 @@ nav {
   flex-shrink: 0;
   animation: map-live 1.5s ease-in-out infinite;
 }
+/* Was animating box-shadow, which the browser cannot hand to the GPU — every frame forced a
+   repaint of the element and everything overlapping it. transform and opacity are composited, so
+   the same pulse now costs nothing. */
 @keyframes map-live {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0,201,167,0.6); }
-  50%       { opacity: 0.45; box-shadow: 0 0 0 5px rgba(0,201,167,0); }
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.45; transform: scale(1.35); }
 }
 
 /* Area label — top-right corner */
@@ -1205,27 +1232,327 @@ nav {
 .dot.active { background: var(--teal); width: 22px; border-radius: 99px; }
 
 /* ── HOW IT WORKS ── */
-.how-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 12px; }
-.how-step { text-align: center; position: relative; }
-.how-step:not(:last-child)::after {
+/* ── How it works: a timeline ────────────────────────────────────────────────
+   Each step is a row with a preview window on one side and the words on the other, alternating,
+   with a line running down the middle. The dot on that line lights up when you are reading its
+   step. */
+.how-steps {
+  position: relative;
+  max-width: 1080px;
+  margin: 40px auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+  text-align: left;
+}
+
+/* The spine, for the stacked layout only — below 860px the steps are one column with the line
+   down the left edge, where a curve would just look wrong. The two-column layout gets .tl-spine
+   instead, so this is switched off there. */
+.how-steps::before {
   content: '';
   position: absolute;
-  top: 21px;
-  left: calc(50% + 22px);
-  right: calc(-50% - 3px);
-  height: 1px;
-  background: rgba(31,200,180,0.3);
+  left: 50%;
+  top: 60px;
+  bottom: 60px;
+  width: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg,
+    transparent,
+    rgba(0, 201, 167, 0.28) 8%,
+    rgba(0, 201, 167, 0.28) 92%,
+    transparent);
 }
-.how-step-num {
-  width: 42px; height: 42px; border-radius: 50%;
-  background: var(--teal); color: #fff;
-  font-size: 15px; font-weight: 800;
-  display: flex; align-items: center; justify-content: center; margin: 0 auto 14px;
-  position: relative; z-index: 1;
+
+@media (min-width: 861px) {
+  .how-steps::before { display: none; }
 }
-[data-theme="light"] .how-step-num { background: #111827; }
-.how-step-title { font-size: 14.5px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
-.how-step-desc  { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+/* ── The curve ──
+   The path itself is measured and written by useCurvedSpine in index.js, because the dots are not
+   evenly spaced. This only has to place the canvas and style the stroke. */
+.tl-spine {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.tl-spine-path {
+  stroke: url(#tl-spine-fade);
+  stroke-width: 2;
+  stroke-linecap: round;
+  /* Dashed, like a route pencilled on a map. This is also why there is no draw-in animation any
+     more: that effect worked by animating stroke-dashoffset against a dasharray the length of the
+     whole path, and a path can only carry one dasharray. The dashes are the better of the two. */
+  stroke-dasharray: 6 9;
+}
+
+.tl-step {
+  position: relative;
+  display: grid;
+  /* The middle column is the lane the route travels in. It is far wider than the dot needs
+     because the loops have to fit inside it — a narrower lane turns them into pinches. */
+  grid-template-columns: 1fr 170px 1fr;
+  align-items: center;
+  gap: 0;
+}
+
+/* Every second step swaps sides. The preview is first in the markup either way, so the order is
+   changed here rather than in the DOM — a screen reader still meets the preview after the step it
+   belongs to. */
+.tl-step.tl-flip .tl-preview { order: 3; }
+.tl-step.tl-flip .tl-dot     { order: 2; }
+.tl-step.tl-flip .tl-text    { order: 1; }
+
+.tl-preview { padding-right: 8px; }
+.tl-step.tl-flip .tl-preview { padding-right: 0; padding-left: 8px; }
+.tl-text { padding-left: 8px; }
+.tl-step.tl-flip .tl-text { padding-left: 0; padding-right: 8px; }
+
+/* ── The dot ── */
+.tl-dot {
+  justify-self: center;
+  width: 15px; height: 15px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid rgba(0, 201, 167, 0.45);
+  position: relative;
+  z-index: 2;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+/* The glow. box-shadow is fine here because it only changes on hover — it is not animating in a
+   loop, so it is painted once when you arrive and once when you leave. */
+.tl-step:hover .tl-dot {
+  border-color: var(--teal);
+  background: var(--teal);
+  transform: scale(1.25);
+  box-shadow:
+    0 0 0 5px rgba(0, 201, 167, 0.14),
+    0 0 18px 2px rgba(0, 201, 167, 0.55);
+}
+
+/* ── The words ── */
+.tl-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
+.tl-num {
+  font-size: 30px; font-weight: 900; color: var(--teal);
+  letter-spacing: -1px; line-height: 1;
+}
+.tl-label {
+  font-size: 11px; font-weight: 800; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--muted);
+  padding-left: 10px; border-left: 1px solid var(--border);
+}
+.tl-title {
+  font-size: 20px; font-weight: 800; color: var(--text);
+  letter-spacing: -0.3px; margin-bottom: 10px;
+}
+.tl-desc { font-size: 13.5px; line-height: 1.75; color: var(--muted2); max-width: 30rem; }
+
+/* ── The preview window ── */
+.tl-window {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+.tl-step:hover .tl-window {
+  border-color: rgba(0, 201, 167, 0.32);
+  transform: translateY(-3px);
+}
+
+.tl-window-bar {
+  display: flex; align-items: center; gap: 6px;
+  padding: 11px 14px;
+  background: var(--card2);
+  border-bottom: 1px solid var(--border);
+}
+.tl-window-bar span[class^="tl-dot-"] {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.tl-dot-r { background: rgba(248,113,113,0.55); }
+.tl-dot-y { background: rgba(251,191,36,0.55); }
+.tl-dot-g { background: rgba(34,197,94,0.55); }
+.tl-window-title {
+  margin-left: 8px; font-size: 11.5px; font-weight: 700;
+  color: var(--muted); letter-spacing: 0.02em;
+}
+
+.tl-window-body { padding: 14px 16px 16px; }
+
+/* Shared chip, used by verification and payments the way the app's badges work. */
+.tl-chip {
+  font-size: 10px; font-weight: 800; letter-spacing: 0.04em;
+  padding: 3px 8px; border-radius: 99px; white-space: nowrap;
+}
+.tl-chip-ok { background: rgba(0,201,167,0.14); color: var(--teal); }
+
+/* ── 01 Verification ── */
+.tl-docs { display: flex; flex-direction: column; gap: 8px; }
+.tl-doc {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 10px;
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.tl-doc-thumb {
+  width: 30px; height: 30px; border-radius: 7px; flex-shrink: 0;
+  background: rgba(0,201,167,0.12);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--teal);
+}
+.tl-doc-thumb svg { width: 15px; height: 15px; }
+.tl-doc-info { flex: 1; min-width: 0; }
+.tl-doc-name { font-size: 12px; font-weight: 700; color: var(--text); }
+.tl-doc-meta {
+  font-size: 10.5px; color: var(--muted); margin-top: 1px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.tl-verified {
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 10px; padding: 10px 12px;
+  background: rgba(0,201,167,0.08);
+  border: 1px solid rgba(0,201,167,0.22);
+  border-radius: 10px;
+}
+.tl-verified-icon { color: var(--teal); display: flex; flex-shrink: 0; }
+.tl-verified-icon svg { width: 17px; height: 17px; }
+.tl-verified-title { font-size: 12.5px; font-weight: 800; color: var(--teal); }
+.tl-verified-sub { font-size: 10.5px; color: var(--muted); margin-top: 1px; }
+
+/* ── 02 Browse: the card browse.html renders ── */
+.tl-filters { display: flex; gap: 6px; margin-bottom: 11px; flex-wrap: wrap; }
+.tl-filter {
+  font-size: 10.5px; font-weight: 600;
+  padding: 4px 9px; border-radius: 99px;
+  background: var(--card2); border: 1px solid var(--border); color: var(--muted2);
+}
+.tl-listing {
+  border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+  background: var(--card2);
+}
+.tl-listing-img {
+  height: 76px; position: relative;
+  background:
+    linear-gradient(135deg, rgba(0,201,167,0.16), rgba(0,201,167,0.04)),
+    var(--card2);
+}
+.tl-listing-type {
+  position: absolute; top: 8px; left: 8px;
+  font-size: 9.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 99px;
+  background: var(--teal); color: #04221d;
+}
+.tl-listing-body { padding: 10px 12px 12px; }
+.tl-listing-title { font-size: 13px; font-weight: 800; color: var(--text); }
+.tl-listing-addr { font-size: 10.5px; color: var(--muted); margin-top: 2px; }
+.tl-listing-price {
+  font-size: 15px; font-weight: 900; color: var(--teal); margin-top: 7px;
+}
+.tl-listing-price span { font-size: 10.5px; font-weight: 600; color: var(--muted); }
+.tl-listing-specs {
+  display: flex; gap: 12px; margin-top: 9px;
+  padding-top: 9px; border-top: 1px solid var(--border);
+}
+.tl-listing-specs span {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 10.5px; color: var(--muted2); font-weight: 600;
+}
+.tl-listing-specs i { display: flex; color: var(--muted); }
+.tl-listing-specs svg { width: 11px; height: 11px; }
+
+/* ── 03 Messages ── */
+.tl-msg { margin-bottom: 9px; max-width: 86%; }
+.tl-msg-me { margin-left: auto; text-align: right; }
+.tl-msg-bubble {
+  display: inline-block; text-align: left;
+  padding: 8px 11px; border-radius: 12px;
+  font-size: 12px; line-height: 1.5;
+}
+.tl-msg-them .tl-msg-bubble {
+  background: var(--card2); color: var(--muted2);
+  border-bottom-left-radius: 4px;
+}
+.tl-msg-me .tl-msg-bubble {
+  background: rgba(0,201,167,0.16); color: var(--text);
+  border-bottom-right-radius: 4px;
+}
+.tl-msg-time { font-size: 9.5px; color: var(--muted); margin-top: 3px; }
+
+/* The viewing request the thread can carry, the way messages.html shows it. */
+.tl-msg-viewing {
+  border-left: 3px solid var(--teal);
+  background: var(--card2) !important;
+  padding: 9px 12px;
+}
+.tl-viewing-tag {
+  font-size: 9.5px; font-weight: 800; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--teal); margin-bottom: 4px;
+}
+.tl-viewing-when { font-size: 12px; font-weight: 700; color: var(--text); }
+.tl-viewing-state { font-size: 10.5px; color: var(--teal); font-weight: 700; margin-top: 3px; }
+
+/* ── 04 Payments: the pay-card shape ── */
+.tl-pay {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  padding: 12px; border-radius: 11px;
+  background: var(--card2); border: 1px solid var(--border);
+}
+.tl-pay-left { min-width: 0; flex: 1; }
+.tl-pay-property { font-size: 12.5px; font-weight: 800; color: var(--text); margin-bottom: 9px; }
+.tl-pay-meta {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px;
+}
+.tl-pay-item { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.tl-pay-label {
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--muted);
+}
+.tl-pay-value {
+  font-size: 11.5px; font-weight: 700; color: var(--text);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.tl-pay-right { text-align: right; flex-shrink: 0; }
+.tl-pay-amount { font-size: 17px; font-weight: 900; color: var(--teal); margin-bottom: 6px; }
+
+/* ── Narrow screens: one column, the spine moves to the left edge ── */
+@media (max-width: 860px) {
+  .how-steps { gap: 36px; margin-top: 28px; }
+  .how-steps::before { left: 7px; transform: none; top: 20px; bottom: 20px; }
+
+  .tl-step,
+  .tl-step.tl-flip {
+    grid-template-columns: 26px 1fr;
+    align-items: start;
+    gap: 0 14px;
+  }
+  /* Dot first, then the words, then the preview underneath — the reading order on a phone. */
+  .tl-step .tl-dot,
+  .tl-step.tl-flip .tl-dot { order: 1; grid-column: 1; grid-row: 1; margin-top: 7px; }
+  .tl-step .tl-text,
+  .tl-step.tl-flip .tl-text { order: 2; grid-column: 2; grid-row: 1; padding: 0; }
+  .tl-step .tl-preview,
+  .tl-step.tl-flip .tl-preview { order: 3; grid-column: 2; grid-row: 2; padding: 14px 0 0; }
+
+  .tl-num { font-size: 24px; }
+  .tl-title { font-size: 17px; }
+  .tl-desc { font-size: 13px; }
+}
+
+/* A dot that lights up on hover means nothing without a pointer, and the lift is motion. */
+@media (hover: none) {
+  .tl-step:hover .tl-window { transform: none; }
+}
+
+.how-step { position: relative; }
+/* The old four-across layout lived here: a numbered circle per step, with a connector line
+   drawn between them. The timeline above replaced all of it. */
 
 /* ── FEATURES ── */
 .features-inner { max-width: 1000px; margin: 0 auto; }
@@ -1386,32 +1713,32 @@ footer {
   transform: none;
 }
 .reveal-section.in-view .cat-card:nth-child(1),
-.reveal-section.in-view .how-step:nth-child(1),
+.reveal-section.in-view .how-step:nth-of-type(1),
 .reveal-section.in-view .feature-card:nth-child(1),
 .reveal-section.in-view .testimonial-card:nth-child(1),
 .reveal-section.in-view .stat-box:nth-child(1) { transition-delay: 0.1s; }
 
 .reveal-section.in-view .cat-card:nth-child(2),
-.reveal-section.in-view .how-step:nth-child(2),
+.reveal-section.in-view .how-step:nth-of-type(2),
 .reveal-section.in-view .feature-card:nth-child(2),
 .reveal-section.in-view .testimonial-card:nth-child(2),
 .reveal-section.in-view .stat-box:nth-child(2) { transition-delay: 0.2s; }
 
 .reveal-section.in-view .cat-card:nth-child(3),
-.reveal-section.in-view .how-step:nth-child(3),
+.reveal-section.in-view .how-step:nth-of-type(3),
 .reveal-section.in-view .feature-card:nth-child(3),
 .reveal-section.in-view .testimonial-card:nth-child(3),
 .reveal-section.in-view .stat-box:nth-child(3) { transition-delay: 0.3s; }
 
 .reveal-section.in-view .cat-card:nth-child(4),
-.reveal-section.in-view .how-step:nth-child(4),
+.reveal-section.in-view .how-step:nth-of-type(4),
 .reveal-section.in-view .feature-card:nth-child(4) { transition-delay: 0.4s; }
 
 /* ── RESPONSIVE ── */
 @media (max-width: 900px) {
   .hero-left { padding: 48px 24px; }
   .section, .section-alt { padding: 60px 24px; }
-  .categories-grid, .how-steps, .features-card-wrap, .stats-grid, .testimonials-grid { grid-template-columns: 1fr; }
+  .categories-grid, .features-card-wrap, .stats-grid, .how-steps, .testimonials-grid { grid-template-columns: 1fr; }
   .footer-grid { grid-template-columns: 1fr 1fr; }
   nav { padding: 0 24px; }
   .nav-tagline { display: none; }
@@ -1465,6 +1792,248 @@ footer {
   .hero-left { padding: 28px 16px; }
   .nav-btns .btn-outline { display: none; }
   .cat-card { padding: 16px 14px; }
-  .how-step { padding: 16px; }
+
   .cta-section { padding: 44px 20px; }
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────────────────
+   The hero runs a dozen infinite animations at once: the particle layer, six markers with a float
+   and a pulse each, the floating card and the live dot. Somebody who has asked their operating
+   system for less motion gets a still page instead — which is also the cheapest version of it,
+   and the one a tired laptop will thank you for. */
+@media (prefers-reduced-motion: reduce) {
+  /* Nothing here for .tl-spine-path: the route is drawn once and never animates, and its dashes
+     are a pattern rather than motion — switching them off would just remove the look. */
+  .hero-particles,
+  .property-marker,
+  .marker-pulse,
+  .map-property-card,
+  .map-live-dot,
+  .hero-bento .bento-ping-dot {
+    animation: none !important;
+  }
+  .reveal-section .cat-card,
+  .reveal-section .how-step,
+  .reveal-section .feature-card,
+  .reveal-section .stat-box {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* ── Off-screen hero ─────────────────────────────────────────────────────────
+   glass-nav.js adds this once the hero has scrolled out of view. animation-play-state keeps each
+   animation exactly where it was, so coming back is seamless — it simply stops costing anything
+   while nobody is looking at it. */
+.hero.hero-paused *,
+.hero.hero-paused {
+  animation-play-state: paused !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   How We Verify
+
+   Where the testimonials block used to be. Four cards, each one a gate the platform enforces.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.verify-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  max-width: 1000px;
+  margin: 44px auto 0;
+  text-align: left;
+}
+
+.verify-card {
+  position: relative;
+  padding: 26px 26px 28px;
+  border-radius: 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  /* Named properties only. `transition: all` on a card this size repaints the shadow on every
+     frame of the hover, which is what made the landing page stutter before. */
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.verify-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  border-radius: 16px 0 0 16px;
+  background: var(--teal);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.verify-card:hover {
+  border-color: rgba(0, 201, 167, 0.4);
+  transform: translateY(-3px);
+}
+
+.verify-card:hover::before { opacity: 1; }
+
+.verify-card-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.verify-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 11px;
+  background: rgba(0, 201, 167, 0.1);
+  border: 1px solid rgba(0, 201, 167, 0.22);
+  color: var(--teal);
+}
+
+.verify-icon svg { width: 20px; height: 20px; }
+
+.verify-tag {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.verify-title {
+  margin: 0 0 9px;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.35;
+  color: var(--text);
+}
+
+.verify-desc {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.68;
+  color: var(--muted2);
+}
+
+.verify-note {
+  max-width: 760px;
+  margin: 30px auto 0;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--muted);
+  text-align: center;
+}
+
+@media (max-width: 860px) {
+  .verify-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 32px;
+  }
+  .verify-card { padding: 22px; }
+  .verify-title { font-size: 16px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   The three cards that tilt
+
+   This lives at the end of the file deliberately. .feature-card is defined twice — once above for
+   these cards and once further down for the "Why HomeSure" row — and the second definition wins,
+   including `.feature-card:hover { transform: translateY(-3px) }`. That hover rule would replace
+   the tilt transform at exactly the moment the tilt is supposed to be running. Everything here is
+   written as .feature-card.feature-3d and placed last, so neither can be contradicted later.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.feature-card.feature-3d {
+  background: linear-gradient(135deg, var(--card) 0%, var(--card2) 100%);
+  border: none;
+  border-left: 4px solid var(--feature-color);
+  border-radius: 16px;
+  padding: 50px 40px;
+  box-shadow: none;
+  /* Not hidden: any overflow other than visible forces transform-style back to flat, and the
+     depth below depends on preserve-3d. The clipping happens in .feature-card-bg instead. */
+  overflow: visible;
+  transform-style: preserve-3d;
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  /* The ease back to flat once the pointer leaves. While it is tracking, the rule below takes
+     over — easing toward a target that moves every frame just reads as lag. */
+  transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* The decorative corner moves to the clipped layer, so the card itself does not need to clip. */
+.feature-card.feature-3d::before { content: none; }
+
+.feature-card.feature-3d.is-tilting {
+  transition: transform 80ms linear;
+}
+
+.feature-3d .feature-card-bg {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.feature-3d .feature-card-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 200px;
+  height: 200px;
+  background: var(--feature-color);
+  opacity: 0.03;
+  border-radius: 50%;
+  transform: translate(50%, -50%);
+}
+
+/* A circle that gets moved, rather than a gradient redrawn at a new position every frame. Moving
+   it is a compositor job; redrawing it would be a paint on each pointer move. */
+.feature-3d .feature-card-glare {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 420px;
+  height: 420px;
+  margin: -210px 0 0 -210px;
+  border-radius: 50%;
+  background: radial-gradient(circle closest-side,
+    var(--feature-color) 0%,
+    rgba(255, 255, 255, 0) 100%);
+  opacity: 0;
+  transform: translate3d(var(--gx, 50%), var(--gy, 50%), 0);
+  transition: opacity 280ms ease;
+}
+
+.feature-3d.is-tilting .feature-card-glare { opacity: 0.14; }
+
+/* Depth. Face on this is invisible — it only reads as depth once the card is turned, which is the
+   point: the card looks ordinary until you move toward it. */
+.feature-3d .feature-card-icon { transform: translateZ(52px); }
+.feature-3d .feature-card-badge { transform: translateZ(34px); }
+.feature-3d .feature-card-title { transform: translateZ(26px); }
+.feature-3d .feature-card-desc { transform: translateZ(16px); }
+
+/* The icon stands furthest off the card, so it casts onto it. */
+.feature-3d .feature-card-icon {
+  box-shadow: 0 10px 26px -10px var(--feature-color);
+}
+
+/* useCardTilt returns before adding .tilt-on when the system asks for less movement, so the tilt
+   and the light are already gone. This flattens the depth that went with them. */
+@media (prefers-reduced-motion: reduce) {
+  .feature-card.feature-3d { transition: none; }
+  .feature-3d .feature-card-icon,
+  .feature-3d .feature-card-badge,
+  .feature-3d .feature-card-title,
+  .feature-3d .feature-card-desc { transform: none; }
 }

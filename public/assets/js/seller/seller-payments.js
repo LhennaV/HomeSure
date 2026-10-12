@@ -334,6 +334,11 @@
     if (names.includes(chosen)) select.value = chosen;
   }
 
+
+  // Only the search box uses this. renderAllPayments() itself stays immediate, so the first render and
+  // every call from code are unaffected.
+  window.renderAllPaymentsSoon = hsDebounce(() => window.renderAllPayments(), 200);
+
   window.renderAllPayments = function () {
     const tenantFilter = document.getElementById('tenantFilter')?.value || '';
     const q = (document.getElementById('allSearch')?.value || '').toLowerCase().trim();

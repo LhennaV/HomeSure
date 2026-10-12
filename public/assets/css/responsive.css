@@ -349,6 +349,32 @@
 }
 
 /* ── 20. Index / Landing Page ────────────────────────────── */
+
+/* Tablets and narrow windows: 769px to 1024px.
+   The hero is two columns side by side, and .hero-left is capped at max-width: 50%. Below about
+   1024px that leaves the headline roughly 350px to live in, while .hero-title has a floor of 38px
+   and will not shrink past it — so "All in one place." ran off the edge. Phones were already
+   handled at 768px; this is the gap between the two.
+   Stacked rather than hidden, so the map is still there on a tablet, just underneath. */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .hero {
+    flex-direction: column;
+    min-height: auto;
+  }
+  .hero-left {
+    max-width: 100%;
+    padding: 64px 40px 48px;
+  }
+  .hero-title {
+    font-size: clamp(34px, 6vw, 52px);
+  }
+  .hero-right {
+    width: 100%;
+    min-height: 420px;
+    flex: none;
+  }
+}
+
 @media (max-width: 768px) {
   nav { padding: 0 20px !important; }
   .nav-links { display: none; }

@@ -160,6 +160,27 @@ const HS = (function () {
   // Everything that reads a listing needs the barangay name joined in.
   const PROPERTY_SELECT = '*, barangays(name)';
 
+  // Lists do not need every column. A card shows a title, a price, a photo and a few figures; it
+  // never shows the description or the amenities, and those are the two biggest fields on the row.
+  // Checked against every page that renders a list — none of them reads either one.
+  //
+  // The detail page still uses PROPERTY_SELECT, because it shows all of it.
+  const PROPERTY_LIST_SELECT = [
+    'id', 'landowner_id', 'title', 'price', 'price_negotiable',
+    'property_type', 'listing_type', 'status', 'lifecycle_status', 'verification_state',
+    'address', 'barangay_id', 'city', 'province', 'latitude', 'longitude',
+    'bedrooms', 'bathrooms', 'floor_area_sqm', 'lot_area_sqm',
+    'images', 'thumbnail_url', 'has_multiple_units', 'total_units', 'available_units',
+    'created_at', 'updated_at',
+    'barangays(name)',
+  ].join(', ');
+
+  // Nothing should ever ask the database for an unbounded number of rows. 500 is far above any
+  // realistic number of listings for one municipality, so it changes nothing today — it is there
+  // so that a table which grows unexpectedly degrades into "showing the newest 500" instead of
+  // sending megabytes to every visitor.
+  const LIST_CAP = 500;
+
   function cover(listing) {
     return (listing && listing.images && listing.images[0]) || PLACEHOLDER_IMG;
   }
@@ -325,7 +346,10 @@ const HS = (function () {
   const listings = {
     // Marketplace: admin-approved and still available.
     async approved() {
-      const rows = unwrap(await sb.from('properties').select(PROPERTY_SELECT).eq('status', 'approved').order('created_at', { ascending: false }));
+      const rows = unwrap(await sb.from('properties').select(PROPERTY_LIST_SELECT)
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false })
+        .limit(LIST_CAP));
       return (rows || []).map(mapProperty).filter((l) => l.lifecycleStatus !== 'sold' && l.lifecycleStatus !== 'rented');
     },
 
@@ -337,13 +361,13 @@ const HS = (function () {
     // The signed-in seller's own listings, every status.
     async mine() {
       const id = await needUserId();
-      const rows = unwrap(await sb.from('properties').select(PROPERTY_SELECT).eq('landowner_id', id).order('created_at', { ascending: false }));
+      const rows = unwrap(await sb.from('properties').select(PROPERTY_LIST_SELECT).eq('landowner_id', id).order('created_at', { ascending: false }).limit(LIST_CAP));
       return (rows || []).map(mapProperty);
     },
 
     // Admins: every listing, every status.
     async all() {
-      const rows = unwrap(await sb.from('properties').select(PROPERTY_SELECT).order('created_at', { ascending: false }));
+      const rows = unwrap(await sb.from('properties').select(PROPERTY_LIST_SELECT).order('created_at', { ascending: false }).limit(LIST_CAP));
       return (rows || []).map(mapProperty);
     },
 
@@ -448,15 +472,58 @@ const HS = (function () {
   // listing-images : public bucket  — listing photos
   // verification-docs : private bucket — IDs, titles, deeds (only the owner and admins can read)
   // Files live under "<user id>/…" so storage policies can check ownership from the path.
+  // A phone camera photo is commonly 3–8 MB at full sensor resolution, and every buyer browsing
+  // afterwards downloads it. Nothing in HomeSure ever displays an image wider than this, so
+  // sending the original costs everyone bandwidth for detail no screen will show.
+  const MAX_IMAGE_EDGE = 1600;        // px on the long side
+  const IMAGE_QUALITY  = 0.82;        // JPEG quality after resizing
+
   const storage = {
     async toBlob(source) {
       if (source instanceof Blob) return source;
       return (await fetch(source)).blob();      // data: / blob: URLs from the camera or file input
     },
 
+    /**
+     * Shrink a photo to something a screen can actually use.
+     *
+     * Returns the original untouched when it is already small enough, when it is not an image
+     * (a PDF land title, say), or when anything goes wrong — a failed resize must never stop
+     * somebody uploading their document.
+     */
+    async shrinkImage(blob) {
+      if (!blob.type.startsWith('image/') || blob.type === 'image/svg+xml') return blob;
+
+      try {
+        const bitmap = await createImageBitmap(blob);
+        const longest = Math.max(bitmap.width, bitmap.height);
+
+        if (longest <= MAX_IMAGE_EDGE) {
+          bitmap.close();
+          return blob;
+        }
+
+        const scale = MAX_IMAGE_EDGE / longest;
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(bitmap.width * scale);
+        canvas.height = Math.round(bitmap.height * scale);
+        canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+        bitmap.close();
+
+        const shrunk = await new Promise((resolve) =>
+          canvas.toBlob(resolve, 'image/jpeg', IMAGE_QUALITY));
+
+        // Re-encoding a small or already-compressed image can make it bigger. Keep whichever won.
+        return shrunk && shrunk.size < blob.size ? shrunk : blob;
+      } catch (err) {
+        console.warn('Could not resize the image, uploading it as it is:', err);
+        return blob;
+      }
+    },
+
     async upload(bucket, source, name) {
       const id = await needUserId();
-      const blob = await storage.toBlob(source);
+      const blob = await storage.shrinkImage(await storage.toBlob(source));
       const ext = (blob.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg').split('+')[0];
       const safe = (name || 'file').replace(/[^a-z0-9_-]+/gi, '-').slice(0, 40);
       const path = `${id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safe}.${ext}`;
@@ -924,6 +991,141 @@ const HS = (function () {
     },
   };
 
+  // ── Public figures for the landing page ─────────────────────────────────────
+  // Counted, not typed in. Anyone can run these without signing in: approved listings are public
+  // by policy, and public_profiles exposes role and account_status to anon by design.
+  //
+  // head: true asks for the count without the rows, so this is three small queries rather than
+  // three downloads of the tables.
+  async function publicStats() {
+    const count = async (table, build) => {
+      const query = build(sb.from(table).select('*', { count: 'exact', head: true }));
+      const { count: n, error } = await query;
+      if (error) throw new Error(error.message);
+      return n || 0;
+    };
+
+    const [listings, sellers, barangayList] = await Promise.all([
+      count('properties', (q) => q.eq('status', 'approved')),
+      count('public_profiles', (q) => q.eq('role', 'seller').eq('account_status', 'verified')),
+      barangays().catch(() => []),
+    ]);
+
+    return {
+      listings,
+      verifiedSellers: sellers,
+      // The barangay table is the authority. Sta. Maria has 24, but reading it means the figure
+      // stays right if that ever changes.
+      barangays: barangayList.length || 24,
+    };
+  }
+
+  // How many live listings sit in each barangay, keyed by barangay name.
+  //
+  // The landing page map links each barangay through to browse.html?barangay=<name>, so these
+  // counts have to agree with what browse will actually show — otherwise the map promises twelve
+  // listings and the page delivers none. That means the same two filters browse applies:
+  // status approved, and not already sold or rented.
+  //
+  // lifecycle_status is filtered here rather than in the query because it is null on older rows,
+  // and `NOT IN ('sold','rented')` is null — not true — for those, which would drop them.
+  async function listingCountsByBarangay() {
+    const rows = unwrap(await sb.from('properties')
+      .select('lifecycle_status, barangays(name)')
+      .eq('status', 'approved')
+      .limit(LIST_CAP));
+
+    const counts = {};
+    for (const r of rows || []) {
+      if (r.lifecycle_status === 'sold' || r.lifecycle_status === 'rented') continue;
+      const name = r.barangays && r.barangays.name;
+      if (!name) continue;
+      counts[name] = (counts[name] || 0) + 1;
+    }
+    return counts;
+  }
+
+  // ── Tenants ─────────────────────────────────────────────────────────────────
+  // Not a table. A tenant is a conclusion drawn from the rows that already exist: somebody with a
+  // confirmed payment or a security deposit on one of your listings. Messaging you or asking for a
+  // viewing does not make someone a tenant — money does.
+  const tenants = {
+    async mine() {
+      const me = await needUserId();
+
+      // One failure must not empty the whole page, so each source is asked for separately and a
+      // tenant is still listed if only one of the two answered.
+      const [paid, held] = await Promise.all([
+        payments.forMyListings().catch((err) => { console.error('Payments:', err); return []; }),
+        deposits.list().catch((err) => { console.error('Deposits:', err); return []; }),
+      ]);
+
+      const myDeposits = held.filter((d) => d.sellerId === me);
+      const byPerson = new Map();
+
+      const entry = (buyerId, listingId, listingTitle) => {
+        if (!byPerson.has(buyerId)) {
+          byPerson.set(buyerId, {
+            id: buyerId,
+            listingId,
+            listingTitle,
+            payments: [],
+            deposit: null,
+            totalPaid: 0,
+            nextDue: null,
+            awaitingConfirmation: 0,
+          });
+        }
+        return byPerson.get(buyerId);
+      };
+
+      paid.forEach((p) => {
+        // A pending payment on its own does not make a tenant — anyone could have an invoice
+        // raised. Only money that arrived, or proof waiting to be checked, counts.
+        if (p.status !== 'confirmed' && p.status !== 'pending_confirmation') return;
+        const t = entry(p.buyerId, p.listingId, p.listingTitle);
+        t.payments.push(p);
+        if (p.status === 'confirmed') t.totalPaid += Number(p.amount || 0);
+        if (p.status === 'pending_confirmation') t.awaitingConfirmation += 1;
+      });
+
+      myDeposits.forEach((d) => {
+        const t = entry(d.buyerId, d.listingId, d.listingTitle);
+        t.deposit = d;
+      });
+
+      const list = [...byPerson.values()];
+      if (!list.length) return [];
+
+      // What is still owed, from the payments already loaded. No extra request.
+      const today = new Date().toISOString().slice(0, 10);
+      const open = paid.filter((p) => p.status === 'pending' || p.status === 'rejected');
+      open.forEach((p) => {
+        const t = byPerson.get(p.buyerId);
+        if (!t) return;                       // owes money but was never a tenant
+        if (!t.nextDue || String(p.dueDate || '9999') < String(t.nextDue.dueDate || '9999')) {
+          t.nextDue = { amount: Number(p.amount || 0), dueDate: p.dueDate, period: p.period,
+                        overdue: !!p.dueDate && p.dueDate < today };
+        }
+      });
+
+      // Names come from the public view, so no contact details are exposed here.
+      const people = await profiles.byIds(list.map((t) => t.id));
+      list.forEach((t) => {
+        const person = people[t.id] || null;
+        t.name = person ? person.name : 'HomeSure user';
+        t.avatar = person ? person.avatar : null;
+        t.since = t.payments.reduce((earliest, p) => {
+          const at = p.paidAt || p.createdAt;
+          return !earliest || (at && at < earliest) ? at : earliest;
+        }, null);
+      });
+
+      list.sort((a, b) => a.name.localeCompare(b.name));
+      return list;
+    },
+  };
+
   // ── Listing reports ─────────────────────────────────────────────────────────
   const reports = {
     async file(propertyId, category, reason) {
@@ -1114,6 +1316,7 @@ const HS = (function () {
   return {
     PLACEHOLDER_IMG, cover, mapProfile, mapProperty, userId,
     auth, profiles, listings, favorites, storage, verification, viewing, messages, reviews, payments,
-    deposits, reports, admin, audit, barangays, barangayId,
+    deposits, tenants, reports, admin, audit, barangays, barangayId,
+    publicStats, listingCountsByBarangay,
   };
 })();

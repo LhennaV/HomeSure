@@ -14,10 +14,18 @@
 (function () {
   'use strict';
 
+  let started = false;
+
   function start() {
     const bar = document.querySelector('nav, .browse-nav, .policy-header');
     const hero = document.querySelector('.hero');
     if (!bar || !hero) return;
+
+    // start() is called twice on purpose — once at DOMContentLoaded and once shortly after, for
+    // the React hero that does not exist yet at parse time. Whichever call finds the hero first
+    // does the work; the other must not add a second set of listeners and observers.
+    if (started) return;
+    started = true;
 
     let queued = false;
 
@@ -38,6 +46,29 @@
     update();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll, { passive: true });
+
+    pauseWhenOffScreen(hero);
+  }
+
+  /**
+   * Stop the hero animating once nobody can see it.
+   *
+   * The hero runs about a dozen animations at the same time: a full-screen particle layer, and six
+   * map markers each with a float and a pulse. They are declared as infinite, so by default they
+   * keep the compositor busy for as long as the tab is open — including while somebody is reading
+   * the footer, with the whole hero scrolled past.
+   *
+   * An IntersectionObserver costs nothing when nothing is crossing the boundary, unlike a scroll
+   * handler that runs on every frame.
+   */
+  function pauseWhenOffScreen(hero) {
+    if (typeof IntersectionObserver !== 'function') return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => hero.classList.toggle('hero-paused', !entry.isIntersecting),
+      { rootMargin: '100px' }     // resume slightly before it comes back into view
+    );
+    observer.observe(hero);
   }
 
   // index.html builds its hero with React, so the element does not exist at parse time.

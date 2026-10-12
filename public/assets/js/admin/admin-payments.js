@@ -221,6 +221,11 @@
   }
 
   // ── Render Transactions ───────────────────────────────────────────────────────
+
+  // Only the search box uses this. renderTransactions() itself stays immediate, so the first render and
+  // every call from code are unaffected.
+  window.renderTransactionsSoon = hsDebounce(() => window.renderTransactions(), 200);
+
   window.renderTransactions = function () {
     const dateFrom = document.getElementById('fDateFrom')?.value || '';
     const dateTo   = document.getElementById('fDateTo')?.value || '';

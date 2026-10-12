@@ -398,88 +398,7 @@
 
       <!-- Reviews List -->
       <div class="reviews-list" id="reviewsList">
-
-        <!-- Sample Review 1 -->
-        <div class="review-card">
-          <div class="review-header">
-            <img src="https://i.pravatar.cc/150?img=1" alt="User" class="review-avatar" />
-            <div class="review-user-info">
-              <div class="review-user-name">Maria Santos</div>
-              <div class="review-meta">Verified Renter • 2 days ago</div>
-            </div>
-            <div class="review-stars">
-              <span class="star">★</span>
-              <span class="star">★</span>
-              <span class="star">★</span>
-              <span class="star">★</span>
-              <span class="star">★</span>
-            </div>
-          </div>
-          <div class="review-content">
-            Excellent experience! The apartment was exactly as described in the listing. The landlord was very responsive and professional. The location is perfect - near schools, markets, and transportation. Would highly recommend!
-          </div>
-          <div class="review-property">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-            </svg>
-            1-Bedroom Apartment near Town Proper
-          </div>
-        </div>
-
-        <!-- Sample Review 2 -->
-        <div class="review-card">
-          <div class="review-header">
-            <img src="https://i.pravatar.cc/150?img=8" alt="User" class="review-avatar" />
-            <div class="review-user-info">
-              <div class="review-user-name">Jose Reyes</div>
-              <div class="review-meta">Verified Renter • 1 week ago</div>
-            </div>
-            <div class="review-stars">
-              <span class="star">★</span>
-              <span class="star">★</span>
-              <span class="star">★</span>
-              <span class="star">★</span>
-              <span class="star">★</span>
-            </div>
-          </div>
-          <div class="review-content">
-            Great value for money! The studio is clean, well-maintained, and has everything I need. The seller was very accommodating and made the move-in process smooth and easy. Very satisfied with my choice!
-          </div>
-          <div class="review-property">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-            </svg>
-            Cozy Studio Apartment in Sonoma
-          </div>
-        </div>
-
-        <!-- Sample Review 3 -->
-        <div class="review-card">
-          <div class="review-header">
-            <img src="https://i.pravatar.cc/150?img=5" alt="User" class="review-avatar" />
-            <div class="review-user-info">
-              <div class="review-user-name">Anna Cruz</div>
-              <div class="review-meta">Verified Renter • 2 weeks ago</div>
-            </div>
-            <div class="review-stars">
-              <span class="star">★</span>
-              <span class="star">★</span>
-              <span class="star">★</span>
-              <span class="star">★</span>
-              <span class="star">☆</span>
-            </div>
-          </div>
-          <div class="review-content">
-            Overall good experience. The property is nice and the area is safe. Only minor issue was the water pressure, but the landlord is already working on fixing it. Communication was excellent throughout!
-          </div>
-          <div class="review-property">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-            </svg>
-            Modern 2BR Apartment
-          </div>
-        </div>
-
+        <!-- filled by buyer-reviews.js -->
       </div>
 
     </div>
@@ -533,53 +452,6 @@
   </div>
 </div>
 
-<script>
-  // Star rating functionality
-  let selectedRating = 0;
-  const stars = document.querySelectorAll('.star-rating .star');
-
-  stars.forEach(star => {
-    star.addEventListener('click', () => {
-      selectedRating = parseInt(star.dataset.rating);
-      updateStars();
-    });
-  });
-
-  function updateStars() {
-    stars.forEach((star, index) => {
-      if (stars.length - index <= selectedRating) {
-        star.classList.add('active');
-      } else {
-        star.classList.remove('active');
-      }
-    });
-  }
-
-  function openReviewModal() {
-    document.getElementById('reviewModal').classList.add('active');
-  }
-
-  function closeReviewModal() {
-    document.getElementById('reviewModal').classList.remove('active');
-    selectedRating = 0;
-    updateStars();
-  }
-
-  function submitReview() {
-    if (selectedRating === 0) {
-      alert('Please select a rating!');
-      return;
-    }
-    // Simulate submission
-    alert('Thank you for your review!');
-    closeReviewModal();
-  }
-
-  // Close modal on backdrop click
-  document.getElementById('reviewModal').addEventListener('click', (e) => {
-    if (e.target.id === 'reviewModal') closeReviewModal();
-  });
-</script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.js"></script>
 <script src="../../assets/js/config.js"></script>
@@ -587,9 +459,6 @@
 <script src="../../assets/js/data.js"></script>
 <script src="../../components/sidebar.js"></script>
 <script src="../../components/topbar.js"></script>
-<script>
-  HomeSureSidebar.init({ activePage: 'reviews' });
-  HomeSureTopbar.init({ placeholder: 'Search reviews...' });
-</script>
+<script src="../../assets/js/buyer/buyer-reviews.js"></script>
 </body>
 </html>

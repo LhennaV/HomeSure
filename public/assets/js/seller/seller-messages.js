@@ -91,6 +91,11 @@
     return m.text || '';
   }
 
+
+  // Only the search box uses this. filterConvs() itself stays immediate, so the first render and
+  // every call from code are unaffected.
+  window.filterConvsSoon = hsDebounce(() => window.filterConvs(), 200);
+
   window.filterConvs = function () {
     const box = document.getElementById('convSearch');
     renderConvList(box ? box.value : '');
@@ -326,8 +331,12 @@
     if (list) list.innerHTML = `<div style="padding:28px 18px;text-align:center;color:var(--muted);font-size:13px">Loading…</div>`;
     showEmptyState();
 
+    // The Tenants page links here as messages.html?to=<buyer id>, so the conversation with that
+    // person opens straight away instead of landing on an empty panel.
+    const wanted = new URLSearchParams(window.location.search).get('to');
+
     try {
-      await reload(null);
+      await reload(wanted || null);
     } catch (err) {
       console.error('Failed to load messages:', err);
       if (list) list.innerHTML = `<div style="padding:28px 18px;text-align:center;color:var(--muted);font-size:13px">Could not load your messages. Please try again.</div>`;

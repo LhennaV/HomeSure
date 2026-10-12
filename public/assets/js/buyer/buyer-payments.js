@@ -340,7 +340,7 @@
     if (tab === 'deposit') renderDeposit();
   };
 
-  document.getElementById('historySearch')?.addEventListener('input', renderHistory);
+  document.getElementById('historySearch')?.addEventListener('input', hsDebounce(renderHistory, 200));
 
   // ── Toast ─────────────────────────────────────────────────────────────────────
   let toastTimer = null;
