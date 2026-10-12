@@ -414,7 +414,7 @@ function Navbar() {
           <img src="/assets/img/CatsTone Logo.png" alt="CatsTone" className="nav-catstone-img" />
         </span>
         <span className="nav-logo-divider" />
-        <img src="/assets/img/HomeSure_Logo.svg" alt="HomeSure" height={30} style={{ display: "block" }} />
+        <img src="/assets/img/HomeSure_Logo.svg" alt="HomeSure" class="img-logo" style={{ display: "block" }} />
         <span>HomeSure</span>
       </Link>
       <div className="nav-btns">

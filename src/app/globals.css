@@ -77,6 +77,7 @@ body.light {
     margin: 0;
     padding: 0;
   }
+
 }
 
 @layer utilities {
@@ -102,7 +103,13 @@ body.light {
 
 /* ─────────────────────────────────────────────────────────────────────────────
    HomeSure – Integrated Admin & Dashboard CSS (from LhennaV/HomeSure)
-───────────────────────────────────────────────────────────────────────────── */
+───
+────────────────────────────────────────────────────────────────────────── */
+
+.img-logo{
+    height:30px;
+    widht:auto;
+}
 
 /* Page Header */
 .page-header { margin-bottom: 26px; animation: fadeUp 0.3s ease both; }
