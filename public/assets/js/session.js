@@ -99,6 +99,22 @@ async function requireRole(...roles) {
   });
 })();
 
+// Wait until typing stops before doing the expensive thing.
+//
+// A search box fires on every keystroke. Typing "apartment" ran the filter nine times and rebuilt
+// every card nine times; eight of those renders were thrown away before anyone saw them. This
+// waits for a pause instead.
+//
+// Only for work that redraws a list. Anything that should feel instant as you type — a character
+// counter, a password strength meter — must stay undebounced.
+function hsDebounce(fn, wait) {
+  let timer = null;
+  return function debounced(...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), wait === undefined ? 200 : wait);
+  };
+}
+
 // Initials for an avatar circle.
 //
 // Every caller used to write `first[0] + last[0]`, which throws the moment a name is null — and a

@@ -55,6 +55,43 @@ export async function POST(request: Request) {
   const safeRole = role === "seller" ? "seller" : "buyer";
   const admin = getAdminSupabase();
 
+  // An address with a sign-up started but never confirmed belongs to nobody yet. Whoever typed it
+  // has not proved they can read that inbox, so they have no claim on it — and leaving the row in
+  // place would lock the real owner out of their own address until an admin deleted it by hand.
+  //
+  // So an unconfirmed account is replaced by this sign-up. The person who can read the mail still
+  // decides who gets in, because only they can open the link, and the password that ends up
+  // working is the one from the most recent attempt.
+  //
+  // A confirmed account is never touched. Someone has proved they own that inbox, and nothing
+  // here may take it from them.
+  const { data: existingProfile } = await admin
+    .from("profiles")
+    .select("id")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (existingProfile) {
+    const { data: existingUser } = await admin.auth.admin.getUserById(existingProfile.id);
+
+    if (existingUser?.user?.email_confirmed_at) {
+      return NextResponse.json(
+        { error: "An account with that email already exists. Try signing in, or reset your password." },
+        { status: 409 },
+      );
+    }
+
+    // Deleting the auth user cascades the profile and any tokens issued for it.
+    const { error: deleteError } = await admin.auth.admin.deleteUser(existingProfile.id);
+    if (deleteError) {
+      console.error("Could not clear the unconfirmed account:", deleteError.message);
+      return NextResponse.json(
+        { error: "Something is wrong with that address. Please contact support." },
+        { status: 409 },
+      );
+    }
+  }
+
   const { data: created, error: createError } = await admin.auth.admin.createUser({
     email,
     password,
@@ -70,6 +107,8 @@ export async function POST(request: Request) {
 
   if (createError || !created?.user) {
     const message = createError?.message ?? "Could not create the account.";
+    // Reached only if two sign-ups for the same address land at the same moment, since an
+    // unconfirmed one was cleared above.
     if (/already|registered|exists|duplicate/i.test(message)) {
       return NextResponse.json(
         { error: "An account with that email already exists. Try signing in, or reset your password." },

@@ -17,21 +17,31 @@
     <!-- Stylesheet -->
     <link rel="stylesheet" href="assets/css/index.css" />
 
-    <!-- React (via CDN — no build tools needed) -->
+    <!-- React (via CDN — no build tools needed).
+         Production builds: the development ones ship roughly three times the code and run extra
+         checks on every render, neither of which a visitor benefits from. -->
     <script
       crossorigin
-      src="https://unpkg.com/react@18/umd/react.development.js"
+      src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"
     ></script>
     <script
       crossorigin
-      src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+      src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"
     ></script>
     <link rel="stylesheet" href="assets/css/responsive.css" />
     <link rel="stylesheet" href="assets/css/glass-nav.css" />
-    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.css" />
 </head>
   <body>
     <div id="root"></div>
+
+<!-- The landing page reads the database for its figures, so it needs the same chain every other
+     page uses: supabase-js, then config.js for `sb`, then data.js for `HS`.
+     session.js only redirects on /module/ pages, so it is inert here — but data.js expects the
+     helpers it defines. -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.js"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/session.js"></script>
+<script src="assets/js/data.js"></script>
 <script src="assets/js/index.js"></script>
 <script src="assets/js/glass-nav.js"></script>
   </body>

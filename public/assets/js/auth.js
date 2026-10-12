@@ -386,7 +386,7 @@ function showGoogleToast() {
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
-  applyAuthTheme(localStorage.getItem('hs-theme') || 'light');
+  applyAuthTheme(localStorage.getItem('hs-theme') || 'dark');
 
   const backdrop = document.getElementById('verifyModal');
   if (backdrop) backdrop.addEventListener('click', e => { if (e.target === backdrop) closeModal(); });

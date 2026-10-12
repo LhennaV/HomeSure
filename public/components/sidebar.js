@@ -45,6 +45,7 @@
     seller: [
       { id: 'dashboard', label: 'Dashboard',   icon: 'grid'    },
       { id: 'listings',  label: 'My Listings', icon: 'home'    },
+      { id: 'tenants',   label: 'My Tenants',  icon: 'users'   },
       { id: 'messages',  label: 'Messages',    icon: 'message' },
       { id: 'payments',  label: 'Payments',    icon: 'wallet'  },
     ],
@@ -394,7 +395,7 @@
   }
 
   function getTheme() {
-    return localStorage.getItem('hs-theme') || 'light';
+    return localStorage.getItem('hs-theme') || 'dark';
   }
 
   function applyTheme(mode) {
@@ -483,7 +484,7 @@
     // Nav routing
     const NAV_ROUTES = {
       buyer:      { dashboard: 'buyer.html', saved: 'saved.html', messages: 'messages.html', payments: 'payments.html' },
-      seller:     { dashboard: 'seller.html', listings: 'listings.html', messages: 'messages.html', payments: 'payments.html' },
+      seller:     { dashboard: 'seller.html', listings: 'listings.html', tenants: 'tenants.html', messages: 'messages.html', payments: 'payments.html' },
       admin:      { dashboard: 'admin.html', listings: 'listings.html', users: 'users.html', reports: 'reports.html', analytics: 'analytics.html', payments: 'payments.html' },
       superadmin: { dashboard: 'super-admin.html', admins: 'admins.html', 'audit-trail': 'audit-trail.html', reports: 'reports.html' },
     };

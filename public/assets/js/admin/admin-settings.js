@@ -244,7 +244,7 @@
 
   // Initialize theme on page load
   (function initTheme() {
-    const savedTheme = localStorage.getItem('theme') || 'light';
+    const savedTheme = localStorage.getItem('theme') || 'dark';
     const themeToggle = document.getElementById('themeToggle');
     const label = document.getElementById('theme-lbl');
 

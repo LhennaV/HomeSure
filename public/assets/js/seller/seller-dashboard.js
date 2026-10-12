@@ -122,6 +122,11 @@
   });
 
   // ── Render Listings ───────────────────────────────────────────────────────
+
+  // Only the search box uses this. renderListings() itself stays immediate, so the first render and
+  // every call from code are unaffected.
+  window.renderListingsSoon = hsDebounce(() => window.renderListings(), 200);
+
   function renderListings() {
     const q        = (document.getElementById('hsSearch') || {}).value || '';
     const barangay = document.getElementById('filterBarangay').value;

@@ -27,8 +27,11 @@ nav {
 }
 .nav-btns { display: flex; gap: 10px; align-items: center; }
 .nav-logo-divider { width: 1px; height: 22px; background: rgba(255,255,255,0.12); flex-shrink: 0; }
-.nav-catstone-wrap { display: flex; align-items: center; width: 38px; height: 38px; overflow: hidden; flex-shrink: 0; }
+.nav-catstone-wrap { display: flex; align-items: center; width: 28px; height: 28px; overflow: hidden; flex-shrink: 0; }
 .nav-catstone-img { width: 130%; height: 130%; object-fit: cover; object-position: center; margin: -15%; }
+
+.nav-logo > img { width: 26px; height: 26px; object-fit: contain; }
+
 .nav-theme-btn {
   width: 36px; height: 36px; border-radius: 9px;
   background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
@@ -63,7 +66,7 @@ nav {
 /* ── HERO ── */
 .about-hero {
   display: flex; align-items: center; justify-content: space-between;
-  gap: 48px; padding: 80px 80px 72px;
+  gap: 48px; padding: 128px 80px 72px;
   background: linear-gradient(135deg, #0d1b2a 0%, #0a2218 100%);
   border-bottom: 1px solid rgba(255,255,255,0.05);
 }
@@ -378,3 +381,91 @@ footer {
 [data-theme="light"] .footer-link { color: rgba(0,0,0,0.6); }
 [data-theme="light"] .footer-link:hover { color: #1fc8b4; }
 [data-theme="light"] .footer-bottom { color: rgba(0,0,0,0.3); border-top-color: rgba(0,0,0,0.06); }
+
+@media (max-width: 760px) {
+  nav { min-height: 60px; padding: 0 18px; }
+  .nav-logo { gap: 7px; font-size: 17px; }
+  .nav-catstone-wrap { width: 24px; height: 24px; }
+  .nav-logo > img { width: 23px; height: 23px; }
+  .nav-logo-divider { height: 18px; }
+  .nav-btns .btn-outline,
+  .nav-btns .btn-solid { display: none; }
+
+  .about-hero {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 28px;
+    padding: 104px 24px 40px;
+  }
+  .about-hero-left { max-width: none; }
+  .about-hero-title { font-size: clamp(40px, 11vw, 52px); }
+  .about-hero-sub { max-width: 38rem; margin-bottom: 0; }
+  .about-hero-right { width: 100%; }
+  .about-hero-img { display: block; width: 100%; height: auto; max-height: 360px; object-fit: cover; }
+
+  .stats-bar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stat-item { min-width: 0; padding: 20px 16px; gap: 12px; }
+  .stat-divider { display: none; }
+  .stat-num { flex: 0 0 auto; }
+  .stat-lbl { min-width: 0; }
+
+  .story-section { display: flex; flex-direction: column; gap: 24px; padding: 48px 24px; }
+  .story-left, .story-right { width: 100%; min-width: 0; }
+  .story-title { font-size: clamp(34px, 9vw, 46px); }
+}
+
+@media (max-width: 420px) {
+  .about-hero { padding: 96px 18px 32px; }
+  .stats-bar { grid-template-columns: 1fr; }
+  .stat-item { padding: 16px 20px; }
+  .story-section { padding: 40px 18px; }
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────────
+   These must stay at the bottom of the file. They were originally near the top, above the rules
+   they correct, so every one of them lost the cascade and the page never responded at all. */
+
+/* Tablets and narrow windows */
+@media (max-width: 1024px) {
+  .principles-section { padding: 72px 40px; gap: 48px; }
+  .values-section, .mv-section, .team-section, .hiring-section { padding: 72px 40px; }
+  .team-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Phones */
+@media (max-width: 760px) {
+  /* Guiding Principles: the heading column is a fixed 280px beside a flexible list, which left
+     the cards hanging off the right edge. Stack them. */
+  .principles-section {
+    flex-direction: column;
+    gap: 28px;
+    padding: 56px 24px;
+  }
+  .principles-left { width: 100%; }
+  .principles-title { font-size: 28px; }
+
+  /* Core values and mission/vision are two-column grids. */
+  .values-grid { grid-template-columns: 1fr; }
+
+  /* Centre the whole card once it is full width, the way the landing page cards read.
+     The icon is a fixed 44px box, so it needs auto margins rather than text-align. */
+  .value-card, .mv-card { text-align: center; }
+  .value-icon, .mv-icon { margin-left: auto; margin-right: auto; }
+  .mv-section { grid-template-columns: 1fr; }
+  .values-section, .mv-section { padding: 56px 24px; }
+
+  /* Team: four across becomes two, and the header stops fighting for one line. */
+  .team-section { padding: 56px 24px; }
+  .team-header { flex-direction: column; gap: 14px; }
+  .team-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+
+  .hiring-section { padding: 56px 24px; }
+  .hiring-btns { flex-direction: column; align-items: stretch; }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+  .team-grid { grid-template-columns: 1fr; }
+  .principles-section, .values-section, .mv-section,
+  .team-section, .hiring-section { padding: 44px 18px; }
+}
