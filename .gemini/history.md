@@ -26,6 +26,14 @@ This document records key milestones, major architecture decisions, refactoring 
   - Merged Supabase migrations: `007_payments_and_deposits.sql`, `009_performance_indexes.sql`, `010_barangays_sta_maria.sql`.
   - Rebuilt `src/app/page.tsx` as a client-side component (`"use client"`) with live client fetch for platform statistics (`publicStats`), dynamic listing counts per barangay on the interactive SVG map (`listingCountsByBarangay`), 3D card tilt for feature highlights, interactive timeline preview screens for How It Works, and the "How We Verify" section.
   - Verified clean TypeScript checks (`tsc --noEmit`), Next.js ESLint, and Next.js production build (`npm run build`).
+### [2026-10-13] Route Audit and Client-Side Fetch Verification
+- **Action**: Performed end-to-end route audit across landing page, client fetches, and auth redirects.
+- **Key Changes**:
+  - Aligned `src/app/auth/signout/route.ts` to redirect directly to `/auth/signin.html`.
+  - Added forward redirection from legacy Next.js `/auth/login` to unified `/auth/signin.html`.
+  - Confirmed all landing page client fetches (`src/app/page.tsx`) connect properly via Supabase browser client to live database tables (`properties`, `public_profiles`, `barangays`) with clean fallbacks.
+  - Verified static page destination targets (`/browse.html`, `/auth/signin.html`, `/auth/signup.html`, `/about.html`, `/faqs.html`, `/help.html`, `/privacy-policy.html`, `/terms.html`).
+  - Verified clean TypeScript checks (`tsc --noEmit`) and successful production build (`npm run build`).
 
 ---
 
