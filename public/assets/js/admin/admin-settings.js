@@ -91,13 +91,15 @@
     if (!/[^A-Za-z0-9]/.test(nw)) { showToast('Password must include a special character.', 'error'); return; }
     if (nw !== cf)                 { showToast('New passwords do not match.', 'error'); return; }
 
+    // Supabase verifies the current password by re-signing in, then sets the new one.
+    // Nothing here ever sees a stored password.
     try {
       await HS.auth.changePassword(cur, nw);
     } catch (err) {
       showToast(err.message, 'error');
       return;
     }
-    
+
     document.getElementById('pwForm').classList.remove('open');
     document.getElementById('changePwBtn').innerHTML =
       `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Change Password`;

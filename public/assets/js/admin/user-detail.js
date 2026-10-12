@@ -1,6 +1,6 @@
 // HomeSure – User Detail Page (Admin)
 
-(function () {
+(async function () {
   const admin = getSession();
   if (!admin || admin.role !== 'admin') {
     window.location.href = '../../auth/signin.html';
@@ -12,7 +12,17 @@
 
   const params = new URLSearchParams(window.location.search);
   const id     = params.get('id');
-  const u      = FAKE_USERS.find(x => x.id === id);
+  const page   = document.getElementById('pageContent');
+
+  page.innerHTML = '<div style="text-align:center;padding:80px;color:var(--muted)">Loading…</div>';
+  let u = null;
+  try {
+    u = await HS.admin.user(id);
+  } catch (err) {
+    console.error(err);
+    page.innerHTML = '<div style="text-align:center;padding:80px;color:var(--muted)">Could not load this user. Please try again.</div>';
+    return;
+  }
 
   if (!u) {
     document.getElementById('pageContent').innerHTML =
@@ -20,7 +30,14 @@
     return;
   }
 
-  const initials    = (u.firstName[0] + u.lastName[0]).toUpperCase();
+  const initials    = (((u.firstName || '')[0] || '') + ((u.lastName || '')[0] || '')).toUpperCase() || '?';
+
+  // Uploaded documents are private: ask for short-lived signed links (admins only).
+  const currentDocs = await HS.storage.resolveDocs(u.verificationDocs);
+  const newDocs     = await HS.storage.resolveDocs(u.newVerificationDocs);
+  const listingsCount = u.role === 'seller'
+    ? (await HS.listings.bySeller(u.id).catch(() => [])).length
+    : await HS.admin.savedCount(u.id).catch(() => 0);
   const avatarColor = u.role === 'buyer' ? '#3b82f6' : '#8b5cf6';
   const roleLabel   = u.role === 'buyer' ? 'Buyer' : 'Seller';
   const statusLabel = u.accountStatus
@@ -48,7 +65,7 @@
   // ── Verification section ──────────────────────────────────────────────────
   let verifSection = '';
 
-  if (u.role === 'seller') {
+  if (u.role === 'seller' || u.role === 'buyer') {
     const isPending        = u.accountStatus === 'pending';
     const isReverification = u.accountStatus === 'reverification';
 
@@ -62,31 +79,31 @@
         <div class="compare-grid">
           <div class="compare-col">
             <div class="compare-col-label old">Previously Approved Documents</div>
-            <div class="compare-col-body">${docsGrid(u.verificationDocs)}</div>
+            <div class="compare-col-body">${docsGrid(currentDocs)}</div>
           </div>
           <div class="compare-col">
             <div class="compare-col-label new">New Submission</div>
-            <div class="compare-col-body">${docsGrid(u.newVerificationDocs)}</div>
+            <div class="compare-col-body">${docsGrid(newDocs)}</div>
           </div>
         </div>`;
     } else if (isPending) {
       verifSection = `
         <div class="section-card">
           <div class="section-label">Submitted Documents</div>
-          ${docsGrid(u.verificationDocs)}
+          ${docsGrid(currentDocs)}
         </div>`;
     } else {
       verifSection = `
         <div class="section-card">
           <div class="section-label">Verification Documents</div>
-          ${docsGrid(u.verificationDocs)}
+          ${docsGrid(currentDocs)}
         </div>`;
     }
   }
 
   // ── Header action buttons ─────────────────────────────────────────────────
   let actionBtns = '';
-  if (u.role === 'seller') {
+  if (u.role === 'seller' || u.role === 'buyer') {
     const isVerified   = u.accountStatus === 'verified';
     const isUnverified = u.accountStatus === 'unverified';
     const approveBtn   = isVerified
@@ -99,9 +116,6 @@
   }
 
   // ── Listings count ────────────────────────────────────────────────────────
-  const userListings = u.role === 'seller'
-    ? FAKE_LISTINGS.filter(l => l.sellerId === u.id)
-    : (u.savedListings || []);
 
   // ── Render page ───────────────────────────────────────────────────────────
   document.getElementById('pageContent').innerHTML = `
@@ -135,12 +149,15 @@
         <div class="info-item"><label>Phone</label><span>${u.phone || '—'}</span></div>
         <div class="info-item"><label>Joined</label><span>${u.joinedAt || '—'}</span></div>
         ${u.role === 'seller' ? `
-          <div class="info-item"><label>Total Listings</label><span>${userListings.length}</span></div>
+          <div class="info-item"><label>Total Listings</label><span>${listingsCount}</span></div>
           <div class="info-item"><label>Verified On</label><span>${u.verifiedAt || '—'}</span></div>
           <div class="info-item"><label>Expiry</label><span>${u.verificationExpiry || '—'}</span></div>
-          <div class="info-item"><label>Submitted</label><span>${u.submittedVerificationAt || u.newSubmittedAt || '—'}</span></div>
+          <div class="info-item"><label>Submitted</label><span>${u.newSubmittedAt || u.submittedVerificationAt || '—'}</span></div>
         ` : `
-          <div class="info-item"><label>Saved Listings</label><span>${userListings.length}</span></div>
+          <div class="info-item"><label>Saved Listings</label><span>${listingsCount}</span></div>
+          <div class="info-item"><label>Verified On</label><span>${u.verifiedAt || '—'}</span></div>
+          <div class="info-item"><label>Expiry</label><span>${u.verificationExpiry || '—'}</span></div>
+          <div class="info-item"><label>Submitted</label><span>${u.newSubmittedAt || u.submittedVerificationAt || '—'}</span></div>
         `}
       </div>
     </div>
@@ -149,14 +166,13 @@
     ${verifSection}`;
 
   // ── Approve ───────────────────────────────────────────────────────────────
-  window.doApprove = function () {
-    u.accountStatus      = 'verified';
-    u.verifiedAt         = new Date().toISOString().split('T')[0];
-    const expiry         = new Date(); expiry.setFullYear(expiry.getFullYear() + 1);
-    u.verificationExpiry = expiry.toISOString().split('T')[0];
-    if (u.newVerificationDocs) {
-      u.verificationDocs    = u.newVerificationDocs;
-      u.newVerificationDocs = null;
+  window.doApprove = async function () {
+    try {
+      await HS.admin.approveVerification(u.id);
+      HS.audit.log('Verified ' + u.role, 'user', u.name + ' (' + u.email + ')');
+    } catch (err) {
+      hsToast('Could not verify this account: ' + err.message, 'error');
+      return;
     }
     window.location.reload();
   };
@@ -201,13 +217,18 @@
     document.getElementById('rejectModal').style.display = 'none';
   };
 
-  window.confirmReject = function () {
+  window.confirmReject = async function () {
     const selected = document.querySelector('input[name="rejectReason"]:checked');
     const custom   = document.getElementById('rejectCustom').value.trim();
     const reason   = custom || (selected ? reasons[selected.value] : null);
     if (!reason) { alert('Please select or write a rejection reason.'); return; }
-    u.accountStatus              = 'unverified';
-    u.verificationRejectReason   = reason;
+    try {
+      await HS.admin.rejectVerification(u.id, reason);
+      HS.audit.log('Rejected verification', 'user', u.name + ' – ' + reason);
+    } catch (err) {
+      hsToast('Could not reject this verification: ' + err.message, 'error');
+      return;
+    }
     closeRejectModal();
     window.location.reload();
   };

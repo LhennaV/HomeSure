@@ -31,7 +31,7 @@
   // ── Render table ────────────────────────────────────────────────────────────
   window.renderListings = function () {
     const q = (document.getElementById('hsSearch') || {}).value?.toLowerCase() || '';
-    const filtered = LISTINGS.filter(l => {
+    const filtered = listings.filter(l => {
       if (l.status === 'draft') return false; // not visible until seller submits
       const matchStatus = activeStatus === 'all' || l.status === activeStatus;
       const matchQ = !q || l.title.toLowerCase().includes(q) || l.barangay.toLowerCase().includes(q);
@@ -45,15 +45,13 @@
     }
 
     tbody.innerHTML = filtered.map(l => {
-	  const sellerName = l.seller ? l.seller.name : 'Unknown';
-      const sellerName = seller ? seller.firstName + ' ' + seller.lastName : 'Unknown';
+      const sellerName = l.seller ? l.seller.name : 'Unknown';
       const price = l.listingFor === 'rent'
         ? '₱' + l.price.toLocaleString('en-PH') + '/mo'
         : '₱' + l.price.toLocaleString('en-PH');
 
-       // A confirmed payment indicates the property is probably occupied
+      // A confirmed payment indicates the property is probably occupied
       const hasConfirmedPayment = paidIds.has(l.id);
-      
       const paymentBadge = hasConfirmedPayment
         ? `<span style="display:inline-block;background:rgba(251,191,36,0.15);color:#f59e0b;border:1px solid rgba(251,191,36,0.3);padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;margin-left:6px;" title="This listing has confirmed payments - likely occupied">💰 PAYMENT CONFIRMED</span>`
         : '';
@@ -75,7 +73,7 @@
         <tr>
           <td>
             <div class="listing-col">
-              <img class="thumb" src="${HS.cover(1)}" alt="${l.title}" />
+              <img class="thumb" src="${HS.cover(l)}" alt="${l.title}" />
               <div class="listing-col-info">
                 <div class="l-title">${l.title}${paymentBadge}</div>
                 <div class="l-loc">${l.barangay}</div>
@@ -83,9 +81,9 @@
             </div>
           </td>
           <td>${sellerName}</td>
-          <td style="text-transform:capitalize">${l.type || '-'}</td>
+          <td style="text-transform:capitalize">${l.type || '—'}</td>
           <td>${price}</td>
-          <td>${fmtDate(1.postedAt)}</td>
+          <td>${fmtDate(l.postedAt)}</td>
           <td><span class="badge ${l.status}">${l.status.charAt(0).toUpperCase() + l.status.slice(1)}</span></td>
           <td>
             <div class="action-btns">
@@ -217,7 +215,7 @@
         <div class="modal-detail">
           <div class="modal-detail-item"><label>Seller</label><span>${sellerName}</span></div>
           <div class="modal-detail-item"><label>Price</label><span>${price}</span></div>
-          <div class="modal-detail-item"><label>Type</label><span style="text-transform:capitalize">${l.type || '-'}</span></div>
+          <div class="modal-detail-item"><label>Type</label><span style="text-transform:capitalize">${l.type || '—'}</span></div>
           <div class="modal-detail-item"><label>For</label><span style="text-transform:capitalize">${l.listingFor}</span></div>
           <div class="modal-detail-item"><label>Bedrooms</label><span>${l.bedrooms ?? '—'}</span></div>
           <div class="modal-detail-item"><label>Bathrooms</label><span>${l.bathrooms ?? '—'}</span></div>
@@ -257,7 +255,7 @@
       amount: 0,
       isAdmin: true, // Flag to customize modal for admin
       onClosed: function() {
-		const listing = listings.find(l => l.id === listingId);
+        const listing = listings.find(l => l.id === listingId);
         if (listing) listing.status = 'closed';
         renderListings();
       }

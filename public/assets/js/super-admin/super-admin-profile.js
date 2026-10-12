@@ -27,25 +27,35 @@
   document.getElementById('identityEmail').textContent = user.email || '';
   document.getElementById('phoneStatus').textContent   = user.phone || 'Not set';
 
-  const fullUser = FAKE_USERS.find(u => u.id === user.id);
-  if (fullUser && fullUser.joinedAt) {
-    document.getElementById('memberSince').textContent =
-      new Date(fullUser.joinedAt).toLocaleDateString('en-PH', { month: 'short', year: 'numeric' });
-  }
+  // "Member since" comes from the profile row, not from a cached copy.
+  HS.profiles.me().then(me => {
+    if (me && me.joinedAt) {
+      document.getElementById('memberSince').textContent =
+        new Date(me.joinedAt).toLocaleDateString('en-PH', { month: 'short', year: 'numeric' });
+    }
+  }).catch(err => console.error('Could not load profile:', err));
 
   const avatarInput = document.getElementById('avatarInput');
   document.getElementById('avatarEditBtn').addEventListener('click', () => avatarInput.click());
-  avatarInput.addEventListener('change', function () {
+  avatarInput.addEventListener('change', async function () {
     const file = this.files[0];
     if (!file) return;
+
+    // Show it straight away, then upload. It only sticks once the upload succeeds.
     const reader = new FileReader();
-    reader.onload = e => {
-      user.avatar = e.target.result;
+    reader.onload = e => { user.avatar = e.target.result; renderAvatar(); };
+    reader.readAsDataURL(file);
+
+    try {
+      const url = await HS.storage.uploadAvatar(file);
+      await HS.profiles.updateMe({ avatar: url });
+      user.avatar = url;
       saveSession(user);
       renderAvatar();
       showToast('Profile photo updated.');
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      showToast('Could not save your photo: ' + err.message, 'error');
+    }
   });
 
   function showToast(msg, type = 'success') {

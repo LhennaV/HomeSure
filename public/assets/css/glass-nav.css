@@ -1,3 +1,18 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   HomeSure — frosted-glass top bar
+   Load this AFTER the page's own stylesheet so it wins.
+
+   The public pages were each written with their own theme switch, and there are three
+   different conventions among them:
+       index.css / about.css   dark :root, overridden by [data-theme="light"]
+       browse.css              light :root, overridden by [data-theme="dark"]
+       policy.css              body.dark / body.light classes
+   So the tokens below key off every one of them rather than off ":root" alone. Whichever
+   way a page flips its theme, the glass follows.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* Before the theme script runs there is no attribute yet, so start light — that is what
+   every page falls back to anyway, and a flash of the wrong glass is very visible. */
 :root {
   --glass-bg:        rgba(255, 255, 255, 0.55);
   --glass-tint:      rgba(0, 201, 167, 0.035);

@@ -20,22 +20,31 @@
   // Apply theme on load
   applyTheme(getTheme());
 
-  // ── Get approved listings ───────────────────────────────────────────────────
-  const allListings = FAKE_LISTINGS.filter(l =>
-    l.status === 'approved' &&
-    l.lifecycleStatus !== 'sold' &&
-    l.lifecycleStatus !== 'rented'
-  );
+  // ── Load approved listings (public: RLS only returns admin-approved ones) ───
+  let allListings = [];
 
-  // Get unique barangays for filter
-  const barangays = [...new Set(allListings.map(l => l.barangay))].sort();
-  const barangaySelect = document.getElementById('filterBarangay');
-  barangays.forEach(b => {
-    const option = document.createElement('option');
-    option.value = b;
-    option.textContent = b;
-    barangaySelect.appendChild(option);
-  });
+  function fillBarangays() {
+    const barangaySelect = document.getElementById('filterBarangay');
+    const barangays = [...new Set(allListings.map(l => l.barangay))].filter(Boolean).sort();
+    barangays.forEach(b => {
+      const option = document.createElement('option');
+      option.value = b;
+      option.textContent = b;
+      barangaySelect.appendChild(option);
+    });
+  }
+
+  async function loadListings() {
+    try {
+      allListings = await HS.listings.approved();
+    } catch (err) {
+      console.error('Failed to load listings:', err);
+      document.getElementById('resultsCount').textContent = 'Could not load listings';
+      return;
+    }
+    fillBarangays();
+    applyFilters();
+  }
 
   // ── Format helpers ──────────────────────────────────────────────────────────
   function formatPrice(listing) {
@@ -52,11 +61,22 @@
     return '₱' + v.toLocaleString('en-PH');
   }
 
+  // Bedrooms / bathrooms / area, skipping what a listing does not have (e.g. a lot).
+  function details(l) {
+    const svgBed  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>';
+    const svgBath = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6 6 3 3 6"/><path d="M17 14h2a2 2 0 0 1 2 2v3H3v-3a2 2 0 0 1 2-2h2"/><path d="M12 17v-3"/><path d="M13 6V3"/><path d="M7 10.5V7a4 4 0 1 1 8 0v3.5"/></svg>';
+    const svgArea = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>';
+    const out = [];
+    if (l.bedrooms !== null && l.bedrooms !== undefined) out.push(svgBed + ' ' + (l.bedrooms === 0 ? 'Studio' : l.bedrooms + ' bed'));
+    if (l.bathrooms !== null && l.bathrooms !== undefined) out.push(svgBath + ' ' + l.bathrooms + ' bath');
+    const area = l.floorArea || l.lotArea;
+    if (area) out.push(svgArea + ' ' + area + 'm²');
+    return out.map(t => '<div class="listing-detail">' + t + '</div>').join('');
+  }
+
   // ── Build listing card ──────────────────────────────────────────────────────
   function buildCard(listing) {
-    const image = (listing.images && listing.images[0])
-      ? listing.images[0]
-      : 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600';
+    const image = HS.cover(listing);
 
     const typeClass = listing.listingFor === 'rent' ? 'rent' : 'sale';
     const typeLabel = listing.listingFor === 'rent' ? 'For Rent' : 'For Sale';
@@ -64,7 +84,7 @@
     return `
       <div class="listing-card" onclick="viewListing('${listing.id}')">
         <img src="${image}" alt="${listing.title}" class="listing-image"
-             onerror="this.src='https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600'" />
+             onerror="this.src=HS.PLACEHOLDER_IMG" />
         <div class="listing-content">
           <div class="listing-header">
             <span class="listing-type ${typeClass}">${typeLabel}</span>
@@ -72,28 +92,7 @@
           <div class="listing-title">${listing.title}</div>
           <div class="listing-address">${listing.address}</div>
           <div class="listing-price">${formatPrice(listing)}</div>
-          <div class="listing-details">
-            <div class="listing-detail">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-                <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-              </svg>
-              ${listing.bedrooms} bed
-            </div>
-            <div class="listing-detail">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 6 6 3 3 6"/><path d="M17 14h2a2 2 0 0 1 2 2v3H3v-3a2 2 0 0 1 2-2h2"/>
-                <path d="M12 17v-3"/><path d="M13 6V3"/><path d="M7 10.5V7a4 4 0 1 1 8 0v3.5"/>
-              </svg>
-              ${listing.bathrooms} bath
-            </div>
-            <div class="listing-detail">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2"/>
-              </svg>
-              ${listing.floorArea}m²
-            </div>
-          </div>
+          <div class="listing-details">${details(listing)}</div>
         </div>
       </div>
     `;
@@ -122,9 +121,9 @@
 
     if (searchQuery) {
       filtered = filtered.filter(l =>
-        l.title.toLowerCase().includes(searchQuery) ||
-        l.address.toLowerCase().includes(searchQuery) ||
-        l.barangay.toLowerCase().includes(searchQuery)
+        (l.title || '').toLowerCase().includes(searchQuery) ||
+        (l.address || '').toLowerCase().includes(searchQuery) ||
+        (l.barangay || '').toLowerCase().includes(searchQuery)
       );
     }
 
@@ -149,10 +148,13 @@
 
   // ── View listing ────────────────────────────────────────────────────────────
   window.viewListing = function (id) {
-    // Redirect to sign-in with return URL
-    window.location.href = `auth/signin.html?redirect=module/buyer/listing.html?id=${id}`;
+    const target = 'module/buyer/listing.html?id=' + id;
+    const me = typeof getSession === 'function' ? getSession() : null;
+    if (me && me.role === 'buyer') { window.location.href = target; return; }
+    // Everyone else signs in first and is sent back to the listing afterwards (see auth.js)
+    window.location.href = 'auth/signin.html?redirect=' + encodeURIComponent(target);
   };
 
   // ── Init ────────────────────────────────────────────────────────────────────
-  applyFilters();
+  loadListings();
 })();

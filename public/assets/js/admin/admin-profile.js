@@ -40,7 +40,8 @@
   avatarInput.addEventListener('change', async function () {
     const file = this.files[0];
     if (!file) return;
-    
+
+    // Show it straight away, then upload. It only sticks once the upload succeeds.
     const reader = new FileReader();
     reader.onload = e => { user.avatar = e.target.result; renderAvatar(); };
     reader.readAsDataURL(file);
@@ -52,9 +53,9 @@
       saveSession(user);
       renderAvatar();
       showToast('Profile photo updated.');
-    }catch (err) {
-		showToast('Could not save your photo: ' + err.message, 'error');
-	}
+    } catch (err) {
+      showToast('Could not save your photo: ' + err.message, 'error');
+    }
   });
 
   function showToast(msg, type = 'success') {

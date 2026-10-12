@@ -1,6 +1,6 @@
 // HomeSure – Seller MOA
 
-(function () {
+(async function () {
   const user = getSession();
   if (!user || user.role !== 'seller') {
     window.location.href = '../../auth/signin.html';
@@ -10,11 +10,10 @@
   HomeSureSidebar.init({ activePage: 'moa' });
   HomeSureTopbar.init({ placeholder: 'Memorandum of Agreement' });
 
-  const fullUser   = FAKE_USERS.find(u => u.id === user.id);
-  const storageKey = 'hs-moa-signed-' + user.id;
-
-  // Check signed state — prefer fake-data flag, fall back to localStorage
-  let signedAt = (fullUser && fullUser.moaSignedAt) || localStorage.getItem(storageKey) || null;
+  // The signature is a column on the profile, not a localStorage flag. The page told the seller
+  // "a copy is kept on record by HomeSure", and until now nothing was.
+  let fullUser = null;
+  let signedAt = null;
 
   const col        = document.getElementById('moaCol');
   const statusBadge = document.getElementById('moaStatusBadge');
@@ -55,14 +54,14 @@ HomeSure is an online real estate marketplace that connects property sellers and
         'The Seller shall respond to buyer or tenant inquiries in a timely and professional manner.',
         'The Seller shall immediately notify HomeSure of any changes in property status (e.g., property has been sold or rented).',
         'The Seller shall comply with all applicable local government ordinances, national laws, and regulations governing real estate transactions in the Philippines.',
-        'The Seller shall undergo and pass HomeSure's identity verification process before publishing active listings.',
+        "The Seller shall undergo and pass HomeSure's identity verification process before publishing active listings.",
         'The Seller shall not engage in any fraudulent, misleading, or deceptive practices on the platform.',
       ],
     },
     {
       title: 'ARTICLE III — OBLIGATIONS OF HOMESURE',
       items: [
-        'HomeSure shall maintain the Seller's listings on the platform in accordance with these terms for the duration of the Seller's active account.',
+        "HomeSure shall maintain the Seller's listings on the platform in accordance with these terms for the duration of the Seller's active account.",
         'HomeSure shall provide the Seller with access to listing management tools, inquiry notifications, and analytics within the platform.',
         'HomeSure shall handle all personal data provided by the Seller in compliance with the Data Privacy Act of 2012 (Republic Act No. 10173).',
         'HomeSure shall process verification documents securely and use them solely for identity verification purposes.',
@@ -196,8 +195,6 @@ Either party may terminate this agreement upon thirty (30) days' written or elec
     }
   }
 
-  render();
-
   // ── Checkbox toggle ───────────────────────────────────────────────────────────
   window.onCheckChange = function () {
     const checked = document.getElementById('agreeCheck').checked;
@@ -205,28 +202,45 @@ Either party may terminate this agreement upon thirty (30) days' written or elec
   };
 
   // ── Sign action ───────────────────────────────────────────────────────────────
-  window.signMOA = function () {
+  window.signMOA = async function () {
     const btn = document.getElementById('signBtn');
     btn.disabled = true;
     btn.textContent = 'Signing…';
 
-    setTimeout(() => {
-      const now = new Date().toISOString().split('T')[0];
-      localStorage.setItem(storageKey, now);
-      signedAt = now;
-      if (fullUser) fullUser.moaSignedAt = now;
-      showToast('MOA signed successfully! Your listings are now eligible for activation.');
-      setTimeout(() => render(), 800);
-    }, 900);
+    try {
+      signedAt = await HS.profiles.signMoa();
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Sign MOA';
+      showToast('Could not record your signature: ' + err.message);
+      return;
+    }
+
+    if (fullUser) fullUser.moaSignedAt = signedAt;
+    showToast('MOA signed successfully! Your listings are now eligible for activation.');
+    render();
   };
 
   // ── Toast ─────────────────────────────────────────────────────────────────────
   let toastTimer = null;
   function showToast(msg) {
     const toast = document.getElementById('toast');
+    if (!toast) return;
     document.getElementById('toastMsg').textContent = msg;
     toast.classList.add('show');
     if (toastTimer) clearTimeout(toastTimer);
     toastTimer = setTimeout(() => toast.classList.remove('show'), 5000);
   }
+
+  // ── Init ──────────────────────────────────────────────────────────────────────
+  try {
+    fullUser = await HS.profiles.me();
+    signedAt = fullUser ? fullUser.moaSignedAt : null;
+  } catch (err) {
+    console.error('Could not load your profile:', err);
+    showToast('Could not check whether you have signed yet. Please refresh.');
+    return;
+  }
+
+  render();
 })();

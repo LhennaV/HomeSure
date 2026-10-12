@@ -63,4 +63,32 @@ export async function POST(request: Request) {
     console.error('Error in /api/payments/create-invoice:', error);
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }
+
+  const qr = await xenditRes.json();
+
+  // No INSERT policy on payments for end users by design -> write with the service role.
+  const { data: payment, error } = await getAdminSupabase()
+    .from("payments")
+    .insert({
+      property_id: propertyId,
+      user_id: user.id,
+      amount,
+      currency: "PHP",
+      purpose,
+      type: property.listing_type === "rent" ? "rent" : "sale",
+      period: period || null,
+      due_date: dueDate || null,
+      method: "QRPH",
+      reference: referenceId,
+      xendit_charge_id: qr.id,
+      xendit_qr_string: qr.qr_string,
+      qr_code_url: qr.qr_code_url,
+      status: "pending",
+    })
+    .select("*")
+    .single();
+
+  if (error) return NextResponse.json({ error: `Could not record payment: ${error.message}` }, { status: 500 });
+
+  return NextResponse.json({ payment, qr }, { status: 200 });
 }

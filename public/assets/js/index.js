@@ -162,33 +162,6 @@ const statsData = [
   { end: 100, suffix: "%", label: "Secure Messaging" },
 ];
 
-const testimonials = [
-  {
-    stars: 5,
-    quote:
-      "Found my apartment in just two days. Every seller was verified — no scams, no stress.",
-    name: "Maria Santos",
-    role: "Tenant, Poblacion",
-    initials: "MS",
-  },
-  {
-    stars: 5,
-    quote:
-      "Listed my townhouse and got genuine buyers in under a week. The platform is so easy to use.",
-    name: "Rolando Cruz",
-    role: "Property Owner, Bagbaguin",
-    initials: "RC",
-  },
-  {
-    stars: 4,
-    quote:
-      "Direct messaging made negotiating with the seller so much smoother than the usual process.",
-    name: "Jessa Reyes",
-    role: "Buyer, Tumana",
-    initials: "JR",
-  },
-];
-
 // ══════════════════════════════════════════════════════════════════════════════
 // UNUSED CODE - Property Card System (Replaced by simple markers)
 // ══════════════════════════════════════════════════════════════════════════════
@@ -1418,53 +1391,6 @@ function Stats() {
   );
 }
 
-// Testimonials
-function Testimonials() {
-  const [ref, visible] = useReveal();
-  return React.createElement(
-    "section",
-    { className: `section-alt reveal-section${visible ? ' in-view' : ''}`, ref },
-    React.createElement("span", { className: "section-label" }, "Testimonials"),
-    React.createElement(
-      "h2",
-      { className: "section-title" },
-      "What Our Users Say",
-    ),
-    React.createElement(
-      "p",
-      { className: "section-sub" },
-      "Real stories from real people in the community",
-    ),
-    React.createElement(
-      "div",
-      { className: "testimonials-grid" },
-      testimonials.map((t, i) =>
-        React.createElement(
-          "div",
-          { key: i, className: "testimonial-card" },
-          React.createElement(
-            "div",
-            { className: "t-stars" },
-            "★".repeat(t.stars) + (t.stars < 5 ? "☆".repeat(5 - t.stars) : ""),
-          ),
-          React.createElement("p", { className: "t-quote" }, `"${t.quote}"`),
-          React.createElement(
-            "div",
-            { className: "t-author" },
-            React.createElement("div", { className: "t-avatar" }, t.initials),
-            React.createElement(
-              "div",
-              null,
-              React.createElement("div", { className: "t-name" }, t.name),
-              React.createElement("div", { className: "t-role" }, t.role),
-            ),
-          ),
-        ),
-      ),
-    ),
-  );
-}
-
 // CTA
 function CTA() {
   const [ref, visible] = useReveal();
@@ -1620,7 +1546,6 @@ function App() {
     React.createElement(HowItWorks),
     React.createElement(Features),
     React.createElement(Stats),
-    React.createElement(Testimonials),
     React.createElement(CTA),
     React.createElement(Footer),
   );

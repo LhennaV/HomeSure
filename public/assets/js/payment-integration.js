@@ -1,564 +1,537 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   HOMESURE - QRPH PAYMENT INTEGRATION (Demo/Prototype)
+   HOMESURE — PAYMENT MODAL
 
-   FOR CAPSTONE DEFENSE:
-   This simulates a complete QRPH payment flow for demonstration purposes.
-   In production, this would connect to:
-   1. Backend server (Node.js/PHP) to create Payment Intent
-   2. QRPH API for actual payment processing
-   3. Database to store transaction records
-   4. Webhook receiver for real-time payment status updates
+   Two ways to pay, both real:
 
-   SECURITY NOTE FOR DEFENSE:
-   - API secret keys MUST be stored on backend server (never in frontend)
-   - Frontend only receives checkout URL and payment status
-   - Webhooks ensure payment status is accurate even if user closes browser
+   1. QR Ph through Xendit. The browser asks POST /api/payments/create-invoice, which raises the
+      charge with the secret key on the server and writes the payments row with the service role.
+      The amount is computed there from the listing price, never sent from here. Xendit then calls
+      POST /api/webhooks/xendit, which is what marks the row paid — so this modal polls the row
+      instead of deciding for itself that the money arrived.
+
+   2. Paying outside the platform (GCash to the landlord, a bank transfer, cash). The buyer uploads
+      proof, the row lands on "awaiting confirmation", and the seller accepts or rejects it on their
+      own payments page.
+
+   Nothing here is stored in localStorage and nothing here decides a payment is complete.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-const PaymentIntegration = (function() {
+const PaymentIntegration = (function () {
+  'use strict';
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // CONFIGURATION (In production, this comes from backend)
-  // ═══════════════════════════════════════════════════════════════════════════
+  // Methods the buyer can pick for a manual payment. These strings are what the API accepts.
+  const MANUAL_METHODS = [
+    { id: 'GCash',         label: 'GCash',         desc: 'Send to the landlord’s GCash number' },
+    { id: 'Maya',          label: 'Maya',          desc: 'Send to the landlord’s Maya account' },
+    { id: 'Bank Transfer', label: 'Bank Transfer', desc: 'InstaPay, PESONet or over the counter' },
+    { id: 'Cash',          label: 'Cash',          desc: 'Paid in person, with a receipt' },
+  ];
 
-  const CONFIG = {
-    // QRPH Test Keys (FOR DEMO ONLY - In production, these are on backend)
-    // Public Key: pk_test_... (safe to use in frontend)
-    // Secret Key: sk_test_... (MUST be on backend only!)
+  // How long to keep asking whether the QR was paid. The Xendit charge itself expires in 15 min.
+  const POLL_EVERY_MS = 3000;
+  const POLL_FOR_MS   = 15 * 60 * 1000;
 
-    // Simulated processing time (milliseconds)
-    PROCESSING_DELAY: 3000,
-
-    // QRPH supported payment methods
-    PAYMENT_METHODS: {
-      GCASH: { id: 'gcash', name: 'GCash', desc: 'Pay via GCash e-wallet' },
-      MAYA: { id: 'paymaya', name: 'Maya', desc: 'Pay via Maya (formerly PayMaya)' },
-      CARD: { id: 'card', name: 'Credit/Debit Card', desc: 'Visa, Mastercard, JCB' }
-    }
-  };
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // STATE MANAGEMENT
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  let currentPayment = null;
+  let currentPayment = null;   // what openPaymentModal was given
   let selectedMethod = null;
+  let proofFile      = null;
+  let pollTimer      = null;
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // MODAL INITIALIZATION
-  // ═══════════════════════════════════════════════════════════════════════════
+  // ── Modal shell ─────────────────────────────────────────────────────────────
 
   function initModal() {
-    // Check if modal already exists
     if (document.getElementById('paymentModalBackdrop')) return;
 
-    // Create modal HTML structure
-    const modalHTML = `
+    document.body.insertAdjacentHTML('beforeend', `
       <div id="paymentModalBackdrop" class="payment-modal-backdrop">
         <div class="payment-modal">
-          <!-- HEADER -->
           <div class="payment-modal-header">
             <h2 class="payment-modal-title">Complete Payment</h2>
             <button class="payment-modal-close" onclick="PaymentIntegration.closeModal()">&times;</button>
           </div>
-
-          <!-- BODY -->
-          <div class="payment-modal-body" id="paymentModalBody">
-            <!-- Payment form will be inserted here -->
-          </div>
+          <div class="payment-modal-body" id="paymentModalBody"></div>
         </div>
       </div>
-    `;
+    `);
 
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-
-    // Close on backdrop click
     document.getElementById('paymentModalBackdrop').addEventListener('click', (e) => {
-      if (e.target.id === 'paymentModalBackdrop') {
-        closeModal();
-      }
+      if (e.target.id === 'paymentModalBackdrop') closeModal();
     });
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // OPEN PAYMENT MODAL
-  // This is called when tenant clicks "Pay Now" button
-  // ═══════════════════════════════════════════════════════════════════════════
-
+  /**
+   * paymentData:
+   *   paymentId?     an existing pending row to pay off
+   *   propertyId     required when there is no paymentId
+   *   listingTitle   for the summary
+   *   amount         for the summary only — the server computes what is charged
+   *   purpose        rent | security | both | reservation | sale
+   *   period, dueDate, depositMonths
+   *   onSuccess(payment)
+   */
   function openPaymentModal(paymentData) {
-    /*
-      paymentData structure:
-      {
-        amount: 15000,
-        listingTitle: "2BR Apartment — Poblacion",
-        listingId: "prop-001",
-        landlordId: "usr-003",
-        period: "June 2026",
-        dueDate: "2026-06-01"
-      }
-    */
-
     initModal();
-    currentPayment = paymentData;
-
-    // Render payment form
-    renderPaymentForm();
-
-    // Show modal
+    currentPayment = paymentData || {};
+    selectedMethod = null;
+    proofFile = null;
+    stopPolling();
+    renderChoice();
     document.getElementById('paymentModalBackdrop').classList.add('active');
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // RENDER PAYMENT FORM
-  // ═══════════════════════════════════════════════════════════════════════════
+  function body() {
+    return document.getElementById('paymentModalBody');
+  }
 
-  function renderPaymentForm() {
-    const body = document.getElementById('paymentModalBody');
-
-    body.innerHTML = `
-      <!-- PAYMENT SUMMARY -->
+  function summaryHtml() {
+    return `
       <div class="payment-summary">
         <div class="payment-summary-row">
           <span class="payment-summary-label">Property</span>
-          <span class="payment-summary-value">${currentPayment.listingTitle}</span>
+          <span class="payment-summary-value">${esc(currentPayment.listingTitle || '')}</span>
         </div>
-        ${currentPayment.paymentType ? `
+        ${currentPayment.purpose ? `
         <div class="payment-summary-row">
           <span class="payment-summary-label">Payment Type</span>
-          <span class="payment-summary-value" style="font-weight:700;color:#00c9a7;">${formatPaymentType(currentPayment.paymentType)}</span>
-        </div>
-        ` : ''}
+          <span class="payment-summary-value" style="font-weight:700;color:#00c9a7;">${formatPaymentType(currentPayment.purpose)}</span>
+        </div>` : ''}
+        ${currentPayment.period ? `
         <div class="payment-summary-row">
           <span class="payment-summary-label">Period</span>
-          <span class="payment-summary-value">${currentPayment.period}</span>
-        </div>
+          <span class="payment-summary-value">${esc(currentPayment.period)}</span>
+        </div>` : ''}
+        ${currentPayment.dueDate ? `
         <div class="payment-summary-row">
           <span class="payment-summary-label">Due Date</span>
           <span class="payment-summary-value">${formatDate(currentPayment.dueDate)}</span>
-        </div>
+        </div>` : ''}
         <div class="payment-summary-row">
           <span class="payment-summary-label">Total Amount</span>
           <span class="payment-summary-value">${formatMoney(currentPayment.amount)}</span>
         </div>
       </div>
+    `;
+  }
 
-      <!-- PAYMENT METHODS -->
+  // ── Step 1: how to pay ──────────────────────────────────────────────────────
+
+  function renderChoice() {
+    body().innerHTML = `
+      ${summaryHtml()}
       <div class="payment-methods-section">
-        <h3 class="payment-section-title">Select Payment Method</h3>
+        <h3 class="payment-section-title">How would you like to pay?</h3>
 
-        <!-- GCash -->
-        <div class="payment-method-option" onclick="PaymentIntegration.selectMethod('gcash')">
-          <div class="payment-method-icon gcash">GCash</div>
+        <div class="payment-method-option" onclick="PaymentIntegration.chooseRoute('qrph')">
+          <div class="payment-method-icon gcash">QR Ph</div>
           <div class="payment-method-info">
-            <div class="payment-method-name">GCash</div>
-            <div class="payment-method-desc">Pay via GCash e-wallet</div>
+            <div class="payment-method-name">Pay through HomeSure</div>
+            <div class="payment-method-desc">Scan one QR with GCash, Maya or your bank app. Confirmed automatically.</div>
           </div>
           <div class="payment-method-radio"></div>
         </div>
 
-        <!-- Maya -->
-        <div class="payment-method-option" onclick="PaymentIntegration.selectMethod('paymaya')">
-          <div class="payment-method-icon maya">Maya</div>
-          <div class="payment-method-info">
-            <div class="payment-method-name">Maya</div>
-            <div class="payment-method-desc">Pay via Maya (formerly PayMaya)</div>
-          </div>
-          <div class="payment-method-radio"></div>
-        </div>
-
-        <!-- Card -->
-        <div class="payment-method-option" onclick="PaymentIntegration.selectMethod('card')">
+        <div class="payment-method-option" onclick="PaymentIntegration.chooseRoute('manual')">
           <div class="payment-method-icon card">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-              <line x1="1" y1="10" x2="23" y2="10"/>
-              <line x1="5" y1="15" x2="9" y2="15"/>
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
             </svg>
           </div>
           <div class="payment-method-info">
-            <div class="payment-method-name">Credit/Debit Card</div>
-            <div class="payment-method-desc">Visa, Mastercard, JCB</div>
+            <div class="payment-method-name">I paid the landlord directly</div>
+            <div class="payment-method-desc">Upload your proof. The landlord confirms it.</div>
           </div>
           <div class="payment-method-radio"></div>
         </div>
       </div>
 
-      <!-- SECURITY NOTICE -->
       <div class="payment-security-notice">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
         </svg>
         <div class="payment-security-notice-text">
-          <strong>Secure Payment:</strong> Your payment is processed securely through QRPH.
-          Your financial information is encrypted and never stored on our servers.
+          <strong>Paying through HomeSure is safer.</strong> The amount is set by the listing, the
+          payment is confirmed by the provider, and you have a record either side can show.
         </div>
       </div>
-
-      <!-- PAY BUTTON -->
-      <button
-        class="payment-submit-btn"
-        id="paymentSubmitBtn"
-        disabled
-        onclick="PaymentIntegration.processPayment()"
-      >
-        Select a payment method
-      </button>
     `;
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // SELECT PAYMENT METHOD
-  // ═══════════════════════════════════════════════════════════════════════════
+  function chooseRoute(route) {
+    if (route === 'qrph') startQrph();
+    else renderManualMethods();
+  }
+
+  // ── QR Ph through Xendit ────────────────────────────────────────────────────
+
+  async function startQrph() {
+    body().innerHTML = `
+      <div class="payment-processing">
+        <div class="payment-processing-spinner"></div>
+        <div class="payment-processing-text">Creating your QR code…</div>
+        <div class="payment-processing-subtext">This takes a moment.</div>
+      </div>
+    `;
+
+    let result;
+    try {
+      result = await HS.payments.startQrph({
+        propertyId: currentPayment.propertyId || currentPayment.listingId,
+        purpose: currentPayment.purpose || 'rent',
+        period: currentPayment.period,
+        dueDate: currentPayment.dueDate,
+        depositMonths: currentPayment.depositMonths,
+      });
+    } catch (err) {
+      renderError(err.message, 'PaymentIntegration.chooseRoute(\'qrph\')');
+      return;
+    }
+
+    renderQr(result.payment, result.qr);
+    pollUntilPaid(result.payment.id);
+  }
+
+  function renderQr(payment, qr) {
+    // Xendit returns the QR as a string for the merchant to render. If the account also returns a
+    // hosted image, show that; otherwise show the string, which any QR Ph app can take.
+    const imageUrl = payment.qr_code_url || (qr && qr.qr_code_url) || null;
+    const qrString = payment.xendit_qr_string || (qr && qr.qr_string) || '';
+
+    body().innerHTML = `
+      ${summaryHtml()}
+      <div class="payment-methods-section">
+        <h3 class="payment-section-title">Scan to pay</h3>
+        ${imageUrl
+          ? `<div style="text-align:center;padding:12px 0;">
+               <img src="${esc(imageUrl)}" alt="QR Ph code" style="width:240px;max-width:100%;border-radius:12px;">
+             </div>`
+          : `<div style="padding:14px;border:1px dashed #cbd5e1;border-radius:12px;">
+               <div style="font-size:13px;color:#64748b;margin-bottom:8px;">
+                 Copy this QR Ph string into your banking or e-wallet app:
+               </div>
+               <textarea readonly id="qrPhString" style="width:100%;height:84px;font-family:monospace;font-size:11px;
+                 border:1px solid #e2e8f0;border-radius:8px;padding:8px;resize:none;">${esc(qrString)}</textarea>
+               <button class="payment-btn-secondary" style="margin-top:8px;"
+                 onclick="PaymentIntegration.copyQrString()">Copy code</button>
+             </div>`}
+        <div class="payment-security-notice" style="margin-top:14px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <div class="payment-security-notice-text">
+            This code expires in 15 minutes. Keep this window open — it updates on its own once
+            the payment goes through.
+          </div>
+        </div>
+      </div>
+      <div id="qrWaitRow" style="display:flex;align-items:center;gap:10px;justify-content:center;
+           padding:14px;color:#64748b;font-size:13px;">
+        <div class="payment-processing-spinner" style="width:18px;height:18px;border-width:2px;margin:0;"></div>
+        Waiting for your payment…
+      </div>
+    `;
+  }
+
+  function copyQrString() {
+    const el = document.getElementById('qrPhString');
+    if (!el) return;
+    el.select();
+    navigator.clipboard.writeText(el.value).catch(() => document.execCommand('copy'));
+  }
+
+  // The webhook is the only thing that marks a charge paid, so ask the row how it is doing.
+  function pollUntilPaid(paymentId) {
+    const until = Date.now() + POLL_FOR_MS;
+
+    pollTimer = setInterval(async () => {
+      if (Date.now() > until) {
+        stopPolling();
+        const row = document.getElementById('qrWaitRow');
+        if (row) {
+          row.innerHTML = 'This code has expired. Close this window and start again when you are ready.';
+        }
+        return;
+      }
+
+      let payment;
+      try {
+        payment = await HS.payments.byId(paymentId);
+      } catch (err) {
+        return;                                  // a dropped request is not an answer; try again
+      }
+      if (!payment || payment.status === 'pending') return;
+
+      stopPolling();
+      if (payment.status === 'confirmed') {
+        renderSuccess(payment);
+        if (currentPayment.onSuccess) currentPayment.onSuccess(payment);
+      } else {
+        renderError('This payment came back as ' + payment.status + '.', 'PaymentIntegration.chooseRoute(\'qrph\')');
+      }
+    }, POLL_EVERY_MS);
+  }
+
+  function stopPolling() {
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = null;
+  }
+
+  // ── Paying the landlord directly ────────────────────────────────────────────
+
+  function renderManualMethods() {
+    body().innerHTML = `
+      ${summaryHtml()}
+      <div class="payment-methods-section">
+        <h3 class="payment-section-title">How did you pay?</h3>
+        ${MANUAL_METHODS.map((m) => `
+          <div class="payment-method-option" id="pm-${esc(m.id)}"
+               onclick="PaymentIntegration.selectMethod('${esc(m.id)}')">
+            <div class="payment-method-icon card">${esc(m.label)}</div>
+            <div class="payment-method-info">
+              <div class="payment-method-name">${esc(m.label)}</div>
+              <div class="payment-method-desc">${m.desc}</div>
+            </div>
+            <div class="payment-method-radio"></div>
+          </div>
+        `).join('')}
+      </div>
+      <button class="payment-submit-btn" id="paymentSubmitBtn" disabled
+              onclick="PaymentIntegration.goToProof()">Select how you paid</button>
+    `;
+  }
 
   function selectMethod(methodId) {
     selectedMethod = methodId;
-
-    // Update UI - remove all selected states
-    document.querySelectorAll('.payment-method-option').forEach(opt => {
-      opt.classList.remove('selected');
-    });
-
-    // Add selected state to clicked option
-    event.currentTarget.classList.add('selected');
-
-    // Enable pay button
+    document.querySelectorAll('.payment-method-option').forEach((o) => o.classList.remove('selected'));
+    const card = document.getElementById('pm-' + methodId);
+    if (card) card.classList.add('selected');
     const btn = document.getElementById('paymentSubmitBtn');
     btn.disabled = false;
-    btn.textContent = `Pay ${formatMoney(currentPayment.amount)}`;
+    btn.textContent = 'Continue';
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // PROCESS PAYMENT
-  // This simulates the complete payment flow
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  function processPayment() {
+  function goToProof() {
     if (!selectedMethod) return;
-
-    /*
-      IN PRODUCTION, THIS WOULD:
-      1. Send request to YOUR backend server
-      2. Backend creates QRPH Payment Intent with secret key
-      3. Backend returns checkout URL
-      4. Frontend redirects user to QRPH checkout page
-      5. User completes payment on QRPH
-      6. QRPH redirects back to your site
-      7. QRPH sends webhook to your backend
-      8. Backend updates database with payment status
-      9. Frontend shows success/failure message
-    */
-
-    // Show processing state
-    showProcessingState();
-
-    // Simulate payment processing delay
-    setTimeout(() => {
-      // Generate transaction reference (in production, this comes from QRPH)
-      const transactionRef = generateTransactionReference(selectedMethod);
-
-      // Create transaction record
-      const transaction = createTransactionRecord(transactionRef);
-
-      // Save to localStorage (in production, this goes to database via backend)
-      saveTransaction(transaction);
-
-      // Show success state
-      showSuccessState(transaction);
-
-      // Trigger callback if provided (to update UI)
-      if (currentPayment.onSuccess) {
-        currentPayment.onSuccess(transaction);
-      }
-    }, CONFIG.PROCESSING_DELAY);
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // SHOW PROCESSING STATE
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  function showProcessingState() {
-    const body = document.getElementById('paymentModalBody');
-    const methodName = CONFIG.PAYMENT_METHODS[selectedMethod.toUpperCase()]?.name || 'Payment Method';
-
-    body.innerHTML = `
-      <div class="payment-processing">
-        <div class="payment-processing-spinner"></div>
-        <div class="payment-processing-text">Processing Payment...</div>
-        <div class="payment-processing-subtext">
-          Connecting to ${methodName}. Please wait.
+    body().innerHTML = `
+      ${summaryHtml()}
+      <div class="payment-methods-section">
+        <h3 class="payment-section-title">Proof of your ${esc(selectedMethod)} payment</h3>
+        <label style="display:block;padding:18px;border:1px dashed #cbd5e1;border-radius:12px;
+               text-align:center;cursor:pointer;color:#64748b;font-size:13px;">
+          <input type="file" accept="image/*" style="display:none"
+                 onchange="PaymentIntegration.onProofSelect(event)">
+          <span id="proofLabel">Click to attach a screenshot or photo of the receipt</span>
+        </label>
+        <div style="margin-top:12px;">
+          <label style="font-size:12px;color:#64748b;display:block;margin-bottom:4px;">
+            Reference number (optional)
+          </label>
+          <input type="text" id="manualReference" placeholder="e.g. GC-78452"
+                 style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;">
+        </div>
+        <div class="payment-security-notice" style="margin-top:14px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <div class="payment-security-notice-text">
+            Your landlord sees this proof and nobody else. The payment counts once they confirm it.
+          </div>
         </div>
       </div>
+      <button class="payment-submit-btn" id="paymentSubmitBtn" disabled
+              onclick="PaymentIntegration.submitProof()">Attach your proof first</button>
     `;
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // SHOW SUCCESS STATE
-  // ═══════════════════════════════════════════════════════════════════════════
+  function onProofSelect(e) {
+    proofFile = e.target.files && e.target.files[0] ? e.target.files[0] : null;
+    document.getElementById('proofLabel').textContent =
+      proofFile ? proofFile.name : 'Click to attach a screenshot or photo of the receipt';
+    const btn = document.getElementById('paymentSubmitBtn');
+    btn.disabled = !proofFile;
+    btn.textContent = proofFile ? 'Submit proof of payment' : 'Attach your proof first';
+  }
 
-  function showSuccessState(transaction) {
-    const body = document.getElementById('paymentModalBody');
-    const methodName = CONFIG.PAYMENT_METHODS[selectedMethod.toUpperCase()]?.name || 'Payment Method';
+  async function submitProof() {
+    if (!proofFile || !selectedMethod) return;
 
-    body.innerHTML = `
+    const reference = (document.getElementById('manualReference') || {}).value || '';
+    body().innerHTML = `
+      <div class="payment-processing">
+        <div class="payment-processing-spinner"></div>
+        <div class="payment-processing-text">Sending your proof…</div>
+        <div class="payment-processing-subtext">Uploading the file and recording the payment.</div>
+      </div>
+    `;
+
+    let payment;
+    try {
+      const proofPath = await HS.payments.uploadProof(proofFile);
+      payment = await HS.payments.submitProof({
+        paymentId: currentPayment.paymentId || null,
+        propertyId: currentPayment.propertyId || currentPayment.listingId,
+        purpose: currentPayment.purpose || 'rent',
+        period: currentPayment.period,
+        dueDate: currentPayment.dueDate,
+        depositMonths: currentPayment.depositMonths,
+        method: selectedMethod,
+        reference: reference.trim(),
+        proofPath,
+      });
+    } catch (err) {
+      renderError(err.message, 'PaymentIntegration.goToProof()');
+      return;
+    }
+
+    renderAwaitingConfirmation(payment);
+    if (currentPayment.onSuccess) currentPayment.onSuccess(payment);
+  }
+
+  // ── Outcomes ────────────────────────────────────────────────────────────────
+
+  function renderSuccess(payment) {
+    body().innerHTML = `
       <div class="payment-success">
-        <!-- Success Icon -->
         <div class="payment-success-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
             <polyline points="20 6 9 17 4 12"/>
           </svg>
         </div>
-
-        <!-- Success Message -->
-        <div class="payment-success-title">Payment Successful!</div>
+        <div class="payment-success-title">Payment Successful</div>
         <div class="payment-success-message">
-          Your payment of ${formatMoney(transaction.amount)} via ${methodName}
-          has been processed successfully.
+          Your payment of ${formatMoney(payment.amount)} went through.
         </div>
-
-        <!-- Transaction Details -->
         <div class="payment-success-details">
           <div class="payment-detail-row">
-            <span class="payment-detail-label">Transaction ID</span>
-            <span class="payment-detail-value">${transaction.id}</span>
+            <span class="payment-detail-label">Reference</span>
+            <span class="payment-detail-value">${esc(payment.reference || payment.id)}</span>
           </div>
           <div class="payment-detail-row">
-            <span class="payment-detail-label">Reference Number</span>
-            <span class="payment-detail-value">${transaction.reference}</span>
+            <span class="payment-detail-label">Date &amp; Time</span>
+            <span class="payment-detail-value">${formatDateTime(payment.paidAt)}</span>
           </div>
           <div class="payment-detail-row">
-            <span class="payment-detail-label">Date & Time</span>
-            <span class="payment-detail-value">${formatDateTime(transaction.paidDate)}</span>
-          </div>
-          <div class="payment-detail-row">
-            <span class="payment-detail-label">Payment Method</span>
-            <span class="payment-detail-value">${methodName}</span>
+            <span class="payment-detail-label">Method</span>
+            <span class="payment-detail-value">${esc(payment.method || 'QR Ph')}</span>
           </div>
           <div class="payment-detail-row">
             <span class="payment-detail-label">Amount Paid</span>
-            <span class="payment-detail-value">${formatMoney(transaction.amount)}</span>
+            <span class="payment-detail-value">${formatMoney(payment.amount)}</span>
           </div>
         </div>
-
-        <!-- Actions -->
         <div class="payment-success-actions">
-          <button class="payment-btn-secondary" onclick="PaymentIntegration.downloadReceipt('${transaction.id}')">
-            Download Receipt
-          </button>
-          <button class="payment-submit-btn" onclick="PaymentIntegration.closeModal()">
-            Done
-          </button>
+          <button class="payment-submit-btn" onclick="PaymentIntegration.closeModal()">Done</button>
         </div>
       </div>
     `;
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // GENERATE TRANSACTION REFERENCE
-  // In production, this comes from QRPH API
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  function generateTransactionReference(method) {
-    const prefix = {
-      'gcash': 'GC',
-      'paymaya': 'MY',
-      'card': 'CD'
-    }[method] || 'PM';
-
-    const timestamp = Date.now().toString().slice(-8);
-    const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-
-    return `${prefix}-${timestamp}${random}`;
+  function renderAwaitingConfirmation(payment) {
+    body().innerHTML = `
+      <div class="payment-success">
+        <div class="payment-success-icon" style="background:#fef3c7;color:#b45309;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div class="payment-success-title">Proof submitted</div>
+        <div class="payment-success-message">
+          Your landlord has been asked to confirm ${formatMoney(payment.amount)}
+          ${payment.period ? 'for ' + esc(payment.period) : ''}. You will see it on this page as soon
+          as they do.
+        </div>
+        <div class="payment-success-details">
+          <div class="payment-detail-row">
+            <span class="payment-detail-label">Method</span>
+            <span class="payment-detail-value">${esc(payment.method || selectedMethod)}</span>
+          </div>
+          ${payment.reference ? `
+          <div class="payment-detail-row">
+            <span class="payment-detail-label">Reference</span>
+            <span class="payment-detail-value">${esc(payment.reference)}</span>
+          </div>` : ''}
+          <div class="payment-detail-row">
+            <span class="payment-detail-label">Status</span>
+            <span class="payment-detail-value">Awaiting confirmation</span>
+          </div>
+        </div>
+        <div class="payment-success-actions">
+          <button class="payment-submit-btn" onclick="PaymentIntegration.closeModal()">Done</button>
+        </div>
+      </div>
+    `;
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // CREATE TRANSACTION RECORD
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  function createTransactionRecord(reference) {
-    const user = getSession();
-    const now = new Date();
-
-    return {
-      id: `TXN-${Date.now()}`,
-      reference: reference,
-      amount: currentPayment.amount,
-      status: 'confirmed', // In production: pending → paid → confirmed
-      method: selectedMethod,
-      listingTitle: currentPayment.listingTitle,
-      listingId: currentPayment.listingId,
-      period: currentPayment.period,
-      dueDate: currentPayment.dueDate,
-      paidDate: now.toISOString().split('T')[0],
-      paidDateTime: now.toISOString(),
-      tenantId: user.id,
-      tenantName: `${user.firstName} ${user.lastName}`,
-      landlordId: currentPayment.landlordId,
-      // In production, would include QRPH payment_intent_id
-      paymongoPaymentId: `pi_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    };
+  function renderError(message, retryCall) {
+    body().innerHTML = `
+      <div class="payment-success">
+        <div class="payment-success-icon" style="background:#fee2e2;color:#b91c1c;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+          </svg>
+        </div>
+        <div class="payment-success-title">That did not go through</div>
+        <div class="payment-success-message">${esc(message || 'Please try again.')}</div>
+        <div class="payment-success-actions">
+          <button class="payment-btn-secondary" onclick="PaymentIntegration.closeModal()">Close</button>
+          <button class="payment-submit-btn" onclick="${retryCall}">Try again</button>
+        </div>
+      </div>
+    `;
   }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // SAVE TRANSACTION
-  // In production, this would be saved to database via backend API
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  function saveTransaction(transaction) {
-    // Get existing transactions from localStorage
-    const transactions = JSON.parse(localStorage.getItem('homesure_transactions') || '[]');
-
-    // Add new transaction
-    transactions.unshift(transaction);
-
-    // Save back to localStorage
-    localStorage.setItem('homesure_transactions', JSON.stringify(transactions));
-
-    // Decrease available units if property has multiple units
-    decreaseAvailableUnits(transaction.listingId);
-
-    console.log('💾 Transaction saved:', transaction);
-    console.log('📝 FOR DEFENSE: In production, this would be saved to database via POST /api/transactions');
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // DECREASE AVAILABLE UNITS (for multi-unit properties)
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  function decreaseAvailableUnits(listingId) {
-    // Find the listing in FAKE_LISTINGS
-    const listing = window.FAKE_LISTINGS?.find(l => l.id === listingId);
-
-    if (listing && listing.hasMultipleUnits && listing.availableUnits > 0) {
-      listing.availableUnits--;
-
-      console.log(`📉 Available units decreased for ${listingId}: ${listing.availableUnits + 1} → ${listing.availableUnits}`);
-
-      // If no units left, mark as fully occupied
-      if (listing.availableUnits === 0) {
-        listing.status = 'occupied';
-        console.log(`🏠 ${listingId} is now fully occupied`);
-      }
-    }
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // GET TRANSACTIONS
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  function getTransactions(filters = {}) {
-    const allTransactions = JSON.parse(localStorage.getItem('homesure_transactions') || '[]');
-
-    // Apply filters if provided
-    let filtered = allTransactions;
-
-    if (filters.tenantId) {
-      filtered = filtered.filter(t => t.tenantId === filters.tenantId);
-    }
-
-    if (filters.landlordId) {
-      filtered = filtered.filter(t => t.landlordId === filters.landlordId);
-    }
-
-    if (filters.status) {
-      filtered = filtered.filter(t => t.status === filters.status);
-    }
-
-    return filtered;
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // DOWNLOAD RECEIPT
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  function downloadReceipt(transactionId) {
-    // In production, this would generate PDF receipt
-    alert(`📄 Receipt for ${transactionId} would be downloaded here.\n\nIn production: Generate PDF receipt with transaction details.`);
-
-    console.log('📄 FOR DEFENSE: Generate PDF receipt using library like jsPDF or backend PDF generator');
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // CLOSE MODAL
-  // ═══════════════════════════════════════════════════════════════════════════
 
   function closeModal() {
-    document.getElementById('paymentModalBackdrop').classList.remove('active');
+    stopPolling();
+    const backdrop = document.getElementById('paymentModalBackdrop');
+    if (backdrop) backdrop.classList.remove('active');
     currentPayment = null;
     selectedMethod = null;
+    proofFile = null;
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // UTILITY FUNCTIONS
-  // ═══════════════════════════════════════════════════════════════════════════
+  // ── Formatting ──────────────────────────────────────────────────────────────
+
+  function esc(s) {
+    return String(s === null || s === undefined ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
 
   function formatMoney(amount) {
+    if (amount === null || amount === undefined || amount === '') return '—';
     return '₱' + Number(amount).toLocaleString('en-PH');
   }
 
   function formatDate(dateStr) {
     if (!dateStr) return '—';
-    return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-PH', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric'
+    return new Date(String(dateStr).slice(0, 10) + 'T00:00:00')
+      .toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
+  }
+
+  function formatDateTime(value) {
+    if (!value) return '—';
+    return new Date(value).toLocaleString('en-PH', {
+      month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit',
     });
   }
 
   function formatPaymentType(type) {
-    const typeMap = {
+    return ({
       security: 'Security Deposit',
       rent: 'Rent Payment',
-      both: 'Security Deposit + Rent'
-    };
-    return typeMap[type] || 'Payment';
+      both: 'Security Deposit + Rent',
+      reservation: 'Reservation Fee',
+      sale: 'Purchase',
+    })[type] || 'Payment';
   }
-
-  function formatDateTime(dateTimeStr) {
-    if (!dateTimeStr) return '—';
-    return new Date(dateTimeStr).toLocaleString('en-PH', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
-
-  function getSession() {
-    // Get current user session
-    return JSON.parse(sessionStorage.getItem('currentUser') || '{}');
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // PUBLIC API
-  // ═══════════════════════════════════════════════════════════════════════════
 
   return {
     openPaymentModal,
+    chooseRoute,
     selectMethod,
-    processPayment,
+    goToProof,
+    onProofSelect,
+    submitProof,
+    copyQrString,
     closeModal,
-    downloadReceipt,
-    getTransactions,
-
-    // For testing in console
-    _testPayment: () => {
-      openPaymentModal({
-        amount: 15000,
-        listingTitle: "2BR Apartment — Poblacion",
-        listingId: "prop-001",
-        landlordId: "usr-003",
-        period: "June 2026",
-        dueDate: "2026-06-01"
-      });
-    }
+    formatPaymentType,
   };
-
 })();
-
-// ═══════════════════════════════════════════════════════════════════════════
-// AUTO-INITIALIZE
-// ═══════════════════════════════════════════════════════════════════════════
-
-console.log('✅ QRPH Payment Integration loaded (Demo Mode)');
-console.log('💡 Test in console: PaymentIntegration._testPayment()');

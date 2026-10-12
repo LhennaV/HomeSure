@@ -6,17 +6,21 @@
   HomeSureSidebar.init({ activePage: 'listings' });
   HomeSureTopbar.init({ placeholder: 'Search your listings...' });
 
-  // ── Resolve user & listings ─────────────────────────────────────────────────
-  const fullUser   = FAKE_USERS.find(u => u.id === session.id) || {};
-  const isVerified = fullUser.accountStatus === 'verified';
+  // ── Resolve user & listings (from the database) ─────────────────────────────
+  let isVerified = (session && session.accountStatus) === 'verified';
+  let myListings = [];
 
-  let myListings = FAKE_LISTINGS.filter(l => l.sellerId === session.id);
-
-  // ── Add button & warning banner ─────────────────────────────────────────────
-  if (!isVerified) {
-    document.getElementById('addListingBtn').classList.add('disabled');
-    document.getElementById('addListingBtn').setAttribute('title', 'Complete verification to post listings');
-    document.getElementById('warnBanner').style.display = 'flex';
+  function applyVerificationGate() {
+    const addBtn = document.getElementById('addListingBtn');
+    if (!isVerified) {
+      addBtn.classList.add('disabled');
+      addBtn.setAttribute('title', 'Complete verification to post listings');
+      document.getElementById('warnBanner').style.display = 'flex';
+    } else {
+      addBtn.classList.remove('disabled');
+      addBtn.removeAttribute('title');
+      document.getElementById('warnBanner').style.display = 'none';
+    }
   }
 
   // ── Buckets ─────────────────────────────────────────────────────────────────
@@ -41,9 +45,7 @@
 
   // ── Build card HTML ─────────────────────────────────────────────────────────
   function buildCard(listing, tab) {
-    const thumb = (listing.images && listing.images[0])
-      ? listing.images[0]
-      : 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400';
+    const thumb = HS.cover(listing);
 
     const pillCls   = listing.listingFor === 'rent' ? 'pill-rent' : 'pill-sale';
     const pillLabel = listing.listingFor === 'rent' ? 'For Rent' : 'For Sale';
@@ -137,7 +139,7 @@
       <div class="listing-card" id="card-${listing.id}">
         <div class="listing-row">
           <img class="listing-thumb" src="${thumb}" alt="${listing.title}" loading="lazy"
-               onerror="this.src='https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=400'" />
+               onerror="this.src=HS.PLACEHOLDER_IMG" />
           <div class="listing-info">
             <div class="listing-title-row">
               <span class="listing-title">${listing.title}</span>
@@ -226,7 +228,23 @@
     renderPanel('pending', getPending(), 'listPending');
     renderPanel('closed',  getClosed(),  'listClosed');
   }
-  renderAll();
+  async function loadListings() {
+    ['listActive', 'listDraft', 'listPending', 'listClosed'].forEach(id => {
+      document.getElementById(id).innerHTML = '<div class="empty-state"><div class="empty-sub">Loading…</div></div>';
+    });
+    try {
+      const [me, mine] = await Promise.all([HS.auth.refresh(), HS.listings.mine()]);
+      if (me) isVerified = me.accountStatus === 'verified';
+      myListings = mine;
+    } catch (err) {
+      console.error('Failed to load listings:', err);
+      document.getElementById('listActive').innerHTML = '<div class="empty-state"><div class="empty-sub">Could not load your listings. Please try again.</div></div>';
+      return;
+    }
+    applyVerificationGate();
+    renderAll();
+  }
+  loadListings();
 
   // ── Tab switching ───────────────────────────────────────────────────────────
   let currentTab = 'active';
@@ -247,34 +265,40 @@
   }
 
   // ── Submit draft for admin review ───────────────────────────────────────────
-  function submitForReview(id) {
-    const listing = myListings.find(l => l.id === id);
-    if (!listing) return;
-    listing.status = 'pending';
-    delete listing.rejectionReason;
+  // Fade the card out, then run after() — same animation the page always had.
+  function removeCardThen(id, after) {
     const card = document.getElementById('card-' + id);
     if (card) {
       card.classList.add('removing');
-      card.addEventListener('animationend', () => {
-        renderAll();
-        switchTab('pending');
-      }, { once: true });
+      card.addEventListener('animationend', after, { once: true });
+    } else {
+      after();
     }
   }
 
-  // ── Reopen closed listing (resubmit for review) ─────────────────────────────
-  function reopenListing(id) {
-    const listing = myListings.find(l => l.id === id);
-    if (!listing) return;
-    listing.status = 'pending';
-    const card = document.getElementById('card-' + id);
-    if (card) {
-      card.classList.add('removing');
-      card.addEventListener('animationend', () => {
-        renderAll();
-        switchTab('pending');
-      }, { once: true });
+  async function submitForReview(id) {
+    try {
+      const updated = await HS.listings.submit(id);
+      const i = myListings.findIndex(l => l.id === id);
+      if (i >= 0) myListings[i] = updated;
+    } catch (err) {
+      hsToast('Could not submit the listing: ' + err.message, 'error');
+      return;
     }
+    removeCardThen(id, () => { renderAll(); switchTab('pending'); });
+  }
+
+  // ── Reopen closed listing (resubmit for review) ─────────────────────────────
+  async function reopenListing(id) {
+    try {
+      const updated = await HS.listings.reopen(id);
+      const i = myListings.findIndex(l => l.id === id);
+      if (i >= 0) myListings[i] = updated;
+    } catch (err) {
+      hsToast('Could not resubmit the listing: ' + err.message, 'error');
+      return;
+    }
+    removeCardThen(id, () => { renderAll(); switchTab('pending'); });
   }
 
   // ── Edit modal ───────────────────────────────────────────────────────────────
@@ -297,29 +321,42 @@
     editingId = null;
   }
 
-  function saveEdit() {
+  async function saveEdit() {
     if (!editingId) return;
     const listing = myListings.find(l => l.id === editingId);
     if (!listing) return;
-    listing.title      = document.getElementById('editTitle').value.trim() || listing.title;
-    listing.price      = parseFloat(document.getElementById('editPrice').value) || listing.price;
-    listing.address    = document.getElementById('editAddress').value.trim() || listing.address;
-    listing.listingFor = document.getElementById('editType').value;
+    const patch = {
+      title:      document.getElementById('editTitle').value.trim() || listing.title,
+      price:      parseFloat(document.getElementById('editPrice').value) || listing.price,
+      address:    document.getElementById('editAddress').value.trim() || listing.address,
+      listingFor: document.getElementById('editType').value,
+    };
+    try {
+      const updated = await HS.listings.update(editingId, patch);
+      const i = myListings.findIndex(l => l.id === editingId);
+      if (i >= 0) myListings[i] = updated;
+    } catch (err) {
+      hsToast('Could not save your changes: ' + err.message, 'error');
+      return;
+    }
     closeEditModal();
     renderAll();
   }
 
-  function deleteFromEdit() {
+  async function deleteFromEdit() {
     if (!editingId) return;
+    const id = editingId;
+    try {
+      await HS.listings.remove(id);
+    } catch (err) {
+      hsToast('Could not delete the listing: ' + err.message, 'error');
+      return;
+    }
     closeEditModal();
-    const card = document.getElementById('card-' + editingId);
-    if (!card) return;
-    card.classList.add('removing');
-    card.addEventListener('animationend', () => {
-      myListings = myListings.filter(l => l.id !== editingId);
-      editingId = null;
+    removeCardThen(id, () => {
+      myListings = myListings.filter(l => l.id !== id);
       renderAll();
-    }, { once: true });
+    });
   }
 
   // ── Close Listing ────────────────────────────────────────────────────────────
@@ -336,18 +373,16 @@
     if (row) row.style.display = 'none';
   }
 
-  function confirmClose(id) {
-    const listing = myListings.find(l => l.id === id);
-    if (!listing) return;
-    listing.status = 'closed';
-    const card = document.getElementById('card-' + id);
-    if (card) {
-      card.classList.add('removing');
-      card.addEventListener('animationend', () => {
-        renderAll();
-        switchTab('closed');
-      }, { once: true });
+  async function confirmClose(id) {
+    try {
+      const updated = await HS.listings.close(id);
+      const i = myListings.findIndex(l => l.id === id);
+      if (i >= 0) myListings[i] = updated;
+    } catch (err) {
+      hsToast('Could not close the listing: ' + err.message, 'error');
+      return;
     }
+    removeCardThen(id, () => { renderAll(); switchTab('closed'); });
   }
 
   // ══════════════════════════════════════════════════════════════════════════════
@@ -355,7 +390,7 @@
   // ══════════════════════════════════════════════════════════════════════════════
 
   window.adjustAvailability = function(id) {
-    const listing = FAKE_LISTINGS.find(l => l.id === id);
+    const listing = myListings.find(l => l.id === id);
     if (!listing) return;
 
     AdjustAvailabilityModal.open({
@@ -364,7 +399,7 @@
       totalUnits: listing.totalUnits,
       availableUnits: listing.availableUnits,
       onConfirm: (newAvailable) => {
-        console.log(`✅ Availability updated: ${listing.title} now has ${newAvailable} units available`);
+        listing.availableUnits = newAvailable;
         renderAll();
       }
     });
