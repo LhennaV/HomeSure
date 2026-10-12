@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
@@ -11,6 +11,11 @@ export default function LoginPage() {
   
   const supabase = createClient();
   const router = useRouter();
+
+  useEffect(() => {
+    // Forward directly to the unified sign-in page
+    window.location.replace("/auth/signin.html");
+  }, []);
   
 
   const handleLogin = async (e: React.FormEvent) => {

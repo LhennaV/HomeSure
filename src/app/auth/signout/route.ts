@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
   revalidatePath("/", "layout");
 
   const baseUrl = getBaseUrl(request);
-  return NextResponse.redirect(new URL("/auth/login", baseUrl));
+  return NextResponse.redirect(new URL("/auth/signin.html", baseUrl));
 }
 
 export async function POST(request: NextRequest) {
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
   revalidatePath("/", "layout");
 
   const baseUrl = getBaseUrl(request);
-  return NextResponse.redirect(new URL("/auth/login", baseUrl));
+  return NextResponse.redirect(new URL("/auth/signin.html", baseUrl));
 }
 
 
