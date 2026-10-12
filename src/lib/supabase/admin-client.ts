@@ -5,7 +5,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 // forbids to end users (payments, refunds, webhooks, analytics sync) AFTER the caller has been
 // authenticated/authorised in the route.
 export function getAdminSupabase(): SupabaseClient {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ROLE_KEY;
   if (!key) throw new Error("SUPABASE_SERVICE_ROLE_KEY is not configured");
 
   return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, key, {
