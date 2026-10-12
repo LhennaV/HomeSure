@@ -7,18 +7,20 @@
 
   HomeSureSidebar.init({ activePage: 'dashboard' });
   HomeSureTopbar.init({ placeholder: 'Search...' });
+
+  // ── Load everything the dashboard shows ───────────────────────────────────
   let LISTINGS, USERS, openReports;
   try {
-	  conts[listings, users, reports] = await Promise.all([HS.listings.all(), HS.admin.users(), HS.admin.openReportsCount()]);
-	  LISTINGS = await HS.listings.withSellers(listings.filter(1=>1.status !== 'draft'));
-	  USERS = users;
-	  openReports = reports;
+    const [listings, users, reports] = await Promise.all([HS.listings.all(), HS.admin.users(), HS.admin.openReportsCount()]);
+    LISTINGS    = await HS.listings.withSellers(listings.filter(l => l.status !== 'draft'));   // drafts are not the admins' business yet
+    USERS       = users;
+    openReports = reports;
   } catch (err) {
-	  console.error('Failed to load dashboard: ', err);
-	  hsToast('Could not load the dashboard data. Please refresh.', 'error);
-	  return;
+    console.error('Failed to load dashboard:', err);
+    hsToast('Could not load the dashboard data. Please refresh.', 'error');
+    return;
   }
-  
+
   // ── Stat counts ───────────────────────────────────────────────────────────
   const allUsers        = USERS.filter(u => ['buyer','seller'].includes(u.role));
   const verifiedSellers = USERS.filter(u => u.role === 'seller' && u.accountStatus === 'verified');
@@ -35,13 +37,13 @@
     .slice(0, 5);
 
   document.getElementById('recentListings').innerHTML = recentListings.map(l => {
-	const sellerName = l.seller ? l.seller.name : 'Unknown';
+    const sellerName = l.seller ? l.seller.name : 'Unknown';
     const price = l.listingFor === 'rent'
       ? '₱' + l.price.toLocaleString('en-PH') + '/mo'
       : '₱' + l.price.toLocaleString('en-PH');
     return `
       <div class="listing-row">
-        <img class="listing-thumb" src="${HS.cover(1)}" alt="${l.title}" />
+        <img class="listing-thumb" src="${HS.cover(l)}" alt="${l.title}" />
         <div class="listing-info">
           <div class="listing-title">${l.title}</div>
           <div class="listing-meta">${sellerName} · ${l.barangay} · ${price}</div>
@@ -98,8 +100,9 @@
   const sellers = USERS.filter(u => u.role === 'seller')
     .sort((a, b) => new Date(b.joinedAt) - new Date(a.joinedAt))
     .slice(0, 8);
+
   document.getElementById('recentSellers').innerHTML = sellers.map(s => {
-	const initials = (((s.firstName || '')[0] || '') + ((s.lastName || '')[0] || '')).toUpperCase() || '?';
+    const initials = (((s.firstName || '')[0] || '') + ((s.lastName || '')[0] || '')).toUpperCase() || '?';
     const statusClass = s.accountStatus === 'verified' ? 'verified'
       : s.accountStatus === 'pending' ? 'pending' : 'unverified';
     const statusLabel = s.accountStatus

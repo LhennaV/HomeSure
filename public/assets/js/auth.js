@@ -104,19 +104,22 @@ async function submitSignin() {
 
   if (!valid) return;
 
-  // Check if account exists first
+  // Signs in, loads the profile (role, verification status, saved listings) and caches it for the pages.
   let user;
   try {
     user = await HS.auth.signIn(email.value.trim(), pw.value);
   } catch (err) {
     showError(pw, err.message);
     return;
-}
+  }
+
+  // Coming from a public listing? Buyers go straight back to it (only our own buyer pages are allowed).
   const back = new URLSearchParams(window.location.search).get('redirect');
   if (user.role === 'buyer' && back && /^module\/buyer\/[a-z-]+\.html(\?[\w=&-]*)?$/.test(back)) {
     window.location.href = '../' + back;
     return;
   }
+
   redirectToDashboard(user.role);
 }
 
@@ -174,6 +177,7 @@ let _resendTimer = null;
 
 async function openVerifyModal() {
   if (!validateSignup()) return;
+
   const surname   = document.querySelector('input[placeholder="Surname"]').value.trim();
   const firstName = document.querySelector('input[placeholder="First Name"]').value.trim();
   const emailEl   = document.querySelector('input[type="email"]');
@@ -181,6 +185,13 @@ async function openVerifyModal() {
   const phone     = document.querySelector('input[type="tel"]').value.trim();
   const password  = document.getElementById('pw1').value;
   const role      = document.getElementById('sellerBtn').classList.contains('active') ? 'seller' : 'buyer';
+
+  // Signing up goes through our own API, not straight to Supabase.
+  //
+  // The auth server insists on a confirmed email but has no mail sender of its own, so its signup
+  // endpoint fails every time with "Error sending confirmation email". Our route creates the
+  // account unconfirmed — which sends nothing and so cannot fail that way — and emails the link
+  // from this app instead. The account still cannot be used until the link is opened.
   const btn = document.getElementById('signupBtn');
   const label = btn ? btn.textContent : '';
   if (btn) { btn.disabled = true; btn.textContent = 'Creating your account…'; }
@@ -203,6 +214,7 @@ async function openVerifyModal() {
   }
 
   if (btn) { btn.disabled = false; btn.textContent = label; }
+
   document.getElementById('modalEmail').textContent = email;
   document.getElementById('verifyModal').classList.add('active');
   startCountdown(60);
@@ -232,7 +244,7 @@ function startCountdown(seconds) {
 }
 
 async function resendEmail() {
-	const email = document.getElementById('modalEmail').textContent;
+  const email = document.getElementById('modalEmail').textContent;
   const countdown = document.getElementById('resendCountdown');
 
   try {
@@ -252,9 +264,14 @@ async function resendEmail() {
     if (countdown) countdown.textContent = 'Could not resend. Check your connection.';
     return;
   }
+
   clearInterval(_resendTimer);
   startCountdown(60);
 }
+
+// ── Coming back from the confirmation link ───────────────────────────────────
+// /api/auth/verify-email sends people here with ?verified=… so they see a sentence rather than
+// a bare JSON response.
 (function showVerificationResult() {
   const status = new URLSearchParams(window.location.search).get('verified');
   if (!status) return;
@@ -298,10 +315,13 @@ async function submitForgotPassword() {
   if (!input.value.trim()) { showError(input, 'Email is required'); return; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value.trim())) { showError(input, 'Enter a valid email address'); return; }
   clearError(input);
+
   const { error } = await sb.auth.resetPasswordForEmail(input.value.trim(), {
-	  redirectTo: window.location.origin + '/auth/signin.html'
+    // PLACEHOLDER: kailangan din i-whitelist, at kailangan ng page na tumatanggap ng bagong password
+    redirectTo: window.location.origin + '/auth/signin.html'
   });
   if (error) { showError(input, error.message); return; }
+
   document.getElementById('sentEmail').textContent = input.value.trim();
   document.getElementById('formView').style.display    = 'none';
   document.getElementById('successView').style.display = '';
@@ -327,6 +347,7 @@ async function resendReset() {
   clearInterval(_fpTimer);
   startFpCountdown(32);
 }
+
 // ── Dodge Button Easter Egg REMOVED ───────────────────────────────────────────
 // QA feedback: Button moving causes bad UX. Removed all dodge functionality.
 

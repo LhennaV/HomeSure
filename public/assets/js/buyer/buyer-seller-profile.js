@@ -1,3 +1,4 @@
+(async function () {
 
   const user = getSession();
   if (!user || user.role !== 'buyer') window.location.href = '../../auth/signin.html';
@@ -31,14 +32,15 @@
 
   // ── Load seller ────────────────────────────────────────────────────────────
   const params = new URLSearchParams(window.location.search);
-  const seller = FAKE_USERS.find(u => u.id === params.get('id') && u.role === 'seller');
+  const sellerId = params.get('id');
+  const seller = sellerId ? await HS.profiles.publicById(sellerId) : null;
   const wrap   = document.getElementById('profileContent');
 
   if (!seller) {
     wrap.innerHTML = `<p style="color:var(--muted);text-align:center;padding:60px 0">Seller not found.</p>`;
   } else {
-    const initials      = seller.firstName[0] + seller.lastName[0];
-    const sellerListings = FAKE_LISTINGS.filter(l =>
+    const initials      = hsInitials(seller.firstName, seller.lastName, seller.email);
+    const sellerListings = (await HS.listings.bySeller(seller.id).catch(() => [])).filter(l =>
       l.sellerId === seller.id &&
       l.status === 'approved' &&
       l.lifecycleStatus !== 'sold' &&
@@ -49,7 +51,7 @@
     const count         = sellerListings.length;
 
     // ── Ratings & Reviews ──────────────────────────────────────────────────────
-    const sellerReviews = FAKE_REVIEWS.filter(r => r.type === 'buyer-to-seller' && r.sellerId === seller.id);
+    const sellerReviews = await HS.reviews.about(seller.id).catch(() => []);
     const reviewCount   = sellerReviews.length;
     const avgRating     = reviewCount > 0
       ? (sellerReviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount).toFixed(1)
@@ -95,9 +97,9 @@
         </div>
         <div class="reviews-list">
           ${sellerReviews.sort((a,b) => new Date(b.reviewDate) - new Date(a.reviewDate)).map(rev => {
-            const buyer = FAKE_USERS.find(u => u.id === rev.buyerId);
+            const buyer = rev.reviewer;
             const buyerName = buyer ? `${buyer.firstName} ${buyer.lastName}` : 'Anonymous';
-            const buyerInitials = buyer ? buyer.firstName[0] + buyer.lastName[0] : '?';
+            const buyerInitials = buyer ? hsInitials(buyer.firstName, buyer.lastName, buyer.email) : '?';
             const reviewDate = new Date(rev.reviewDate).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
             return `
               <div class="review-card">
@@ -180,3 +182,5 @@
       </div>
     `;
   }
+
+})();

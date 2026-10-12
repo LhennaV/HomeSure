@@ -1,3 +1,4 @@
+(async function () {
 
   // ── Auth guard ──────────────────────────────────────────────────────────────
   const session = getSession();
@@ -7,9 +8,12 @@
   HomeSureSidebar.init({ activePage: 'profile' });
   HomeSureTopbar.init({ placeholder: 'Search properties...' });
 
-  // ── Resolve current buyer from FAKE_USERS ───────────────────────────────────
-  const buyer = FAKE_USERS.find(u => u.id === session.id) || null;
-  if (!buyer) window.location.href = '../../auth/signin.html';
+  // ── Load the real profile, reviews and payments ─────────────────────────────
+  const buyer = await HS.profiles.me();
+  if (!buyer) { window.location.href = '../../auth/signin.html'; return; }
+
+  const buyerReviews = await HS.reviews.about(buyer.id).catch(() => []);
+  const buyerPayments = await HS.payments.mine().catch(() => []);
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
   const iconHome = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`;
@@ -23,7 +27,7 @@
   }
 
   // ── Render profile card ──────────────────────────────────────────────────────
-  const initials      = (buyer.firstName[0] || '') + (buyer.lastName[0] || '');
+  const initials      = ((buyer.firstName || '')[0] || '') + ((buyer.lastName || '')[0] || '');
   const profileAvatar = document.getElementById('profileAvatar');
 
   function renderBuyerAvatar() {
@@ -57,12 +61,7 @@
   document.getElementById('profileName').textContent =
     buyer.firstName + ' ' + buyer.lastName;
 
-  // Get buyer transactions
-  const buyerTransactions = FAKE_TRANSACTIONS.filter(t => t.buyerId === buyer.id && t.status === 'completed');
-  const transactionCount = buyerTransactions.length;
-
-  // Get buyer reviews
-  const buyerReviews = FAKE_REVIEWS.filter(r => r.type === 'seller-to-buyer' && r.buyerId === buyer.id);
+  const transactionCount = buyerPayments.filter(p => p.status === 'paid').length;
   const reviewCount = buyerReviews.length;
 
   const metaItems = [
@@ -228,9 +227,8 @@
       </div>
       <div class="reviews-list">
         ${buyerReviews.sort((a,b) => new Date(b.reviewDate) - new Date(a.reviewDate)).map(rev => {
-          const seller = FAKE_USERS.find(u => u.id === rev.sellerId);
-          const sellerName = seller ? `${seller.firstName} ${seller.lastName}` : 'Anonymous';
-          const sellerInitials = seller ? seller.firstName[0] + seller.lastName[0] : '?';
+          const sellerName = rev.reviewerName || 'HomeSure user';
+          const sellerInitials = sellerName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?';
           const reviewDate = new Date(rev.reviewDate).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
           return `
             <div class="review-card">
@@ -271,7 +269,7 @@
     document.getElementById('editModal').classList.remove('active');
   };
 
-  window.saveProfile = function() {
+  window.saveProfile = async function() {
     const firstName = document.getElementById('editFirstName').value.trim();
     const lastName = document.getElementById('editLastName').value.trim();
     const phone = document.getElementById('editPhone').value.trim();
@@ -282,28 +280,18 @@
       return;
     }
 
-    // Update buyer data
-    buyer.firstName = firstName;
-    buyer.lastName = lastName;
-    buyer.phone = phone;
-
-    // Update session
-    session.firstName = firstName;
-    session.lastName = lastName;
-    session.phone = phone;
-    saveSession(session);
-
-    // Update FAKE_USERS
-    const userIndex = FAKE_USERS.findIndex(u => u.id === buyer.id);
-    if (userIndex !== -1) {
-      FAKE_USERS[userIndex] = { ...FAKE_USERS[userIndex], firstName, lastName, phone };
+    // Save to the database, then refresh so the page shows what was actually stored.
+    try {
+      await HS.profiles.updateMe({ firstName, lastName, phone });
+    } catch (err) {
+      alert('Could not save your profile: ' + err.message);
+      return;
     }
 
-    // Close modal
     closeEditModal();
-
-    // Refresh page to show updated info
     alert('✅ Profile updated successfully!');
     location.reload();
   };
 
+
+})();

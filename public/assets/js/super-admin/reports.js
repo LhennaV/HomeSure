@@ -4,7 +4,7 @@
 // Only the chosen ones (superadmins) shall pass.
 // ══════════════════════════════════════════════════════════════════════════════
 
-(function () {
+(async function () {
   // ────────────────────────────────────────────────────────────────────────
   // Ultra-Secure Auth Guard
   // Not a superadmin? Yeet yourself out.
@@ -17,17 +17,32 @@
 
   HomeSureSidebar.init({ activePage: 'reports' });
   HomeSureTopbar.init({ placeholder: 'Search...' });
+  let LISTINGS = [];
+  let USERS = [];
+  let REPORTS_DATA = [];
+
+  // Everything below adds up these rows. Load them once; RLS decides what this account may see.
+  try {
+    LISTINGS = await HS.listings.all();
+    USERS    = await HS.admin.users();
+    REPORTS_DATA = await HS.reports.list();
+  } catch (err) {
+    console.error('Could not load dashboard data:', err);
+    hsToast('Could not load the dashboard data. Please refresh.', 'error');
+    return;
+  }
+
 
   // ══════════════════════════════════════════════════════════════════════════
   // Computed Stats
   // Crunching numbers like it's nobody's business
   // ══════════════════════════════════════════════════════════════════════════
-  const buyers      = FAKE_USERS.filter(u => u.role === 'buyer').length;
-  const sellers     = FAKE_USERS.filter(u => u.role === 'seller').length;
+  const buyers      = USERS.filter(u => u.role === 'buyer').length;
+  const sellers     = USERS.filter(u => u.role === 'seller').length;
   const totalUsers  = buyers + sellers;
-  const totalListings  = FAKE_LISTINGS.length;
-  const pendingReports = FAKE_REPORTS.filter(r => r.status === 'pending').length;
-  const activeAdmins   = FAKE_USERS.filter(u => u.role === 'admin').length;
+  const totalListings  = LISTINGS.length;
+  const pendingReports = REPORTS_DATA.filter(r => r.status === 'pending').length;
+  const activeAdmins   = USERS.filter(u => u.role === 'admin').length;
 
   // ── Stat Cards ────────────────────────────────────────────────────────────
   const stats = [
@@ -111,7 +126,7 @@
 
   // ── Listing Breakdown Donut ───────────────────────────────────────────────
   const listingPeriodData = {
-    monthly: { approved: FAKE_LISTINGS.filter(l => l.status === 'approved').length, pending: FAKE_LISTINGS.filter(l => l.status === 'pending').length, rejected: FAKE_LISTINGS.filter(l => l.status === 'rejected').length, sub: 'All listings by current status' },
+    monthly: { approved: LISTINGS.filter(l => l.status === 'approved').length, pending: LISTINGS.filter(l => l.status === 'pending').length, rejected: LISTINGS.filter(l => l.status === 'rejected').length, sub: 'All listings by current status' },
     weekly:  { approved: 8, pending: 3, rejected: 1, sub: 'Listings submitted this week' },
     daily:   { approved: 2, pending: 1, rejected: 0, sub: 'Listings submitted today' },
   };
@@ -215,7 +230,7 @@
 
   // ── Reports Table ─────────────────────────────────────────────────────────
   let reportFilter = 'all';
-  let reports = [...FAKE_REPORTS];
+  let reports = [...REPORTS_DATA];
 
   function renderReports() {
     const filtered = reportFilter === 'all'
@@ -226,8 +241,8 @@
 
     document.getElementById('reportsTable').innerHTML = filtered.length
       ? filtered.map(r => {
-          const listing    = FAKE_LISTINGS.find(l => l.id === r.listingId);
-          const reporter   = FAKE_USERS.find(u => u.id === r.reportedBy);
+          const listing    = LISTINGS.find(l => l.id === r.listingId);
+          const reporter   = USERS.find(u => u.id === r.reportedBy);
           const listingName = listing ? listing.title : r.listingId;
           const reporterName = reporter ? reporter.firstName + ' ' + reporter.lastName : 'Unknown';
           const catLabel   = catLabels[r.category] || 'Other';
@@ -279,8 +294,8 @@
 
     const headers = ['Listing', 'Reported By', 'Category', 'Reason', 'Reported At', 'Status', 'Resolved At'];
     const rows = filtered.map(r => {
-      const listing  = FAKE_LISTINGS.find(l => l.id === r.listingId);
-      const reporter = FAKE_USERS.find(u => u.id === r.reportedBy);
+      const listing  = LISTINGS.find(l => l.id === r.listingId);
+      const reporter = USERS.find(u => u.id === r.reportedBy);
       return [
         listing ? listing.title : r.listingId,
         reporter ? reporter.firstName + ' ' + reporter.lastName : 'Unknown',

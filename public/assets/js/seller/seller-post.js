@@ -3,14 +3,16 @@
   const user = getSession();
   if (!user || user.role !== 'seller') window.location.href = '../../auth/signin.html';
 
-  /* ── Verification gate ── */
-  const fullUser   = FAKE_USERS.find(u => u.id === user.id);
-  const isVerified = fullUser && fullUser.accountStatus === 'verified';
-  if (!isVerified) {
-    document.getElementById('postForm').style.display = 'none';
-    document.getElementById('verifyGate').style.display = 'flex';
-    document.getElementById('pageSubtitle').textContent = 'Complete identity verification to post your first listing';
+  /* ── Verification gate (cached state first, confirmed from the database below) ── */
+  function applyGate(isVerified) {
+    document.getElementById('postForm').style.display   = isVerified ? '' : 'none';
+    document.getElementById('verifyGate').style.display = isVerified ? 'none' : 'flex';
+    if (!isVerified) {
+      document.getElementById('pageSubtitle').textContent = 'Complete identity verification to post your first listing';
+    }
   }
+  applyGate(user.accountStatus === 'verified');
+  HS.auth.refresh().then(me => { if (me) applyGate(me.accountStatus === 'verified'); }).catch(() => {});
 
   /* ── Init sidebar & topbar ── */
   HomeSureSidebar.init({ activePage: 'listings' });
@@ -20,15 +22,16 @@
   const sellerFullName = (user.firstName || '') + ' ' + (user.lastName || '');
   document.getElementById('sellerNameDisplay').textContent = sellerFullName.trim();
 
-  /* ── Populate barangay dropdown from fake listings ── */
-  const barangays = [...new Set(FAKE_LISTINGS.map(l => l.barangay))].sort();
+  /* ── Populate barangay dropdown (Sta. Maria barangay list) ── */
   const barangaySelect = document.getElementById('listingBarangay');
-  barangays.forEach(b => {
-    const opt = document.createElement('option');
-    opt.value = b;
-    opt.textContent = b;
-    barangaySelect.appendChild(opt);
-  });
+  HS.barangays().then(names => {
+    names.forEach(b => {
+      const opt = document.createElement('option');
+      opt.value = b;
+      opt.textContent = b;
+      barangaySelect.appendChild(opt);
+    });
+  }).catch(err => console.error('Could not load barangays:', err));
 
   /* ── Amenities ── */
   const AMENITY_LIST = [
@@ -230,37 +233,134 @@
     toastTimer = setTimeout(() => toast.classList.remove('show'), 3800);
   }
 
+  /* ── Save to the database ── */
+  let draftId = null;                    // set after the first save, so later saves update instead of inserting again
+  let saving  = false;
+  const uploadedDocPaths = new Map();    // data URL → storage path, so a retry never uploads the same photo twice
+
+  function readForm() {
+    const val = (id) => document.getElementById(id).value.trim();
+    const num = (id) => (val(id) === '' ? null : Number(val(id)));
+    const type = val('propertyType') || null;
+    const hasRooms = type !== 'lot' && type !== 'commercial';
+    const multi = document.getElementById('multiUnitToggle').checked;
+    return {
+      title: val('listingTitle'),
+      type,
+      listingFor: currentListingType,
+      price: num('listingPrice'),
+      barangay: val('listingBarangay') || null,
+      address: val('listingAddress') || null,
+      floorArea: num('floorArea'),
+      lotArea: num('lotArea'),
+      bedrooms: hasRooms ? parseInt(val('listingBedrooms'), 10) : null,
+      bathrooms: hasRooms ? parseInt(val('listingBathrooms'), 10) : null,
+      negotiable: document.getElementById('negotiableToggle').checked,
+      hasMultipleUnits: multi,
+      totalUnits: multi ? num('totalUnits') : null,
+      availableUnits: multi ? num('availableUnits') : null,
+      description: val('listingDesc') || null,
+      amenities: Array.from(selectedAmenities),
+    };
+  }
+
+  // Create/update the row, upload photos + documents, then (optionally) hand it to the admins.
+  async function persist(submit) {
+    const form = readForm();
+
+    // 1. The row first (as a draft): if an upload fails the seller keeps what they typed.
+    const row = draftId ? await HS.listings.update(draftId, form) : await HS.listings.create(form);
+    draftId = row.id;
+
+    // 2. Listing photos → public bucket
+    const pending = uploadedPhotos.filter(p => !p.remoteUrl);
+    if (pending.length) {
+      const urls = await HS.storage.uploadListingImages(pending.map(p => p.file));
+      pending.forEach((p, i) => { p.remoteUrl = urls[i]; });
+    }
+
+    // 3. Title documents → private bucket (only the owner and admins can open them)
+    const documents = [];
+    const groups = [
+      { label: 'Deed of Sale / Transfer Certificate of Title', photos: deedPhotos },
+      { label: 'Supporting Document', photos: supportPhotos },
+    ];
+    for (const g of groups) {
+      for (let i = 0; i < g.photos.length; i++) {
+        const dataUrl = g.photos[i];
+        if (!uploadedDocPaths.has(dataUrl)) {
+          uploadedDocPaths.set(dataUrl, await HS.storage.upload('verification-docs', dataUrl, g.label));
+        }
+        documents.push({ label: g.photos.length > 1 ? g.label + ' (page ' + (i + 1) + ')' : g.label, path: uploadedDocPaths.get(dataUrl) });
+      }
+    }
+
+    // 4. Attach everything; submitting moves it to the admins' review queue.
+    const patch = { images: uploadedPhotos.map(p => p.remoteUrl).filter(Boolean), documents };
+    if (submit) patch.status = 'pending';
+    await HS.listings.update(draftId, patch);
+  }
+
+  function setSaving(on) {
+    saving = on;
+    document.querySelectorAll('#postForm .btn-primary, #postForm .btn-ghost').forEach(b => { b.disabled = on; });
+  }
+
   /* ── Validation + Submit ── */
-  function submitListing() {
-    const title    = document.getElementById('listingTitle').value.trim();
-    const price    = document.getElementById('listingPrice').value.trim();
-    const barangay = document.getElementById('listingBarangay').value;
-    const address  = document.getElementById('listingAddress').value.trim();
-    const floor    = document.getElementById('floorArea').value.trim();
-    const desc     = document.getElementById('listingDesc').value.trim();
+  async function submitListing() {
+    if (saving) return;
+    const f = readForm();
 
     const missing = [];
-    if (!title)    missing.push('Listing Title');
-    if (!price)    missing.push('Price');
-    if (!barangay) missing.push('Barangay');
-    if (!address)  missing.push('Full Address');
-    if (!floor)    missing.push('Floor Area');
-    if (!desc)     missing.push('Description');
-    if (uploadedPhotos.length === 0) missing.push('at least 1 photo');
-    if (deedPhotos.length === 0) missing.push('Deed of Sale or TCT photos (at least 1 page)');
+    if (!f.title)                       missing.push('Listing Title');
+    if (!f.type)                        missing.push('Property Type');
+    if (!f.price)                       missing.push('Price');
+    if (!f.barangay)                    missing.push('Barangay');
+    if (!f.address)                     missing.push('Full Address');
+    if (!f.floorArea)                   missing.push('Floor Area');
+    if (!f.description)                 missing.push('Description');
+    if (uploadedPhotos.length === 0)    missing.push('at least 1 photo');
+    if (deedPhotos.length === 0)        missing.push('Deed of Sale or TCT photos (at least 1 page)');
 
     if (missing.length > 0) {
       showToast('error', 'Please fill in all required fields and upload required documents.');
       return;
     }
+    if (f.hasMultipleUnits && !(f.totalUnits >= 2 && f.availableUnits >= 0 && f.availableUnits <= f.totalUnits)) {
+      showToast('error', 'Units: total must be at least 2 and available cannot exceed the total.');
+      return;
+    }
 
-    // Show success modal
-    document.getElementById('successModal').classList.add('open');
+    setSaving(true);
+    try {
+      await persist(true);
+      document.getElementById('successModal').classList.add('open');
+    } catch (err) {
+      console.error(err);
+      showToast('error', 'Could not submit your listing: ' + err.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
   /* ── Save as Draft ── */
-  function saveAsDraft() {
-    showToast('success', 'Listing saved as draft. You can submit it for review from My Listings.');
+  async function saveAsDraft() {
+    if (saving) return;
+    const f = readForm();
+    if (!f.title || !f.price) {
+      showToast('error', 'Add at least a title and a price to save a draft.');
+      return;
+    }
+    setSaving(true);
+    try {
+      await persist(false);
+      showToast('success', 'Listing saved as draft. You can submit it for review from My Listings.');
+    } catch (err) {
+      console.error(err);
+      showToast('error', 'Could not save your draft: ' + err.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════════

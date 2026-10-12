@@ -20,7 +20,8 @@
   // Apply theme on load
   applyTheme(getTheme());
 
- let allListings = [];
+  // ── Load approved listings (public: RLS only returns admin-approved ones) ───
+  let allListings = [];
 
   function fillBarangays() {
     const barangaySelect = document.getElementById('filterBarangay');
@@ -59,8 +60,9 @@
     }
     return '₱' + v.toLocaleString('en-PH');
   }
-  
-   function details(l) {
+
+  // Bedrooms / bathrooms / area, skipping what a listing does not have (e.g. a lot).
+  function details(l) {
     const svgBed  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>';
     const svgBath = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6 6 3 3 6"/><path d="M17 14h2a2 2 0 0 1 2 2v3H3v-3a2 2 0 0 1 2-2h2"/><path d="M12 17v-3"/><path d="M13 6V3"/><path d="M7 10.5V7a4 4 0 1 1 8 0v3.5"/></svg>';
     const svgArea = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>';
@@ -71,16 +73,18 @@
     if (area) out.push(svgArea + ' ' + area + 'm²');
     return out.map(t => '<div class="listing-detail">' + t + '</div>').join('');
   }
+
   // ── Build listing card ──────────────────────────────────────────────────────
   function buildCard(listing) {
     const image = HS.cover(listing);
+
     const typeClass = listing.listingFor === 'rent' ? 'rent' : 'sale';
     const typeLabel = listing.listingFor === 'rent' ? 'For Rent' : 'For Sale';
 
     return `
       <div class="listing-card" onclick="viewListing('${listing.id}')">
         <img src="${image}" alt="${listing.title}" class="listing-image"
-             onerror="this.src=HS.PLACEHOLDER_IMG"/>
+             onerror="this.src=HS.PLACEHOLDER_IMG" />
         <div class="listing-content">
           <div class="listing-header">
             <span class="listing-type ${typeClass}">${typeLabel}</span>
@@ -144,10 +148,10 @@
 
   // ── View listing ────────────────────────────────────────────────────────────
   window.viewListing = function (id) {
-  const target = 'module/buyer/listing.html?id=' + id;
-  const me = typeof getSession === 'function' ? getSession() : null;
-  if (me && me.role === 'buyer') { window.location.href = target; return; }
-  // Everyone else signs in first and is sent back to the listing afterwards (see auth.js)
+    const target = 'module/buyer/listing.html?id=' + id;
+    const me = typeof getSession === 'function' ? getSession() : null;
+    if (me && me.role === 'buyer') { window.location.href = target; return; }
+    // Everyone else signs in first and is sent back to the listing afterwards (see auth.js)
     window.location.href = 'auth/signin.html?redirect=' + encodeURIComponent(target);
   };
 

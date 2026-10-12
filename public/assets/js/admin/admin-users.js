@@ -10,7 +10,7 @@
   HomeSureSidebar.init({ activePage: 'users' });
   HomeSureTopbar.init({ placeholder: 'Search users...', onSearch: renderUsers });
 
-  // Only buyers and sellers are shown here
+  // Only buyers and sellers are shown here (loaded from the database; admins can read every profile)
   let users = [];
   let activeFilter = 'all';
 
@@ -26,7 +26,7 @@
                           (activeFilter === 'pending' && (u.accountStatus === 'pending' || u.accountStatus === 'reverification'));
       const matchSearch = !q ||
         (u.firstName + ' ' + u.lastName).toLowerCase().includes(q) ||
-        (u.email || '' ).toLowerCase().includes(q);
+        (u.email || '').toLowerCase().includes(q);
       return matchRole && matchSearch;
     });
 
@@ -37,12 +37,13 @@
     }
 
     tbody.innerHTML = filtered.map(u => {
-	  const initials = (((u.firstName || '')[0] || '') + ((u.lastName || '')[0] || '')).toUpperCase() || '?';
+      const initials  = (((u.firstName || '')[0] || '') + ((u.lastName || '')[0] || '')).toUpperCase() || '?';
       const avatarBg  = avatarColors[u.role] || '#6b7280';
       const roleBadge = u.role === 'buyer'
         ? `<span class="badge buyer-role">Buyer</span>`
         : `<span class="badge seller-role">Seller</span>`;
 
+      // Buyers are verified too now (documents reviewed by an admin), so both roles show their status.
       const s = u.accountStatus || 'unverified';
       const statusBadge = `<span class="badge ${s}">${s.charAt(0).toUpperCase() + s.slice(1)}</span>`;
 

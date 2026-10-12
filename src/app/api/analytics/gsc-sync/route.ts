@@ -1,19 +1,20 @@
 import { NextResponse } from "next/server";
-import { getServerSupabase } from "@/lib/supabase/server-client";
+import { ADMIN_ROLES, guardApi } from "@/lib/api";
+import { getAdminSupabase } from "@/lib/supabase/admin-client";
 
 export async function POST(request: Request) {
-  const supabase = await getServerSupabase();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const guard = await guardApi(ADMIN_ROLES);
+  if (!guard.ok) return guard.response;
 
-  const body = await request.json();
+  const body = await request.json().catch(() => ({}));
   const { url, query, clicks, impressions, ctr, position } = body;
 
   if (!url || !query) {
     return NextResponse.json({ error: "url and query are required" }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  // gsc_metrics has no write policies by design -> write with the service role (after the admin check).
+  const { data, error } = await getAdminSupabase()
     .from("gsc_metrics")
     .upsert({
       url,
@@ -23,7 +24,7 @@ export async function POST(request: Request) {
       ctr: ctr || 0,
       position: position || 0,
       synced_at: new Date().toISOString(),
-    }, { onConflict: ["url", "query"] as any })
+    }, { onConflict: "url,query" })
     .select("*")
     .single();
 

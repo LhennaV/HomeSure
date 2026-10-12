@@ -7,3 +7,6 @@ export function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 }
+
+// Shared instance for the dashboard components that import `{ supabase }`.
+export const supabase = createClient()

@@ -10,7 +10,12 @@
   HomeSureSidebar.init({ activePage: 'reports' });
   HomeSureTopbar.init({ placeholder: 'Search reports...', onSearch: () => window.renderReports && window.renderReports() });
 
-let REPORTS = [];
+  // ── Reports (from listing_reports; RLS gives admins every row) ───────────────
+  //
+  // The database keeps a report as category + reason + status. This page also shows a severity and
+  // a comment thread, which have no columns yet, so severity is derived from the category and the
+  // single admin_notes field stands in for the thread.
+  let REPORTS = [];
 
   const SEVERITY_BY_CATEGORY = {
     fraudulent: 'high', scam: 'high', fake: 'high',
@@ -37,6 +42,7 @@ let REPORTS = [];
       comments: r.adminNotes ? [{ text: r.adminNotes, by: 'Admin', at: (r.resolvedAt || r.reportedAt || '').slice(0, 16).replace('T', ' ') }] : [],
     };
   }
+
 
   const ACTION_LABELS = {
     listing_removed:       'Listing Removed',
@@ -131,7 +137,8 @@ let REPORTS = [];
   };
 
   // ── Add comment ─────────────────────────────────────────────────────────────
-  window.addComment = function (id) {
+  // There is one admin_notes field per report, so a new note replaces the old one.
+  window.addComment = async function (id) {
     const r = REPORTS.find(x => x.id === id);
     if (!r) return;
     const textarea = document.getElementById('commentTextarea');
@@ -140,7 +147,7 @@ let REPORTS = [];
       showToast('Please enter a comment');
       return;
     }
-     try {
+    try {
       await HS.reports.resolve(id, { status: r.status === 'rejected' ? 'dismissed' : r.status, adminNotes: text });
     } catch (err) {
       showToast('Could not save your note: ' + err.message);
@@ -150,15 +157,15 @@ let REPORTS = [];
     r.adminNotes = text;
     r.comments = [{ text, by: 'Admin', at }];
     textarea.value = '';
-    openModal(id); // Refresh modal
-    showToast('Note Saved');
+    openModal(id);
+    showToast('Note saved');
   };
 
   // ── Take action (resolve) ───────────────────────────────────────────────────
   window.takeAction = async function (id, action) {
     const r = REPORTS.find(x => x.id === id);
     if (!r) return;
-     const dbStatus = action === 'report_rejected' ? 'dismissed' : 'resolved';
+    const dbStatus = action === 'report_rejected' ? 'dismissed' : 'resolved';
     const label = ACTION_LABELS[action] || action;
 
     try {
@@ -168,6 +175,7 @@ let REPORTS = [];
       showToast('Could not record your action: ' + err.message);
       return;
     }
+
     r.actionTaken = action;
     r.status = dbStatus === 'dismissed' ? 'rejected' : 'resolved';
     renderReports();
@@ -176,7 +184,7 @@ let REPORTS = [];
   };
 
   // ── Modal ───────────────────────────────────────────────────────────────────
-  window.openModal = async function (id) {
+  window.openModal = function (id) {
     const r = REPORTS.find(x => x.id === id);
     if (!r) return;
     const reporterName = r.reporterName || 'HomeSure user';

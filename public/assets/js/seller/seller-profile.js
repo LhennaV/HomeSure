@@ -1,3 +1,4 @@
+(async function () {
 
   // ── Auth guard ──────────────────────────────────────────────────────────────
   const session = getSession();
@@ -7,9 +8,12 @@
   HomeSureSidebar.init({ activePage: 'profile' });
   HomeSureTopbar.init({ placeholder: 'Search...' });
 
-  // ── Resolve current seller from FAKE_USERS ──────────────────────────────────
-  const seller = FAKE_USERS.find(u => u.id === session.id) || null;
-  if (!seller) window.location.href = '../../auth/signin.html';
+  // ── Load the real profile, listings and reviews ─────────────────────────────
+  const seller = await HS.profiles.me();
+  if (!seller) { window.location.href = '../../auth/signin.html'; return; }
+
+  const myListings    = await HS.listings.mine().catch(() => []);
+  const sellerReviews = await HS.reviews.about(seller.id).catch(() => []);
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
   const iconBed  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg>`;
@@ -25,12 +29,12 @@
   }
 
   // ── Approved listings for this seller ───────────────────────────────────────
-  const approvedListings = FAKE_LISTINGS.filter(
+  const approvedListings = myListings.filter(
     l => l.sellerId === seller.id && l.status === 'approved'
   );
 
   // ── Render profile card ──────────────────────────────────────────────────────
-  const initials      = (seller.firstName[0] || '') + (seller.lastName[0] || '');
+  const initials      = hsInitials(seller.firstName, seller.lastName, seller.email);
   const profileAvatar = document.getElementById('profileAvatar');
 
   function renderSellerAvatar() {
@@ -67,8 +71,8 @@
   const activeCount = approvedListings.length;
 
   // Count sold/rented listings
-  const soldCount = FAKE_LISTINGS.filter(l => l.sellerId === seller.id && l.lifecycleStatus === 'sold').length;
-  const rentedCount = FAKE_LISTINGS.filter(l => l.sellerId === seller.id && l.lifecycleStatus === 'rented').length;
+  const soldCount = myListings.filter(l => l.lifecycleStatus === 'sold').length;
+  const rentedCount = myListings.filter(l => l.lifecycleStatus === 'rented').length;
   const closedCount = soldCount + rentedCount;
 
   const metaItems = [
@@ -192,7 +196,6 @@
     return stars;
   };
 
-  const sellerReviews = FAKE_REVIEWS.filter(r => r.type === 'buyer-to-seller' && r.sellerId === seller.id);
   const reviewCount   = sellerReviews.length;
   const avgRating     = reviewCount > 0
     ? (sellerReviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount).toFixed(1)
@@ -243,9 +246,8 @@
       </div>
       <div class="reviews-list">
         ${sellerReviews.sort((a,b) => new Date(b.reviewDate) - new Date(a.reviewDate)).map(rev => {
-          const buyer = FAKE_USERS.find(u => u.id === rev.buyerId);
-          const buyerName = buyer ? `${buyer.firstName} ${buyer.lastName}` : 'Anonymous';
-          const buyerInitials = buyer ? buyer.firstName[0] + buyer.lastName[0] : '?';
+          const buyerName = rev.reviewerName || 'HomeSure user';
+          const buyerInitials = buyerName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?';
           const reviewDate = new Date(rev.reviewDate).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
           return `
             <div class="review-card">
@@ -287,7 +289,7 @@
     document.getElementById('editModal').classList.remove('active');
   };
 
-  window.saveProfile = function() {
+  window.saveProfile = async function() {
     const firstName = document.getElementById('editFirstName').value.trim();
     const lastName = document.getElementById('editLastName').value.trim();
     const phone = document.getElementById('editPhone').value.trim();
@@ -298,24 +300,14 @@
       return;
     }
 
-    // Update seller data
-    seller.firstName = firstName;
-    seller.lastName = lastName;
-    seller.phone = phone;
-
-    // Update session
-    session.firstName = firstName;
-    session.lastName = lastName;
-    session.phone = phone;
-    saveSession(session);
-
-    // Update FAKE_USERS
-    const userIndex = FAKE_USERS.findIndex(u => u.id === seller.id);
-    if (userIndex !== -1) {
-      FAKE_USERS[userIndex] = { ...FAKE_USERS[userIndex], firstName, lastName, phone };
+    // Save to the database, then reload so the page shows what was actually stored.
+    try {
+      await HS.profiles.updateMe({ firstName, lastName, phone });
+    } catch (err) {
+      alert('Could not save your profile: ' + err.message);
+      return;
     }
 
-    // Close modal
     closeEditModal();
 
     // Refresh page to show updated info
@@ -323,3 +315,5 @@
     location.reload();
   };
 
+
+})();

@@ -32,6 +32,7 @@
 
   const initials    = (((u.firstName || '')[0] || '') + ((u.lastName || '')[0] || '')).toUpperCase() || '?';
 
+  // Uploaded documents are private: ask for short-lived signed links (admins only).
   const currentDocs = await HS.storage.resolveDocs(u.verificationDocs);
   const newDocs     = await HS.storage.resolveDocs(u.newVerificationDocs);
   const listingsCount = u.role === 'seller'
@@ -115,9 +116,6 @@
   }
 
   // ── Listings count ────────────────────────────────────────────────────────
-  const userListings = u.role === 'seller'
-    ? listings.filter(l => l.sellerId === u.id)
-    : (u.savedListings || []);
 
   // ── Render page ───────────────────────────────────────────────────────────
   document.getElementById('pageContent').innerHTML = `
@@ -151,7 +149,7 @@
         <div class="info-item"><label>Phone</label><span>${u.phone || '—'}</span></div>
         <div class="info-item"><label>Joined</label><span>${u.joinedAt || '—'}</span></div>
         ${u.role === 'seller' ? `
-          <div class="info-item"><label>Total Listings</label><span>${listingCount}</span></div>
+          <div class="info-item"><label>Total Listings</label><span>${listingsCount}</span></div>
           <div class="info-item"><label>Verified On</label><span>${u.verifiedAt || '—'}</span></div>
           <div class="info-item"><label>Expiry</label><span>${u.verificationExpiry || '—'}</span></div>
           <div class="info-item"><label>Submitted</label><span>${u.newSubmittedAt || u.submittedVerificationAt || '—'}</span></div>
@@ -175,6 +173,9 @@
     } catch (err) {
       hsToast('Could not verify this account: ' + err.message, 'error');
       return;
+    }
+    window.location.reload();
+  };
 
   // ── Reject Modal ──────────────────────────────────────────────────────────
   const isReverif = u.accountStatus === 'reverification';
@@ -212,7 +213,7 @@
     document.getElementById('rejectModal').style.display = 'flex';
   };
 
-  window.closeRejectModal = async function () {
+  window.closeRejectModal = function () {
     document.getElementById('rejectModal').style.display = 'none';
   };
 

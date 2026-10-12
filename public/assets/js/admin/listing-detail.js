@@ -23,12 +23,14 @@
     page.innerHTML = '<div style="text-align:center;padding:80px;color:var(--muted)">Could not load this listing. Please try again.</div>';
     return;
   }
+
   if (!l) {
     document.getElementById('pageContent').innerHTML =
       `<div style="text-align:center;padding:80px;color:var(--muted)">Listing not found.</div>`;
     return;
   }
 
+  // Admins can read the seller's full profile (contact details) and every listing of theirs.
   const seller    = await HS.admin.user(l.sellerId).catch(() => null);
   const sellerListings = await HS.listings.bySeller(l.sellerId).catch(() => []);
   const docs      = await HS.storage.resolveDocs(l.documents);   // private files → short-lived signed links
@@ -41,6 +43,7 @@
   // ── Gallery ──────────────────────────────────────────────────────────────────
   let galleryIdx = 0;
   const imgs = (l.images && l.images.length) ? l.images : [HS.PLACEHOLDER_IMG];
+
   function renderGallery() {
     const thumbsHtml = imgs.map((src, i) =>
       `<img class="gallery-thumb${i === 0 ? ' active' : ''}" src="${src}" data-idx="${i}" alt="Photo ${i+1}" onclick="galleryGo(${i})" />`
@@ -106,6 +109,7 @@
   // ── Seller sidebar stats ──────────────────────────────────────────────────
   const sellerApproved = sellerListings.filter(x => x.status === 'approved').length;
   const sellerInitials = seller ? (((seller.firstName || '')[0] || '') + ((seller.lastName || '')[0] || '')).toUpperCase() || '?' : '?';
+
   const statusLabel = l.status.charAt(0).toUpperCase() + l.status.slice(1);
 
   // ── Render page ───────────────────────────────────────────────────────────
@@ -177,6 +181,8 @@
       hsToast('Could not approve the listing: ' + err.message, 'error');
       return;
     }
+    window.location.reload();
+  };
 
   // ── Reject Modal ──────────────────────────────────────────────────────────
   const REJECT_REASONS = [

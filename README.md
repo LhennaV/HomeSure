@@ -1,93 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HomeSure
 
-## Getting Started
+One repo, one server. `npm run dev` serves the front end **and** the API on `http://localhost:3000`.
 
-First, run the development server:
+| Path | What it is |
+|---|---|
+| `public/` | The front end — static HTML/CSS/JS (`index.html`, `browse.html`, `auth/`, `module/`, `assets/`, `components/`). Next.js serves this at the site root. |
+| `src/app/api/` | The API — sign-up, email confirmation, payments, refunds, OCR, the Xendit webhook. Needs secrets, so it runs server-side. |
+| `supabase/migrations/` | The database definition. |
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+`src/` is the backend and nothing else. A second React dashboard used to live there; it was
+removed once the pages in `public/` covered the same ground against the live database. See
+[ARCHITECTURE.md](ARCHITECTURE.md) for the full map and [CHANGELOG.md](CHANGELOG.md) for what
+changed when.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The front end is the source of truth for what the app does. The database keeps its own column names
+(`property_type`, `listing_type`, `latitude`, `floor_area_sqm`, `barangay_id`, `saved_properties`, …)
+and the code was adapted to them — see `006_frontend_alignment.sql`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Run it
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-## Run locally
-
-- Install dependencies:
+**Setting up for the first time? Follow [SETUP.md](SETUP.md)** — step by step, with a check at each stage.
 
 ```bash
 npm install
+npm run dev          # http://localhost:3000
 ```
 
-- Create a copy of `.env.local.example` named `.env.local` and fill in the values for your environment (Supabase, Xendit, Google credentials):
+| URL | Page |
+|---|---|
+| `localhost:3000/` | the front end home (redirects to `/index.html`) |
+| `localhost:3000/browse.html` | public listings |
+| `localhost:3000/auth/signin.html` | sign in |
+| `localhost:3000/module/buyer/buyer.html` | buyer dashboard |
+| `localhost:3000/api/*` | the API |
 
-```text
-NEXT_PUBLIC_SUPABASE_URL=your-project-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+Secrets live in `.env.local` (never committed). `SUPABASE_SERVICE_ROLE_KEY` is required for payments
+and refunds. The front end's Supabase URL and anon key are in `public/assets/js/config.js` — the anon
+key is meant to be public; Row Level Security decides what anyone can actually read or write.
 
-XENDIT_SECRET_KEY=your-xendit-secret-key
-XENDIT_CALLBACK_TOKEN=your-webhook-callback-token
+## First admin
 
-GOOGLE_CLOUD_PROJECT_ID=your-project-id
-GOOGLE_CLOUD_KEY_FILE=path/to/service-account.json
+Roles are `buyer`, `seller`, `admin`, `superadmin`. Nobody can change their own role — not even an
+admin. Sign up normally, then promote the account in the Supabase SQL editor:
 
-GOOGLE_SEARCH_CONSOLE_CLIENT_ID=your-client-id
-GOOGLE_SEARCH_CONSOLE_CLIENT_SECRET=your-client-secret
-GOOGLE_SEARCH_CONSOLE_REFRESH_TOKEN=your-refresh-token
-GOOGLE_SEARCH_CONSOLE_SITE_URL=https://homesure.ph
+```sql
+update profiles set role = 'superadmin' where email = 'you@example.com';
 ```
 
-- Start development server:
+## How the front end reads data
 
-```bash
-npm run dev
+```
+config.js   → Supabase client (sb)
+session.js  → cached profile (getSession) + sign-out + guards
+data.js     → HS.*  the only place that talks to the database
 ```
 
-- Build for production and run:
+Pages call `HS.listings…`, `HS.favorites…`, `HS.admin…` rather than reading sample data. `data.js`
+maps the database's snake_case columns to the camelCase shape the pages already used, so no page had
+to change its markup.
 
-```bash
-npm run build
-npm start
-```
+**Still on sample data** (`public/assets/js/fake-data.js`): messages, viewing requests (seller side),
+reviews, payments/transactions, notifications, reports, analytics, profile & settings, MOA, and the
+super-admin pages. Their tables already exist (`messages`, `viewing_requests`, `reviews`,
+`listing_reports`, `notifications`, `audit_logs`, `payments`) — the page scripts just need pointing at
+`HS.*`. A page loads `fake-data.js` only while its script still needs it; remove that one `<script>`
+line when you convert a page.
 
-## Useful scripts
+## Payments
 
-- `npm run dev` — run Next.js in development mode (hot reload at http://localhost:3000)
-- `npm run build` — build the production bundle
-- `npm start` — start the built production server
-- `npm run lint` — run ESLint
-- `npm run typecheck` — run TypeScript type check
-
-## Notes & troubleshooting
-
-- Ensure Node.js (v18+) and npm are installed.
-- If you see authentication or Supabase errors, confirm `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are correct and present in `.env.local`.
-- For server-side operations requiring elevated privileges, set `SUPABASE_SERVICE_ROLE_KEY` only on server/runtime (do NOT expose it to the browser).
-- Verify the path in `GOOGLE_CLOUD_KEY_FILE` points to a valid service account JSON file accessible to the runtime.
-- If images fail to load from Supabase or external services, check `next.config.mjs` remote patterns.
-# homesure-final
+The `payments` table carries **both** providers' columns on purpose: PayMongo (`paymongo_source_id`,
+`paymongo_reference`, `webhook_payload`) was already in the database, and the API routes under
+`src/app/api/payments` and `src/app/api/webhooks/xendit` are written against **Xendit**
+(`xendit_charge_id`, `xendit_qr_string`). Neither side's work was thrown away; settle on one provider
+and use its columns.

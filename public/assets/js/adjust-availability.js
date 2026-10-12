@@ -139,11 +139,13 @@ const AdjustAvailabilityModal = (function() {
       return;
     }
 
+    // Save to the database. The listing stays approved at 0 units; cards show "Fully occupied".
     try {
       await HS.listings.update(currentListing.listingId, { availableUnits: newAvailable });
     } catch (err) {
       alert('Could not update availability: ' + err.message);
       return;
+    }
 
     // Show success state
     showSuccess(newAvailable);

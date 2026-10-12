@@ -12,15 +12,15 @@
   const iconBath = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6 6.5 3.5a1.5 1.5 0 0 0-1-.5C4.683 3 4 3.683 4 4.5V17a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/><line x1="10" y1="5" x2="8" y2="7"/><line x1="2" y1="12" x2="22" y2="12"/></svg>`;
   const iconArea = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>`;
 
-  // Fake saved dates per listing
-  const SAVED_DATES = {
-    'prop-002': 'Feb 25, 2026', 'prop-004': 'Feb 24, 2026',
-    'prop-006': 'Mar 01, 2026', 'prop-007': 'Mar 05, 2026', 'prop-009': 'Mar 10, 2026',
-  };
+  // [{ listing, savedAt }] loaded from the favorites table
+  let saved = [];
+
+  function fmtDate(iso) {
+    return new Date(iso).toLocaleDateString('en-PH', { month: 'short', day: '2-digit', year: 'numeric' });
+  }
 
   function renderSaved() {
-    const savedIds = user.savedListings || [];
-    let list = FAKE_LISTINGS.filter(l => savedIds.includes(l.id) && l.status === 'approved');
+    let list = saved.filter(s => s.listing.status === 'approved').map(s => Object.assign({}, s.listing, { savedAt: s.savedAt }));
     const sort = document.getElementById('sortSelect').value;
     if (sort === 'price-asc')  list = list.sort((a, b) => a.price - b.price);
     if (sort === 'price-desc') list = list.sort((a, b) => b.price - a.price);
@@ -37,13 +37,13 @@
     container.innerHTML = list.map((l, i) => {
       const isRent    = l.listingFor === 'rent';
       const price     = '₱' + l.price.toLocaleString('en-PH');
-      const bedsLabel = l.bedrooms === 0 ? 'Studio' : l.bedrooms + ' bed';
-      const savedDate = SAVED_DATES[l.id] || '';
+      const bedsLabel = l.bedrooms === 0 ? 'Studio' : (l.bedrooms ?? '–') + ' bed';
+      const savedDate = l.savedAt ? fmtDate(l.savedAt) : '';
 
       return `
         <div class="saved-card" style="animation-delay:${0.05 + i * 0.05}s"
              onclick="window.location.href='listing.html?id=${l.id}&from=saved'">
-          <div class="saved-img-wrap"><img class="saved-img" src="${l.images[0]}" alt="${l.title}" loading="lazy" /></div>
+          <div class="saved-img-wrap"><img class="saved-img" src="${HS.cover(l)}" alt="${l.title}" loading="lazy" /></div>
           <div class="saved-body">
             <div class="saved-title">${l.title}</div>
             <div class="saved-location">${iconPin} ${l.address}</div>
@@ -51,9 +51,9 @@
             <div class="saved-specs">
               <span>${bedsLabel}</span>
               <span class="saved-specs-dot">•</span>
-              <span>${l.bathrooms} bath</span>
+              <span>${l.bathrooms ?? '–'} bath</span>
               <span class="saved-specs-dot">•</span>
-              <span>${l.floorArea} sqm</span>
+              <span>${l.floorArea || l.lotArea || '–'} sqm</span>
             </div>
             ${savedDate ? `<div class="saved-date">${iconClock} Saved ${savedDate}</div>` : ''}
           </div>
@@ -65,4 +65,17 @@
     }).join('');
   }
 
-  renderSaved();
+  async function loadSaved() {
+    const container = document.getElementById('savedList');
+    container.innerHTML = '<div class="empty-state">Loading…</div>';
+    try {
+      saved = await HS.favorites.list();
+    } catch (err) {
+      console.error('Failed to load saved listings:', err);
+      container.innerHTML = '<div class="empty-state">Could not load your saved listings. Please try again.</div>';
+      return;
+    }
+    renderSaved();
+  }
+
+  loadSaved();

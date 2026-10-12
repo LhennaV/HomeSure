@@ -5,9 +5,6 @@
   HomeSureSidebar.init({ activePage: 'profile' });
   HomeSureTopbar.init({ placeholder: 'Identity Verification' });
 
-  const isVerified = user.isVerified && user.verificationExpiry && new Date(user.verificationExpiry) >= new Date();
-  const isExpired  = user.isVerified && user.verificationExpiry && new Date(user.verificationExpiry) < new Date();
-
   const col = document.getElementById('verifyCol');
 
   function fmtDate(d) {
@@ -15,7 +12,46 @@
     return new Date(d).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
   }
 
+  // Reads the account's current status from the database, then draws the page.
+  async function renderPage() {
+  col.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Loading…</div>';
+  let fullUser;
+  try {
+    fullUser = await HS.auth.refresh();
+  } catch (err) {
+    console.error(err);
+    col.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Could not load your account. Please try again.</div>';
+    return;
+  }
+  if (!fullUser) { window.location.href = '../../auth/signin.html'; return; }
+
+  const isVerified = fullUser.accountStatus === 'verified' && fullUser.verificationExpiry && new Date(fullUser.verificationExpiry) >= new Date();
+  const isExpired  = fullUser.accountStatus === 'verified' && fullUser.verificationExpiry && new Date(fullUser.verificationExpiry) < new Date();
+
+    // Under review / last rejection (the reason is written by the admin who reviewed the documents)
+    const underReview = fullUser.accountStatus === 'pending' || fullUser.accountStatus === 'reverification';
+    const notices = (underReview ? `
+      <div class="banner-card">
+        <div class="banner-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div>
+          <div class="banner-title">Documents Under Review</div>
+          <div class="banner-desc">We received your documents. An admin will review them within 1–2 business days. You can submit new photos below if you need to replace them.</div>
+        </div>
+      </div>` : '') + (fullUser.accountStatus === 'unverified' && fullUser.verificationRejectReason ? `
+      <div class="banner-card danger">
+        <div class="banner-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div>
+          <div class="banner-title">Your last submission was not approved</div>
+          <div class="banner-desc">${fullUser.verificationRejectReason}</div>
+        </div>
+      </div>` : '');
+
   col.innerHTML = `
+    ${notices}
     <div class="banner-card">
       <div class="banner-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -37,7 +73,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         <div>
           <div class="verif-info-label">Verified On</div>
-          <div class="verif-info-value">${fmtDate(user.verifiedAt)}</div>
+          <div class="verif-info-value">${fmtDate(fullUser.verifiedAt)}</div>
         </div>
       </div>
       <div class="verif-info-divider"></div>
@@ -45,7 +81,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         <div>
           <div class="verif-info-label">Expires On</div>
-          <div class="verif-info-value">${fmtDate(user.verificationExpiry)}${isExpired ? ' <span class="verif-expired-tag">Expired</span>' : ''}</div>
+          <div class="verif-info-value">${fmtDate(fullUser.verificationExpiry)}${isExpired ? ' <span class="verif-expired-tag">Expired</span>' : ''}</div>
         </div>
       </div>
     </div>` : ''}
@@ -119,6 +155,9 @@
       </div>
     </div>
   `;
+  }
+
+  renderPage();
 
   // ══════════════════════════════════════════════════════════════════════════════
   // CAMERA CAPTURE
@@ -188,7 +227,7 @@
     document.getElementById('submitBtn').disabled = !bothCaptured;
   }
 
-  function submitVerification() {
+  async function submitVerification() {
     if (!idPhotoData || !selfiePhotoData) {
       showToast('⚠️ Please take both ID photo and selfie');
       return;
@@ -198,25 +237,22 @@
     btn.disabled = true;
     btn.textContent = 'Submitting...';
 
-    // Save photos to localStorage (in production, upload to server)
-    const verificationData = {
-      idPhoto: idPhotoData,
-      selfiePhoto: selfiePhotoData,
-      submittedAt: new Date().toISOString(),
-      status: 'pending'
-    };
-    localStorage.setItem('homesure_verification_' + user.id, JSON.stringify(verificationData));
+    // Photos go to the private bucket; the account waits for an admin's review. Only an admin can mark
+    // it verified — the database refuses a buyer who tries to do that to their own account.
+    try {
+      await HS.verification.submit([
+        { label: 'Government-Issued ID', sources: [idPhotoData] },
+        { label: 'Selfie Verification',  sources: [selfiePhotoData] },
+      ]);
+    } catch (err) {
+      console.error(err);
+      btn.disabled = false;
+      btn.textContent = 'Submit for Verification';
+      showToast('⚠️ Could not submit your documents: ' + err.message);
+      return;
+    }
 
-    // Update user session
-    const u = getSession();
-    u.isVerified = true;
-    const expiry = new Date();
-    expiry.setMonth(expiry.getMonth() + 6);
-    u.verificationExpiry = expiry.toISOString().split('T')[0];
-    u.verifiedAt = new Date().toISOString().split('T')[0];
-    saveSession(u);
-
-    showToast("✅ Documents submitted! You'll be able to message sellers and save listings once verified (within 24 hours).");
+    showToast("✅ Documents submitted! You'll be able to message sellers and save listings once an admin verifies you (within 24 hours).");
 
     setTimeout(() => window.location.href = 'buyer.html', 3000);
   }

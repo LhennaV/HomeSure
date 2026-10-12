@@ -19,16 +19,18 @@
   let LISTINGS = [];
   let USERS = [];
   let REPORTS_DATA = [];
-  
+
+  // Everything below adds up these rows. Load them once; RLS decides what this account may see.
   try {
-	  LISTINGS = await HS.listings.all();
-	  USERS    = await HS.admin.users();
-      REPORTS_DATA = await HS.reports.list();
+    LISTINGS = await HS.listings.all();
+    USERS    = await HS.admin.users();
+    REPORTS_DATA = await HS.reports.list();
   } catch (err) {
     console.error('Could not load dashboard data:', err);
     hsToast('Could not load the dashboard data. Please refresh.', 'error');
     return;
   }
+
 
   // ══════════════════════════════════════════════════════════════════════════
   // Computed Data

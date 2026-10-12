@@ -21,6 +21,7 @@
   // All 16 barangays of Valenzuela, alphabetically sorted
   // (because chaos is not an option here)
   // ──────────────────────────────────────────────────────────────────────────
+  // Listings come from the database (admin-approved only); the dropdown is filled once they arrive.
   let approved = [];
   function fillBarangays() {
     const barSel = document.getElementById('filterBarangay');
@@ -108,7 +109,7 @@
         : `<span class="badge-tl badge-sale">For Sale</span>`;
       const rightBadge = `<span class="badge-tr">${l.images.length} Photo${l.images.length !== 1 ? 's' : ''}</span>`;
       const verifiedBadge = `<span class="verified-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>`;
-      const bedsLabel = l.bedrooms === 0 ? 'Studio' : (l.bedrooms ?? '–');
+      const bedsLabel  = l.bedrooms === 0 ? 'Studio' : (l.bedrooms ?? '–');
       const price      = '₱' + l.price.toLocaleString('en-PH');
       const priceSub   = isRent ? '<span class="prop-price-per"> / month</span>' : '';
       const sellerName = l.seller ? l.seller.name : '';

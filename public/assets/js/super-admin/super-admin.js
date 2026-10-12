@@ -1,6 +1,6 @@
 // HomeSure – Super Admin Dashboard
 
-(function () {
+(async function () {
   const user = getSession();
   if (!user || user.role !== 'superadmin') {
     window.location.href = '../../auth/signin.html';
@@ -9,19 +9,38 @@
 
   HomeSureSidebar.init({ activePage: 'dashboard' });
   HomeSureTopbar.init({ placeholder: 'Search...' });
+  let LISTINGS = [];
+  let USERS = [];
+  let REPORTS_DATA = [];
+  let ADMINS = [];
+  let AUDIT = [];
+
+  // Everything below adds up these rows. Load them once; RLS decides what this account may see.
+  try {
+    LISTINGS = await HS.listings.all();
+    USERS    = await HS.admin.users();
+    REPORTS_DATA = await HS.reports.list();
+    ADMINS   = await HS.admin.admins();
+    AUDIT    = await HS.audit.list(50);
+  } catch (err) {
+    console.error('Could not load dashboard data:', err);
+    hsToast('Could not load the dashboard data. Please refresh.', 'error');
+    return;
+  }
+
 
   document.getElementById('dashTitle').textContent =
     'Welcome back, ' + user.firstName + ' ' + user.lastName;
 
   // ── Computed stats ──────────────────────────────────────────────────────────
-  const totalUsers      = FAKE_USERS.filter(u => ['buyer','seller'].includes(u.role)).length;
-  const totalAdmins     = FAKE_USERS.filter(u => u.role === 'admin').length;
-  const totalSellers    = FAKE_USERS.filter(u => u.role === 'seller').length;
-  const totalBuyers     = FAKE_USERS.filter(u => u.role === 'buyer').length;
-  const totalListings   = FAKE_LISTINGS.length;
-  const openReports     = FAKE_REPORTS.filter(r => r.status === 'pending').length;
-  const approved        = FAKE_LISTINGS.filter(l => l.status === 'approved').length;
-  const verifiedSellers = FAKE_USERS.filter(u => u.role === 'seller' && u.accountStatus === 'verified').length;
+  const totalUsers      = USERS.filter(u => ['buyer','seller'].includes(u.role)).length;
+  const totalAdmins     = USERS.filter(u => u.role === 'admin').length;
+  const totalSellers    = USERS.filter(u => u.role === 'seller').length;
+  const totalBuyers     = USERS.filter(u => u.role === 'buyer').length;
+  const totalListings   = LISTINGS.length;
+  const openReports     = REPORTS_DATA.filter(r => r.status === 'pending').length;
+  const approved        = LISTINGS.filter(l => l.status === 'approved').length;
+  const verifiedSellers = USERS.filter(u => u.role === 'seller' && u.accountStatus === 'verified').length;
   const approvalRate    = totalListings ? Math.round(approved / totalListings * 100) : 0;
   const verifyRate      = totalSellers  ? Math.round(verifiedSellers / totalSellers * 100) : 0;
 
@@ -49,7 +68,7 @@
     { label: 'Listing Approval Rate', value: approvalRate + '%',      note: approvalRate >= 70 ? 'Healthy' : 'Needs review', ok: approvalRate >= 70 },
     { label: 'Seller Verification',   value: verifyRate + '%',         note: verifyRate >= 50 ? 'Good trust level' : 'Encourage verification', ok: verifyRate >= 50 },
     { label: 'Open Reports',          value: openReports,              note: openReports === 0 ? 'All cleared' : openReports + ' need attention', ok: openReports === 0 },
-    { label: 'Pending Listings',      value: FAKE_LISTINGS.filter(l => l.status === 'pending').length, note: 'Awaiting admin review', ok: true },
+    { label: 'Pending Listings',      value: LISTINGS.filter(l => l.status === 'pending').length, note: 'Awaiting admin review', ok: true },
   ];
 
   document.getElementById('healthRow').innerHTML = health.map(h => `
@@ -60,11 +79,11 @@
     </div>`).join('');
 
   // ── Admin Management ────────────────────────────────────────────────────────
-  let adminList = [...FAKE_ADMINS];
+  let adminList = [...ADMINS];
 
   function renderAdminTable() {
     document.getElementById('adminTable').innerHTML = adminList.map(a => {
-      const initials = (a.firstName[0] + a.lastName[0]).toUpperCase();
+      const initials = hsInitials(a.firstName, a.lastName, a.email);
       const statusBadge = a.status === 'active'
         ? `<span class="badge active">Active</span>`
         : `<span class="badge inactive">Inactive</span>`;
@@ -155,7 +174,7 @@
   const roleColors = { admin: '#3b82f6', superadmin: '#8b5cf6' };
 
   function renderAuditPreview() {
-    const preview = FAKE_AUDIT_TRAIL.slice(0, 5);
+    const preview = AUDIT.slice(0, 5);
     document.getElementById('auditTable').innerHTML = preview.map(e => {
       const initials   = e.actor.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
       const roleLabel  = e.actorRole === 'superadmin' ? 'Super Admin' : 'Admin';
@@ -181,11 +200,18 @@
   }
   renderAuditPreview();
 
-  function addAuditEntry(actor, actorRole, action, details, type, status = 'success') {
-    const now = new Date();
-    const ts  = now.toISOString().slice(0, 16).replace('T', ' ');
-    FAKE_AUDIT_TRAIL.unshift({ id: 'aud-' + Date.now(), actor, actorRole, action, details, type, ipAddress: '10.0.0.1', status, timestamp: ts });
+  // Writes to audit_logs. The database stamps the actor, so it cannot be forged.
+  async function addAuditEntry(actor, actorRole, action, details, type, status = 'success') {
+    AUDIT.unshift({ id: 'tmp-' + Date.now(), actor, actorRole, action, details, type,
+                    ipAddress: '', status, timestamp: new Date().toISOString() });
     renderAuditPreview();
+    try {
+      await HS.audit.log(action, type, details, status);
+      AUDIT = await HS.audit.list(50);
+      renderAuditPreview();
+    } catch (err) {
+      console.error('Could not write the audit entry:', err);
+    }
   }
 
   // ── Toast ───────────────────────────────────────────────────────────────────

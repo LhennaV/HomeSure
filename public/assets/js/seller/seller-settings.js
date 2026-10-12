@@ -5,15 +5,17 @@
   HomeSureSidebar.init({ activePage: 'settings' });
   HomeSureTopbar.init({ placeholder: 'Search settings...' });
 
-  // ── Pre-fill personal info ──────────────────────────────────────────────────
-  const fullUser = FAKE_USERS.find(u => u.id === user.id) || {};
-  document.getElementById('profileName').value     = fullUser.name  || user.name  || '';
-  document.getElementById('profileEmail').value    = fullUser.email || user.email || '';
-  document.getElementById('profilePhone').value    = fullUser.phone || '';
-  document.getElementById('profileLocation').value = fullUser.location || 'Sta. Maria, Bulacan';
+  // ── Personal info + verification status, filled in once the profile loads ───
+  let fullUser = {};
 
-  // ── Identity Verification status ───────────────────────────────────────────
-  (function renderVerifyStatus() {
+  function fillPersonalInfo() {
+    document.getElementById('profileName').value     = fullUser.name  || user.name  || '';
+    document.getElementById('profileEmail').value    = fullUser.email || user.email || '';
+    document.getElementById('profilePhone').value    = fullUser.phone || '';
+    document.getElementById('profileLocation').value = fullUser.location || 'Sta. Maria, Bulacan';
+  }
+
+  function renderVerifyStatus() {
     const status  = fullUser.accountStatus || 'unverified';
     const expiry  = fullUser.verificationExpiry ? new Date(fullUser.verificationExpiry) : null;
     const today   = new Date();
@@ -100,7 +102,7 @@
           <a href="verification.html" class="btn-primary" style="text-decoration:none;white-space:nowrap;">Start Verification →</a>
         </div>`;
     }
-  })();
+  }
 
   // ── Toast ────────────────────────────────────────────────────────────────────
   function showToast(msg, type = 'success') {
@@ -115,11 +117,24 @@
   }
 
   // ── Personal info ────────────────────────────────────────────────────────────
-  function savePersonalInfo() {
+  async function savePersonalInfo() {
     const name  = document.getElementById('profileName').value.trim();
     const phone = document.getElementById('profilePhone').value.trim();
     if (!name) { showToast('Please enter your full name.', 'error'); return; }
-    showToast('Personal information updated.');
+
+    // The form has one name box; split it into the first/last the database keeps.
+    const parts = name.split(/s+/);
+    try {
+      const me = await HS.profiles.updateMe({
+        firstName: parts[0] || '',
+        lastName: parts.slice(1).join(' '),
+        phone: phone,
+      });
+      if (me) fullUser = me;
+      showToast('Personal information updated.');
+    } catch (err) {
+      showToast('Could not save: ' + err.message, 'error');
+    }
   }
 
   // ── Password ─────────────────────────────────────────────────────────────────
@@ -188,18 +203,26 @@
     label.textContent = texts[score] || '';
   }
 
-  function savePassword() {
+  async function savePassword() {
     const cur = document.getElementById('currentPw').value;
     const nw  = document.getElementById('newPw').value;
     const cf  = document.getElementById('confirmPw').value;
 
     if (!cur || !nw || !cf) { showToast('Please fill in all password fields.', 'error'); return; }
-    if (fullUser && cur !== fullUser.password) { showToast('Current password is incorrect.', 'error'); return; }
     if (nw.length < 8)              { showToast('Password must be at least 8 characters.', 'error'); return; }
     if (!/[A-Z]/.test(nw))          { showToast('Password must include an uppercase letter.', 'error'); return; }
     if (!/[0-9]/.test(nw))          { showToast('Password must include a number.', 'error'); return; }
     if (!/[^A-Za-z0-9]/.test(nw))   { showToast('Password must include a special character.', 'error'); return; }
     if (nw !== cf) { showToast('New passwords do not match.', 'error'); return; }
+
+    // Supabase verifies the current password by re-signing in, then sets the new one.
+    // Nothing here ever sees a stored password.
+    try {
+      await HS.auth.changePassword(cur, nw);
+    } catch (err) {
+      showToast(err.message, 'error');
+      return;
+    }
 
     document.getElementById('pwForm').classList.remove('open');
     document.getElementById('changePwBtn').innerHTML =
@@ -390,9 +413,6 @@ function togglePaymentMethod(method, isEnabled) {
 }
 
 function savePaymentMethods() {
-  const user = getSession();
-  if (!user) return;
-
   const paymentMethods = {
     gcash: {
       enabled: document.getElementById('enableGcash').checked,
@@ -426,18 +446,22 @@ function savePaymentMethods() {
     return;
   }
 
-  // Save to user object
-  user.paymentMethods = paymentMethods;
-  updateSession(user);
-
-  showToast('Payment methods saved successfully!', 'success');
+  // These go on the profile, not in the browser session: a buyer paying you directly has to be
+  // able to read the number, and it has to survive signing out.
+  HS.profiles.savePaymentMethods(paymentMethods)
+    .then(() => showToast('Payment methods saved successfully!', 'success'))
+    .catch((err) => showToast('Could not save that: ' + err.message, 'error'));
 }
 
-function loadPaymentMethods() {
-  const user = getSession();
-  if (!user || !user.paymentMethods) return;
-
-  const pm = user.paymentMethods;
+async function loadPaymentMethods() {
+  let pm;
+  try {
+    pm = await HS.profiles.myPaymentMethods();
+  } catch (err) {
+    console.error('Could not load your payment methods:', err);
+    return;
+  }
+  if (!pm) return;
 
   // Load GCash
   if (pm.gcash) {
@@ -479,3 +503,18 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(loadPaymentMethods, 100);
 });
 
+
+  // ── Load the real profile, then fill the form ────────────────────────────────
+  (async function loadProfile() {
+    fillPersonalInfo();
+    renderVerifyStatus();
+    try {
+      const me = await HS.profiles.me();
+      if (!me) return;
+      fullUser = me;
+      fillPersonalInfo();
+      renderVerifyStatus();
+    } catch (err) {
+      console.error('Could not load your profile:', err);
+    }
+  })();

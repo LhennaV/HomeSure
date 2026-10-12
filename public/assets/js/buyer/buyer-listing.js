@@ -15,8 +15,9 @@
       const iconFlag = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>`;
       const iconHeart = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
 
-      // ── Save / unsave ──────────────────────────────────────────────────────────
+      // ── Save / unsave (favorites table) ────────────────────────────────────────
       let savedIds = [];
+
       function updateSaveBtn(listingId) {
         const isSaved = savedIds.includes(listingId);
         const btn = document.getElementById("saveBtn");
@@ -30,7 +31,7 @@
         }
       }
 
-      async function isBuyerVerified() {
+      function isBuyerVerified() {
         const u = getSession();
         if (!u || u.role !== 'buyer') return true;
         if (!u.isVerified) return false;
@@ -38,12 +39,12 @@
         return true;
       }
 
-     async function toggleSave(listingId) {
+      async function toggleSave(listingId) {
         if (!isBuyerVerified()) {
           window.location.href = 'verification.html';
           return;
         }
-         try {
+        try {
           const nowSaved = await HS.favorites.toggle(listingId);
           savedIds = nowSaved ? savedIds.concat(listingId) : savedIds.filter((id) => id !== listingId);
           updateSaveBtn(listingId);
@@ -136,10 +137,11 @@
         backBtn.onclick = () => (window.location.href = "saved.html");
       }
 
-      // ── Load listing ───────────────────────────────────────────────────────────
+      // ── Load listing (from the database; RLS decides whether this user may see it) ──
       let listing = null;
       let seller = null;
       const detail = document.getElementById("listingDetail");
+
       async function loadListing() {
         detail.innerHTML = `<p style="color:var(--muted);text-align:center;padding:60px 0">Loading…</p>`;
         try {
@@ -153,6 +155,7 @@
           detail.innerHTML = `<p style="color:var(--muted);text-align:center;padding:60px 0">Could not load this listing. Please try again.</p>`;
           return;
         }
+
       if (!listing) {
         detail.innerHTML = `<p style="color:var(--muted);text-align:center;padding:60px 0">Listing not found.</p>`;
       } else {
@@ -277,8 +280,9 @@
           .getElementById("saveBtn")
           .addEventListener("click", () => toggleSave(listing.id));
       }
-  }
-  loadListing();
+      }
+
+      loadListing();
 
       function handleMessageSeller() {
         if (!isBuyerVerified()) {
@@ -313,7 +317,7 @@
         document.getElementById('scheduleModal').classList.remove('active');
       };
 
-      window.submitSchedule = function() {
+      window.submitSchedule = async function() {
         const date = document.getElementById('viewingDate').value;
         const time = document.getElementById('viewingTime').value;
         const notes = document.getElementById('viewingNotes').value;
@@ -353,7 +357,7 @@
         const hour12 = hour % 12 || 12;
         const formattedTime = `${hour12}:${minutes} ${ampm}`;
 
-       // Create the viewing request (and the chat card for the seller) in the database
+        // Create the viewing request (and the chat card for the seller) in the database
         try {
           await HS.viewing.request({
             propertyId: listing.id,
@@ -375,7 +379,8 @@
         document.getElementById('viewingNotes').value = '';
 
         // Show success notification
-        `Your viewing request for <strong>${formattedDate} at ${formattedTime}</strong> has been sent to ${seller ? seller.name : "the seller"}. They will review and respond soon!`
+        showSuccessNotification(
+          `Your viewing request for <strong>${formattedDate} at ${formattedTime}</strong> has been sent to ${seller ? seller.name : "the seller"}. They will review and respond soon!`
         );
       };
 

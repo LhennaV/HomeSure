@@ -1,9 +1,17 @@
-(function() {
-  conts user = getSession();
+// ─────────────────────────────────────────────────────────────────────────────
+//  HomeSure – Buyer Messages
+//  Depends on: config.js, session.js, data.js (HS.messages), sidebar.js, topbar.js
+//
+//  A conversation is the pair of people. Row Level Security only ever returns messages the
+//  signed-in user sent or received, so there is nothing to filter by hand here.
+// ─────────────────────────────────────────────────────────────────────────────
+(function () {
+  const user = getSession();
   if (!user || user.role !== 'buyer') {
-	      window.location.href = '../../auth/signin.html';
+    window.location.href = '../../auth/signin.html';
     return;
   }
+
   HomeSureSidebar.init({ activePage: 'messages' });
   HomeSureTopbar.init({ placeholder: 'Search messages...' });
 
@@ -13,7 +21,7 @@
   const iconClip   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>`;
   const iconVerify = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 
- // ── State ──────────────────────────────────────────────────────────────────
+  // ── State ──────────────────────────────────────────────────────────────────
   let convs = [];            // from HS.messages.conversations()
   let activeConvId = null;   // the other person's id
 
@@ -22,11 +30,12 @@
 
   const fmtTime = (iso) => new Date(iso).toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit' });
   const fmtDay  = (iso) => new Date(iso).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
-  
-  // ── conversation list ───────────────────────────────────────────────
+
+  // ── Conversation list ──────────────────────────────────────────────────────
   function renderConvList(filter = '') {
     const list = document.getElementById('convList');
     if (!list) return;
+
     const q = (filter || '').toLowerCase();
     const filtered = convs.filter((c) => {
       if (!q) return true;
@@ -34,6 +43,13 @@
       const name = c.other ? c.other.name : '';
       return title.toLowerCase().includes(q) || name.toLowerCase().includes(q);
     });
+
+    if (!filtered.length) {
+      list.innerHTML = `<div style="padding:28px 18px;text-align:center;color:var(--muted);font-size:13px">
+        ${convs.length ? 'No conversations match your search.' : 'No messages yet. Open a listing and message the seller.'}
+      </div>`;
+      return;
+    }
 
     list.innerHTML = filtered.map((c) => {
       const name = c.other ? c.other.name : 'HomeSure user';
@@ -43,16 +59,16 @@
       return `
         <div class="conv-item ${c.id === activeConvId ? 'active' : ''}"
              onclick="openConv('${c.id}')">
-		<img class="conv-avatar" src="${esc(thumb)}" alt="${esc(title)}" />
+          <img class="conv-avatar" src="${esc(thumb)}" alt="${esc(title)}" />
           <div class="conv-info">
             <div class="conv-name">
-				${esc(title.length > 22 ? title.slice(0, 22) + '…' : title)}
-				${c.other && c.other.verified ? `<span class="conv-verified">${iconVerify}</span>` : ''}
+              ${esc(title.length > 22 ? title.slice(0, 22) + '…' : title)}
+              ${c.other && c.other.verified ? `<span class="conv-verified">${iconVerify}</span>` : ''}
             </div>
-			<div class="conv-preview">${esc(name)} · ${esc(preview.slice(0, 32))}${preview.length > 32 ? '…' : ''}</div>
+            <div class="conv-preview">${esc(name)} · ${esc(preview.slice(0, 32))}${preview.length > 32 ? '…' : ''}</div>
           </div>
           <div class="conv-meta">
-          <span class="conv-time">${esc(fmtDay(c.updatedAt))}</span>
+            <span class="conv-time">${esc(fmtDay(c.updatedAt))}</span>
             ${c.unread > 0 ? `<span class="conv-badge">${c.unread}</span>` : ''}
           </div>
         </div>`;
@@ -65,15 +81,18 @@
     if (m.type === 'viewing-response') return 'Viewing response';
     return m.text || '';
   }
+
   window.filterConvs = function () {
     const box = document.getElementById('convSearch');
     renderConvList(box ? box.value : '');
-    };
+  };
+
   // ── One message ────────────────────────────────────────────────────────────
   function renderMessage(m, me) {
     const mine = m.senderId === me;
     const side = mine ? 'buyer' : 'seller';
-   if (m.type === 'viewing-request' || m.type === 'viewing-response') {
+
+    if (m.type === 'viewing-request' || m.type === 'viewing-response') {
       const d = m.viewingData || {};
       const when = [d.requestedDate || d.proposedDate, d.requestedTime || d.proposedTime].filter(Boolean).join(' at ');
       const notes = d.buyerNotes || d.sellerNotes;
@@ -90,18 +109,20 @@
           </div>
           <div class="msg-time">${esc(fmtTime(m.timestamp))}</div>
         </div>`;
-        }
-        return `
-        <div class="msg-row ${side}">
+    }
+
+    return `
+      <div class="msg-row ${side}">
         <div class="msg-bubble">${esc(m.text)}</div>
         <div class="msg-time">
           ${esc(fmtTime(m.timestamp))}
           ${mine && m.read ? iconCheck2 : ''}
-          </div>
-          </div>`;
+        </div>
+      </div>`;
+  }
 
   // ── Open a conversation ────────────────────────────────────────────────────
-   window.openConv = async function (otherId) {
+  window.openConv = async function (otherId) {
     activeConvId = otherId;
     const c = convs.find((x) => x.id === otherId);
     if (!c) return;
@@ -132,7 +153,7 @@
           <div class="chat-header-seller">${c.other && c.other.verified ? iconVerify : ''} ${esc(name)}</div>
         </div>
         <div class="chat-header-price">
-		${esc(price)}
+          ${esc(price)}
           ${isRent ? `<span>/month</span>` : ''}
         </div>
       </div>
@@ -147,11 +168,11 @@
       </div>
     `;
 
-    // Mobile: slide into chat view
     document.querySelector('.messages-layout').classList.add('chat-open');
     const msgs = document.getElementById('chatMessages');
     if (msgs) msgs.scrollTop = msgs.scrollHeight;
-    
+
+    // Their messages are now on screen, so mark them read.
     if (c.unread > 0) {
       try {
         await HS.messages.markRead(otherId);
@@ -170,17 +191,17 @@
     renderConvList(document.getElementById('convSearch')?.value || '');
   };
 
-  // ── Send a message ─────────────────────────────────────────────────────────
-  window.sendMessage = function(otherId) {
+  // ── Send ───────────────────────────────────────────────────────────────────
+  window.sendMessage = async function (otherId) {
     const input = document.getElementById('chatInput');
-	  if (!input) return;
+    if (!input) return;
     const text = input.value.trim();
     if (!text) return;
 
     const c = convs.find((x) => x.id === otherId);
     if (!c) return;
 
-     input.value = '';
+    input.value = '';
     input.disabled = true;
 
     try {
@@ -221,7 +242,8 @@
         <p style="font-size:13px;color:var(--muted);max-width:300px;">Select a conversation from the list to view messages</p>
       </div>`;
   }
-   // Payments are not connected to the chat yet; keep the old hook from throwing.
+
+  // Payments are not connected to the chat yet; keep the old hook from throwing.
   window.payFromChat = function () {
     hsToast('Paying from chat is not connected yet.');
   };

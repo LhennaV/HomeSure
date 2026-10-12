@@ -143,11 +143,12 @@ const CloseListingModal = (function() {
   // CONFIRM CLOSE - Actually close the listing
   // ═══════════════════════════════════════════════════════════════════════════
 
-  function confirmClose() {
+  async function confirmClose() {
     if (!currentListing) return;
 
     // Get closure reason if admin
     let closeReason = 'Payment confirmed';
+    let closedBecauseOccupied = true;
     if (currentListing.isAdmin) {
       const reasonSelect = document.getElementById('adminCloseReason');
       const reasonMap = {
@@ -157,35 +158,24 @@ const CloseListingModal = (function() {
         'other': 'Other reason'
       };
       closeReason = reasonSelect ? reasonMap[reasonSelect.value] : 'Closed by admin';
+      closedBecauseOccupied = !reasonSelect || reasonSelect.value === 'occupied';
     }
 
-    // Update listing status in fake-data.js (in production, this would be API call)
-    const listing = window.ALL_LISTINGS?.find(l => l.id === currentListing.listingId);
-    if (listing) {
-      listing.availability = 'Occupied';
-      listing.status = 'closed';
-      listing.closedReason = closeReason;
-      listing.closedBy = currentListing.isAdmin ? 'admin' : 'seller';
-      listing.closedAt = new Date().toISOString();
-      console.log('✅ Listing closed:', listing);
+    // Close the listing in the database. A sale/rental that went through is recorded as sold/rented.
+    try {
+      let lifecycle = null;
+      if (closedBecauseOccupied) {
+        const listing = await HS.listings.get(currentListing.listingId);
+        if (listing) lifecycle = listing.listingFor === 'rent' ? 'rented' : 'sold';
+      }
+      await HS.listings.close(currentListing.listingId, lifecycle);
+      if (currentListing.isAdmin) {
+        HS.audit.log('Closed listing', 'listing', currentListing.listingTitle + ' – ' + closeReason);
+      }
+    } catch (err) {
+      hsToast('Could not close the listing: ' + err.message, 'error');
+      return;
     }
-
-    // Save to localStorage for persistence
-    const closedListings = JSON.parse(localStorage.getItem('homesure_closed_listings') || '[]');
-    const closureData = {
-      listingId: currentListing.listingId,
-      reason: closeReason,
-      closedBy: currentListing.isAdmin ? 'admin' : 'seller',
-      closedAt: new Date().toISOString()
-    };
-
-    const existingIndex = closedListings.findIndex(c => c.listingId === currentListing.listingId);
-    if (existingIndex >= 0) {
-      closedListings[existingIndex] = closureData;
-    } else {
-      closedListings.push(closureData);
-    }
-    localStorage.setItem('homesure_closed_listings', JSON.stringify(closedListings));
 
     // Show success state
     showSuccessState();
@@ -245,9 +235,9 @@ const CloseListingModal = (function() {
   // CHECK IF LISTING IS CLOSED
   // ═══════════════════════════════════════════════════════════════════════════
 
-  function isListingClosed(listingId) {
-    const closedListings = JSON.parse(localStorage.getItem('homesure_closed_listings') || '[]');
-    return closedListings.includes(listingId);
+  async function isListingClosed(listingId) {
+    const listing = await HS.listings.get(listingId);
+    return !!listing && listing.status === 'closed';
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
