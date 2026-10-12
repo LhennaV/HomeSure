@@ -1,67 +1,87 @@
-import { NextResponse } from 'next/server';
-import { createXenditInvoice } from '@/lib/xendit';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { NextResponse } from "next/server";
+import { guardApi } from "@/lib/api";
+import { getAdminSupabase } from "@/lib/supabase/admin-client";
+
+type Body = {
+  propertyId?: string;
+  purpose?: string;
+  period?: string;
+  dueDate?: string;
+  depositMonths?: number;
+};
+
+const PURPOSES = ["rent", "security", "both", "reservation", "sale"];
 
 export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const { amount, user_id, seller_id, listing_id, payer_email, description, payment_type = 'rent' } = body;
+  const guard = await guardApi();
+  if (!guard.ok) return guard.response;
+  const { supabase, user } = guard;
 
-    if (!amount || !user_id || !payer_email) {
-      return NextResponse.json(
-        { error: 'amount, user_id, and payer_email are required parameters.' },
-        { status: 400 }
-      );
-    }
+  const { propertyId, purpose = "rent", period, dueDate, depositMonths = 1 } =
+    ((await request.json().catch(() => ({}))) as Body);
 
-    // 1. Create Xendit Payment Invoice
-    const xenditResponse = await createXenditInvoice({
-      amount: parseFloat(amount),
-      user_id,
-      seller_id,
-      listing_id,
-      payer_email: payer_email,
-      description: description || 'HomeSure Property Rental Payment',
-      payment_type,
-    });
+  if (!propertyId) return NextResponse.json({ error: "propertyId is required" }, { status: 400 });
+  if (!PURPOSES.includes(purpose)) {
+    return NextResponse.json({ error: `purpose must be one of ${PURPOSES.join(", ")}` }, { status: 400 });
+  }
+  const months = Math.trunc(Number(depositMonths));
+  if (!Number.isFinite(months) || months < 1 || months > 3) {
+    return NextResponse.json({ error: "depositMonths must be 1, 2 or 3" }, { status: 400 });
+  }
+  if (dueDate && !/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) {
+    return NextResponse.json({ error: "dueDate must be YYYY-MM-DD" }, { status: 400 });
+  }
 
-    // 2. Insert payment record into Supabase payments table
-    const supabase = createAdminClient();
-    const { data: paymentRecord, error: dbError } = await supabase
-      .from('payments')
-      .insert([
-        {
-          external_id: xenditResponse.externalId,
-          xendit_invoice_id: xenditResponse.invoiceId,
-          user_id,
-          seller_id: seller_id || null,
-          listing_id: listing_id || null,
-          amount: parseFloat(amount),
-          fee: 0,
-          net_amount: parseFloat(amount),
-          type: payment_type,
-          status: 'PENDING',
-          payment_method: 'UNKNOWN',
-          checkout_url: xenditResponse.checkoutUrl,
-        },
-      ])
-      .select()
-      .single();
+  // RLS only lets the caller see publicly visible (admin-approved) listings.
+  const { data: property } = await supabase
+    .from("properties")
+    .select("id, price, status, lifecycle_status, listing_type, landowner_id")
+    .eq("id", propertyId)
+    .single();
+  if (!property) return NextResponse.json({ error: "Property not found" }, { status: 404 });
+  if (property.status !== "approved") return NextResponse.json({ error: "Property is not available" }, { status: 400 });
+  if (property.lifecycle_status === "sold" || property.lifecycle_status === "rented") {
+    return NextResponse.json({ error: "Property is no longer available" }, { status: 400 });
+  }
+  if (property.landowner_id === user.id) {
+    return NextResponse.json({ error: "You cannot pay for your own listing" }, { status: 400 });
+  }
 
-    if (dbError) {
-      console.error('Database Error storing payment:', dbError);
-      return NextResponse.json({ error: dbError.message }, { status: 500 });
-    }
+  // The amount is computed here, never taken from the request: a client that could name its own
+  // price could pay ₱1 for a ₱15,000 month.
+  const price = Number(property.price);
+  if (!Number.isFinite(price) || price <= 0) {
+    return NextResponse.json({ error: "This listing has no usable price" }, { status: 400 });
+  }
+  const amount =
+    purpose === "security" ? price * months :
+    purpose === "both"     ? price + price * months :
+    price;
 
-    return NextResponse.json({
-      message: 'Payment invoice created successfully',
-      payment: paymentRecord,
-      checkout_url: xenditResponse.checkoutUrl,
-      external_id: xenditResponse.externalId,
-    }, { status: 201 });
-  } catch (error: any) {
-    console.error('Error in /api/payments/create-invoice:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+  const xenditSecret = process.env.XENDIT_SECRET_KEY;
+  if (!xenditSecret) return NextResponse.json({ error: "Xendit not configured" }, { status: 500 });
+
+  const auth = Buffer.from(`${xenditSecret}:`).toString("base64");
+  const referenceId = `property-${propertyId}-${Date.now()}`;
+
+  const xenditRes = await fetch("https://api.xendit.co/qr_codes", {
+    method: "POST",
+    headers: {
+      "Authorization": `Basic ${auth}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      reference_id: referenceId,
+      amount,
+      currency: "PHP",
+      channel_codes: ["PH_QRPH"],
+      expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+    }),
+  });
+
+  if (!xenditRes.ok) {
+    const err = await xenditRes.text();
+    return NextResponse.json({ error: `Xendit error: ${err}` }, { status: 500 });
   }
 
   const qr = await xenditRes.json();

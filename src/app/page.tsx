@@ -107,24 +107,32 @@ const categories = [
 
 const steps = [
   {
-    num: "1",
+    num: "01",
+    label: "Account",
     title: "Create an Account",
-    desc: "Sign up as a buyer or seller. Verify your identity to build trust.",
+    desc: "Sign up as a buyer or seller. Verify your identity so the person on the other side knows who they are dealing with.",
+    screen: "verification" as const,
   },
   {
-    num: "2",
+    num: "02",
+    label: "Discover",
     title: "Browse or List",
-    desc: "Search properties by barangay, budget, and type — or post your listing.",
+    desc: "Search by barangay, budget and property type across Sta. Maria — or post your own listing and let buyers come to you.",
+    screen: "listing" as const,
   },
   {
-    num: "3",
-    title: "Connect Directly",
-    desc: "Message verified sellers securely within the platform.",
+    num: "03",
+    label: "Connect",
+    title: "Message the Owner",
+    desc: "Talk to the seller inside HomeSure. Arrange a viewing, ask about the place, and keep the whole conversation in one thread.",
+    screen: "messages" as const,
   },
   {
-    num: "4",
-    title: "Close the Deal",
-    desc: "Agree on terms confidently with full transparency on both sides.",
+    num: "04",
+    label: "Payment",
+    title: "Pay and Move In",
+    desc: "Pay through the platform or upload proof of a direct payment. The seller confirms it, and both of you keep a record.",
+    screen: "payment" as const,
   },
 ];
 
@@ -159,34 +167,52 @@ const whyFeatures = [
   },
 ];
 
-const statsData = [
-  { end: 24, suffix: "", label: "Barangays Covered" },
-  { end: 1200, suffix: "+", label: "Verified Sellers" },
-  { end: 0, suffix: "", label: "Unverified Listings" },
-  { end: 100, suffix: "%", label: "Secure Messaging" },
-];
-
-const testimonials = [
+const verifySteps = [
   {
-    stars: 5,
-    quote: "Found my apartment in just two days. Every seller was verified — no scams, no stress.",
-    name: "Maria Santos",
-    role: "Tenant, Poblacion",
-    initials: "MS",
+    tag: "Step 1",
+    title: "The email has to be real",
+    desc: "Signing up does not get you in. We send a one-time link to the address given, and the account stays closed until it is opened. An address nobody can receive mail at never becomes an account.",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="24" height="24">
+        <rect x="2" y="4" width="20" height="16" rx="2" />
+        <path d="m2 7 10 6 10-6" />
+      </svg>
+    ),
   },
   {
-    stars: 5,
-    quote: "Listed my townhouse and got genuine buyers in under a week. The platform is so easy to use.",
-    name: "Rolando Cruz",
-    role: "Property Owner, Bagbaguin",
-    initials: "RC",
+    tag: "Step 2",
+    title: "A government ID and a live selfie",
+    desc: "Sellers submit a valid ID and take a selfie through the camera, in the app — not a photo chosen from a gallery. An administrator compares the two before the account is marked verified.",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="24" height="24">
+        <rect x="2" y="5" width="20" height="14" rx="2" />
+        <circle cx="9" cy="12" r="2.6" />
+        <path d="M14.5 10h4M14.5 14h3" />
+      </svg>
+    ),
   },
   {
-    stars: 4,
-    quote: "Direct messaging made negotiating with the seller so much smoother than the usual process.",
-    name: "Jessa Reyes",
-    role: "Buyer, Tumana",
-    initials: "JR",
+    tag: "Step 3",
+    title: "Proof the property is theirs",
+    desc: "Every listing carries photographs of its Deed of Sale or Transfer Certificate of Title, or a tax declaration. One per property — a verified seller still cannot post a house they cannot document.",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="24" height="24">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <path d="M14 2v6h6" />
+        <path d="m9 15 2 2 4-4" />
+      </svg>
+    ),
+  },
+  {
+    tag: "Step 4",
+    title: "Nothing is public until it is reviewed",
+    desc: "A new listing is not hidden behind a label — it is not on the site at all. It appears in browse only after an administrator approves it, and it comes straight back down if a seller’s verification lapses.",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="24" height="24">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        <path d="m9 12 2 2 4-4" />
+      </svg>
+    ),
   },
 ];
 
@@ -264,7 +290,7 @@ function TypingText() {
   );
 }
 
-// Interactive Map Component
+// ── Interactive Map Component with Client-Side Fetch ───────────────────────
 function HeroMap() {
   const mapWrapRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -273,46 +299,101 @@ function HeroMap() {
   const [isRotating, setIsRotating] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [svgContent, setSvgContent] = useState("");
+  const [counts, setCounts] = useState<Record<string, number> | null>(null);
 
+  // Client fetch barangay listing counts
   useEffect(() => {
-    fetch("/assets/img/Sta. Maria Map.svg")
-      .then((res) => res.text())
-      .then((svg) => setSvgContent(svg))
-      .catch((err) => console.error("Map SVG load error:", err));
+    let cancelled = false;
+    async function loadCounts() {
+      try {
+        const supabase = createClient();
+        const { data: rows, error } = await supabase
+          .from("properties")
+          .select("lifecycle_status, barangays(name)")
+          .eq("status", "approved")
+          .limit(1000);
+
+        if (error) throw error;
+
+        const map: Record<string, number> = {};
+        for (const r of (rows as any[]) || []) {
+          if (r.lifecycle_status === "sold" || r.lifecycle_status === "rented") continue;
+          const name = r.barangays && r.barangays.name;
+          if (!name) continue;
+          map[name] = (map[name] || 0) + 1;
+        }
+        if (!cancelled) setCounts(map);
+      } catch (err) {
+        console.error("Could not load the listing count per barangay:", err);
+      }
+    }
+    loadCounts();
+    return () => { cancelled = true; };
   }, []);
 
+  // Fetch SVG map artwork
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches) return;
+
+    let cancelled = false;
+    fetch("/assets/img/Sta. Maria Map.svg")
+      .then((res) => res.text())
+      .then((svg) => { if (!cancelled) setSvgContent(svg); })
+      .catch((err) => console.error("Map SVG load error:", err));
+
+    return () => { cancelled = true; };
+  }, []);
+
+  // Property markers placement based on live counts
   useEffect(() => {
     if (!containerRef.current || !svgContent) return;
 
-    // Clear existing markers if any
     const existingMarkers = containerRef.current.querySelectorAll(".property-marker");
     existingMarkers.forEach((m) => m.remove());
 
-    const markers = [
-      { x: 35, y: 68, count: 12, barangay: "Poblacion" },
-      { x: 40, y: 58, count: 8, barangay: "Guyong" },
-      { x: 25, y: 73, count: 15, barangay: "Bagbaguin" },
-      { x: 45, y: 78, count: 10, barangay: "Tumana" },
-      { x: 63, y: 58, count: 6, barangay: "Catmon" },
-      { x: 63, y: 28, count: 20, barangay: "Pulong Buhangin" },
+    const positions = [
+      { x: 35, y: 68, barangay: "Poblacion" },
+      { x: 40, y: 58, barangay: "Guyong" },
+      { x: 25, y: 73, barangay: "Bagbaguin" },
+      { x: 45, y: 78, barangay: "Tumana" },
+      { x: 63, y: 58, barangay: "Catmon" },
+      { x: 63, y: 28, barangay: "Pulong Buhangin" },
     ];
 
-    markers.forEach((marker, i) => {
+    const pins: HTMLElement[] = [];
+    positions.forEach((p, i) => {
+      const n = counts ? (counts[p.barangay] || 0) : 0;
+      // Only place pin if counts are loaded and > 0, or fallback if counts is still loading
+      if (counts && n === 0) return;
+
       const pin = document.createElement("div");
       pin.className = "property-marker";
-      pin.style.left = `${marker.x}%`;
-      pin.style.top = `${marker.y}%`;
+      pin.style.left = `${p.x}%`;
+      pin.style.top = `${p.y}%`;
       pin.style.animationDelay = `${i * 0.3}s`;
+      pin.setAttribute("role", "link");
+      pin.setAttribute("tabindex", "0");
       pin.innerHTML = `
         <div class="marker-pulse"></div>
         <div class="marker-icon">
-          <img src="/assets/img/House Icon.svg" alt="Property" />
+          <img src="/assets/img/House Icon.svg" alt="" />
         </div>
-        <div class="marker-tooltip">${marker.count} properties in ${marker.barangay}</div>
+        <div class="marker-tooltip">${n || "View"} ${n === 1 ? "property" : "properties"} in ${p.barangay}</div>
       `;
+
+      const open = (e: Event) => {
+        e.stopPropagation();
+        window.location.href = `/browse.html?barangay=${encodeURIComponent(p.barangay)}`;
+      };
+      pin.addEventListener("click", open);
+      pin.addEventListener("mousedown", (e) => e.stopPropagation());
+
       containerRef.current?.appendChild(pin);
+      pins.push(pin);
     });
-  }, [svgContent]);
+
+    return () => pins.forEach((p) => p.remove());
+  }, [svgContent, counts]);
 
   useEffect(() => {
     if (!mapWrapRef.current) return;
@@ -390,7 +471,7 @@ function HeroMap() {
   );
 }
 
-// Navbar Component
+// ── Navbar Component ────────────────────────────────────────────────────────
 function Navbar() {
   const [theme, setTheme] = useState("dark");
 
@@ -414,7 +495,7 @@ function Navbar() {
           <img src="/assets/img/CatsTone Logo.png" alt="CatsTone" className="nav-catstone-img" />
         </span>
         <span className="nav-logo-divider" />
-        <img src="/assets/img/HomeSure_Logo.svg" alt="HomeSure" class="img-logo" style={{ display: "block" }} />
+        <img src="/assets/img/HomeSure_Logo.svg" alt="HomeSure" className="img-logo" style={{ display: "block", height: 30 }} />
         <span>HomeSure</span>
       </Link>
       <div className="nav-btns">
@@ -441,10 +522,10 @@ function Navbar() {
             </svg>
           )}
         </button>
-        <Link href="/auth/login" className="btn-outline">
+        <Link href="/auth/signin.html" className="btn-outline">
           Sign In
         </Link>
-        <Link href="/auth/signup" className="btn-solid">
+        <Link href="/auth/signup.html" className="btn-solid">
           Sign Up
         </Link>
       </div>
@@ -452,7 +533,7 @@ function Navbar() {
   );
 }
 
-// Hero Section Component
+// ── Hero Section Component ──────────────────────────────────────────────────
 function Hero() {
   return (
     <section className="hero">
@@ -473,7 +554,7 @@ function Hero() {
           HomeSure connects buyers with verified property owners across Sta. Maria, Bulacan. No hidden listings. No unverified sellers.
         </p>
         <div className="hero-ctas">
-          <Link href="/dashboard/properties" className="hero-btn-primary hero-btn-browse" style={{ textDecoration: 'none' }}>
+          <Link href="/browse.html" className="hero-btn-primary hero-btn-browse" style={{ textDecoration: 'none' }}>
             <span>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="8" />
@@ -482,7 +563,7 @@ function Hero() {
             </span>
             <span>Browse Listings</span>
           </Link>
-          <Link href="/auth/signup" className="hero-btn-secondary hero-btn-list" style={{ textDecoration: 'none' }}>
+          <Link href="/auth/signup.html" className="hero-btn-secondary hero-btn-list" style={{ textDecoration: 'none' }}>
             <span>List Your Property</span>
             <span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -490,10 +571,10 @@ function Hero() {
               </svg>
             </span>
           </Link>
-          <Link href="/auth/login" className="hero-btn-mobile-signin">
+          <Link href="/auth/signin.html" className="hero-btn-mobile-signin">
             Sign In
           </Link>
-          <Link href="/auth/signup" className="hero-btn-mobile-signup">
+          <Link href="/auth/signup.html" className="hero-btn-mobile-signup">
             Sign Up
           </Link>
         </div>
@@ -505,14 +586,6 @@ function Hero() {
               </svg>
             </span>
             <span>Verified Listings</span>
-          </span>
-          <span className="hero-trust-item">
-            <span className="hero-trust-icon">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="0">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-              </svg>
-            </span>
-            <span>4.8/5 Rating</span>
           </span>
           <span className="hero-trust-item">
             <span className="hero-trust-icon">
@@ -532,9 +605,89 @@ function Hero() {
   );
 }
 
-// Feature Highlights Section
+// ── Feature Highlights Section with Tilt ───────────────────────────────────
+const TILT_DEGREES = 9;
+
+function useCardTilt(gridRef: React.RefObject<HTMLDivElement | null>) {
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+
+    const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (!fine.matches || still.matches) return;
+
+    grid.classList.add("tilt-on");
+
+    let frame = 0;
+    let pending: { card: HTMLElement; px: number; py: number; w: number; h: number } | null = null;
+    let current: HTMLElement | null = null;
+
+    function clear(card: HTMLElement | null) {
+      if (!card) return;
+      card.classList.remove("is-tilting");
+      for (const prop of ["--rx", "--ry", "--gx", "--gy"]) card.style.removeProperty(prop);
+    }
+
+    function apply() {
+      frame = 0;
+      if (!pending) return;
+      const { card, px, py, w, h } = pending;
+      card.style.setProperty("--rx", `${(0.5 - py / h) * TILT_DEGREES}deg`);
+      card.style.setProperty("--ry", `${(px / w - 0.5) * TILT_DEGREES}deg`);
+      card.style.setProperty("--gx", `${px}px`);
+      card.style.setProperty("--gy", `${py}px`);
+    }
+
+    function onMove(e: PointerEvent) {
+      const card = (e.target as HTMLElement)?.closest?.(".feature-card") as HTMLElement | null;
+      if (!card) {
+        if (current) {
+          clear(current);
+          current = null;
+        }
+        return;
+      }
+
+      if (current && current !== card) clear(current);
+      if (current !== card) {
+        card.classList.add("is-tilting");
+        current = card;
+      }
+
+      const r = card.getBoundingClientRect();
+      pending = { card, px: e.clientX - r.left, py: e.clientY - r.top, w: r.width, h: r.height };
+      if (!frame) frame = requestAnimationFrame(apply);
+    }
+
+    function onLeave() {
+      if (frame) {
+        cancelAnimationFrame(frame);
+        frame = 0;
+      }
+      pending = null;
+      clear(current);
+      current = null;
+    }
+
+    grid.addEventListener("pointermove", onMove as any);
+    grid.addEventListener("pointerleave", onLeave);
+
+    return () => {
+      grid.removeEventListener("pointermove", onMove as any);
+      grid.removeEventListener("pointerleave", onLeave);
+      if (frame) cancelAnimationFrame(frame);
+      clear(current);
+      grid.classList.remove("tilt-on");
+    };
+  }, [gridRef]);
+}
+
 function FeatureHighlights() {
-  const highlights = [
+  const gridRef = useRef<HTMLDivElement>(null);
+  useCardTilt(gridRef);
+
+  const features = [
     {
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -572,9 +725,12 @@ function FeatureHighlights() {
 
   return (
     <section className="feature-highlights">
-      <div className="feature-grid">
-        {highlights.map((feat, i) => (
-          <div key={i} className="feature-card" style={{ "--feature-color": feat.color } as React.CSSProperties}>
+      <div className="feature-grid" ref={gridRef}>
+        {features.map((feat, i) => (
+          <div key={i} className="feature-card feature-3d" style={{ ["--feature-color" as string]: feat.color }}>
+            <div className="feature-card-bg" aria-hidden="true">
+              <span className="feature-card-glare" />
+            </div>
             <div className="feature-card-icon">{feat.icon}</div>
             <div className="feature-card-badge">{feat.badge}</div>
             <h3 className="feature-card-title">{feat.title}</h3>
@@ -586,7 +742,7 @@ function FeatureHighlights() {
   );
 }
 
-// Trust Banner Component
+// ── Trust Banner Component ─────────────────────────────────────────────────
 function TrustBanner() {
   return (
     <section className="trust-banner">
@@ -607,7 +763,7 @@ function TrustBanner() {
   );
 }
 
-// Platform Features Component
+// ── Platform Features Section ──────────────────────────────────────────────
 function PlatformFeatures() {
   const platformList = [
     {
@@ -684,13 +840,13 @@ function PlatformFeatures() {
   );
 }
 
-// Categories Component
+// ── Categories Component ───────────────────────────────────────────────────
 function Categories() {
   const [ref, visible] = useReveal();
   return (
     <section className={`section reveal-section${visible ? " in-view" : ""}`} ref={ref}>
       <span className="section-label">Browse by Type</span>
-      <h2 className="section-title">Find What You're Looking For</h2>
+      <h2 className="section-title">Find What You&apos;re Looking For</h2>
       <p className="section-sub">Filter by property type or listing category</p>
       <div className="categories-grid">
         {categories.map((c, i) => (
@@ -707,7 +863,7 @@ function Categories() {
   );
 }
 
-// Carousel / Featured Properties Component
+// ── Carousel / Featured Properties Component ──────────────────────────────
 function Carousel({ propertiesList }: { propertiesList: any[] }) {
   const [ref, visible] = useReveal();
   const list = propertiesList.length > 0 ? propertiesList : fallbackProperties;
@@ -794,7 +950,7 @@ function Carousel({ propertiesList }: { propertiesList: any[] }) {
                     {typeof centerProp.price === "number" ? `₱${centerProp.price.toLocaleString()}` : centerProp.price}
                     <span>{centerProp.period || "/month"}</span>
                   </div>
-                  <Link href="/dashboard/properties" className="card-link">
+                  <Link href="/browse.html" className="card-link">
                     View Details
                   </Link>
                 </div>
@@ -820,20 +976,260 @@ function Carousel({ propertiesList }: { propertiesList: any[] }) {
   );
 }
 
-// How It Works Component
+// ── How It Works Section with Interactive Previews ─────────────────────────
+function offsetWithin(el: HTMLElement, root: HTMLElement) {
+  let x = 0, y = 0;
+  for (let node: HTMLElement | null = el; node && node !== root; node = node.offsetParent as HTMLElement | null) {
+    x += node.offsetLeft;
+    y += node.offsetTop;
+  }
+  return { x, y };
+}
+
+function useCurvedSpine(containerRef: React.RefObject<HTMLDivElement | null>, pathRef: React.RefObject<SVGPathElement | null>) {
+  useEffect(() => {
+    const box = containerRef.current;
+    const path = pathRef.current;
+    if (!box || !path) return;
+
+    const twoColumn = window.matchMedia("(min-width: 861px)");
+
+    function draw() {
+      if (!path || !box) return;
+      const svg = path.parentNode as SVGSVGElement | null;
+      if (!svg) return;
+      if (!twoColumn.matches) {
+        svg.style.display = "none";
+        return;
+      }
+      svg.style.display = "";
+
+      const rect = { width: box.offsetWidth, height: box.offsetHeight };
+      const dotEls = Array.from(box.querySelectorAll<HTMLElement>(".tl-dot"));
+      const dots = dotEls.map((dot) => {
+        const at = offsetWithin(dot, box);
+        return { x: at.x + dot.offsetWidth / 2, y: at.y + dot.offsetHeight / 2 };
+      });
+      if (dots.length < 2) return;
+
+      svg.setAttribute("viewBox", `0 0 ${rect.width} ${rect.height}`);
+
+      const swoop = Math.min(78, rect.width * 0.085);
+      const radius = Math.min(46, rect.width * 0.043);
+      const halfChord = radius * 0.76;
+
+      let d = `M ${dots[0].x} ${dots[0].y}`;
+
+      for (let i = 1; i < dots.length; i++) {
+        const a = dots[i - 1];
+        const b = dots[i];
+        const dy = b.y - a.y;
+        const side = i % 2 ? 1 : -1;
+
+        if (i % 2) {
+          const loopSide = ((i - 1) / 2) % 2 ? -1 : 1;
+          const mid = (a.y + b.y) / 2;
+          const enter = mid - halfChord;
+          const leave = mid + halfChord;
+
+          d += ` C ${a.x + swoop * loopSide * 0.45} ${a.y + dy * 0.26}, ${a.x} ${enter - dy * 0.2}, ${a.x} ${enter}`;
+          d += ` A ${radius} ${radius} 0 1 ${loopSide > 0 ? 1 : 0} ${a.x} ${leave}`;
+          d += ` C ${b.x} ${leave + dy * 0.2}, ${b.x + swoop * loopSide * 0.45} ${b.y - dy * 0.26}, ${b.x} ${b.y}`;
+        } else {
+          const reach = dy * 0.42;
+          d += ` C ${a.x + swoop * side} ${a.y + reach}, ${b.x + swoop * side} ${b.y - reach}, ${b.x} ${b.y}`;
+        }
+      }
+
+      path.setAttribute("d", d);
+    }
+
+    draw();
+
+    let observer: ResizeObserver | null = null;
+    if (typeof ResizeObserver === "function") {
+      observer = new ResizeObserver(draw);
+      observer.observe(box);
+    } else {
+      window.addEventListener("resize", draw);
+    }
+    twoColumn.addEventListener("change", draw);
+
+    return () => {
+      if (observer) observer.disconnect();
+      else window.removeEventListener("resize", draw);
+      twoColumn.removeEventListener("change", draw);
+    };
+  }, [containerRef, pathRef]);
+}
+
+function StepPreviewWindow({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="tl-window">
+      <div className="tl-window-bar">
+        <span className="tl-dot-r" />
+        <span className="tl-dot-y" />
+        <span className="tl-dot-g" />
+        <span className="tl-window-title">{title}</span>
+      </div>
+      <div className="tl-window-body">{children}</div>
+    </div>
+  );
+}
+
+function StepPreview({ screen }: { screen: "verification" | "listing" | "messages" | "payment" }) {
+  if (screen === "verification") {
+    return (
+      <StepPreviewWindow title="Verification">
+        <div className="tl-docs">
+          <div className="tl-doc">
+            <div className="tl-doc-thumb">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
+                <circle cx="12" cy="12" r="10" /><polyline points="16 10 11 15 8 12" />
+              </svg>
+            </div>
+            <div className="tl-doc-info">
+              <div className="tl-doc-name">Valid ID</div>
+              <div className="tl-doc-meta">Driver’s Licence · front and back</div>
+            </div>
+            <span className="tl-chip tl-chip-ok">Approved</span>
+          </div>
+          <div className="tl-doc">
+            <div className="tl-doc-thumb">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
+                <circle cx="12" cy="12" r="10" /><polyline points="16 10 11 15 8 12" />
+              </svg>
+            </div>
+            <div className="tl-doc-info">
+              <div className="tl-doc-name">Selfie with ID</div>
+              <div className="tl-doc-meta">Taken in app</div>
+            </div>
+            <span className="tl-chip tl-chip-ok">Approved</span>
+          </div>
+        </div>
+        <div className="tl-verified">
+          <span className="tl-verified-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+          </span>
+          <div>
+            <div className="tl-verified-title">Verified Seller</div>
+            <div className="tl-verified-sub">Checked by a HomeSure admin</div>
+          </div>
+        </div>
+      </StepPreviewWindow>
+    );
+  }
+
+  if (screen === "listing") {
+    return (
+      <StepPreviewWindow title="Browse">
+        <div className="tl-filters">
+          <span className="tl-filter">Poblacion</span>
+          <span className="tl-filter">Up to ₱20,000</span>
+          <span className="tl-filter">Apartment</span>
+        </div>
+        <div className="tl-listing">
+          <div className="tl-listing-img">
+            <span className="tl-listing-type">For Rent</span>
+          </div>
+          <div className="tl-listing-body">
+            <div className="tl-listing-title">2BR Apartment</div>
+            <div className="tl-listing-addr">Poblacion, Sta. Maria</div>
+            <div className="tl-listing-price">₱15,000 <span>/month</span></div>
+            <div className="tl-listing-specs">
+              <span><i>🛏</i> 2</span>
+              <span><i>🚿</i> 1</span>
+              <span><i>📐</i> 48 sqm</span>
+            </div>
+          </div>
+        </div>
+      </StepPreviewWindow>
+    );
+  }
+
+  if (screen === "messages") {
+    return (
+      <StepPreviewWindow title="Messages">
+        <div className="tl-msg tl-msg-them">
+          <div className="tl-msg-bubble">Hi! Is the unit still available?</div>
+          <div className="tl-msg-time">9:15 AM</div>
+        </div>
+        <div className="tl-msg tl-msg-me">
+          <div className="tl-msg-bubble">Yes it is. Free this Saturday?</div>
+          <div className="tl-msg-time">9:18 AM</div>
+        </div>
+        <div className="tl-msg tl-msg-them">
+          <div className="tl-msg-bubble tl-msg-viewing">
+            <div className="tl-viewing-tag">Viewing Request</div>
+            <div className="tl-viewing-when">Sat, 14 June · 10:00 AM</div>
+            <div className="tl-viewing-state">Accepted</div>
+          </div>
+          <div className="tl-msg-time">9:22 AM</div>
+        </div>
+      </StepPreviewWindow>
+    );
+  }
+
+  return (
+    <StepPreviewWindow title="Payments">
+      <div className="tl-pay">
+        <div className="tl-pay-left">
+          <div className="tl-pay-property">2BR Apartment — Poblacion</div>
+          <div className="tl-pay-meta">
+            <div className="tl-pay-item"><span className="tl-pay-label">Type</span><span className="tl-pay-value">Rent</span></div>
+            <div className="tl-pay-item"><span className="tl-pay-label">Period</span><span className="tl-pay-value">June 2026</span></div>
+            <div className="tl-pay-item"><span className="tl-pay-label">Method</span><span className="tl-pay-value">GCash</span></div>
+            <div className="tl-pay-item"><span className="tl-pay-label">Reference</span><span className="tl-pay-value">GC-78452</span></div>
+          </div>
+        </div>
+        <div className="tl-pay-right">
+          <div className="tl-pay-amount">₱15,000</div>
+          <span className="tl-chip tl-chip-ok">Confirmed</span>
+        </div>
+      </div>
+    </StepPreviewWindow>
+  );
+}
+
 function HowItWorks() {
   const [ref, visible] = useReveal();
+  const stepsRef = useRef<HTMLDivElement>(null);
+  const pathRef = useRef<SVGPathElement>(null);
+  useCurvedSpine(stepsRef, pathRef);
+
   return (
     <section className={`section reveal-section${visible ? " in-view" : ""}`} ref={ref}>
       <span className="section-label">How It Works</span>
       <h2 className="section-title">Simple Steps to Your Next Home</h2>
       <p className="section-sub">Get started in minutes — no complicated process</p>
-      <div className="how-steps">
+      <div className="how-steps" ref={stepsRef}>
+        <svg className="tl-spine" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="tl-spine-fade" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="rgba(0,201,167,0)" />
+              <stop offset="0.09" stopColor="rgba(0,201,167,0.34)" />
+              <stop offset="0.91" stopColor="rgba(0,201,167,0.34)" />
+              <stop offset="1" stopColor="rgba(0,201,167,0)" />
+            </linearGradient>
+          </defs>
+          <path className="tl-spine-path" ref={pathRef} fill="none" />
+        </svg>
         {steps.map((s, i) => (
-          <div key={i} className="how-step">
-            <div className="how-step-num">{s.num}</div>
-            <div className="how-step-title">{s.title}</div>
-            <div className="how-step-desc">{s.desc}</div>
+          <div key={i} className={`how-step tl-step${i % 2 ? " tl-flip" : ""}`}>
+            <div className="tl-preview">
+              <StepPreview screen={s.screen} />
+            </div>
+            <div className="tl-dot" aria-hidden="true" />
+            <div className="tl-text">
+              <div className="tl-head">
+                <span className="tl-num">{s.num}</span>
+                <span className="tl-label">{s.label}</span>
+              </div>
+              <h3 className="tl-title">{s.title}</h3>
+              <p className="tl-desc">{s.desc}</p>
+            </div>
           </div>
         ))}
       </div>
@@ -841,7 +1237,37 @@ function HowItWorks() {
   );
 }
 
-// Features Component
+// ── How We Verify Component ────────────────────────────────────────────────
+function HowWeVerify() {
+  const [ref, visible] = useReveal();
+
+  return (
+    <section className={`section reveal-section verify-section${visible ? " in-view" : ""}`} ref={ref} id="how-we-verify">
+      <span className="section-label">How We Verify</span>
+      <h2 className="section-title">Four Things Nobody Gets Past</h2>
+      <p className="section-sub">
+        Not a promise about how careful we are — four checks the platform refuses to skip
+      </p>
+      <div className="verify-grid">
+        {verifySteps.map((s, i) => (
+          <div key={i} className="verify-card">
+            <div className="verify-card-top">
+              <span className="verify-icon">{s.icon}</span>
+              <span className="verify-tag">{s.tag}</span>
+            </div>
+            <h3 className="verify-title">{s.title}</h3>
+            <p className="verify-desc">{s.desc}</p>
+          </div>
+        ))}
+      </div>
+      <p className="verify-note">
+        Verification does not expire quietly. When a seller’s documents lapse they are moved back to re-verification, and their listings leave the site until the new ones are approved.
+      </p>
+    </section>
+  );
+}
+
+// ── Why HomeSure Component ─────────────────────────────────────────────────
 function WhyHomeSure() {
   const [ref, visible] = useReveal();
   return (
@@ -864,8 +1290,8 @@ function WhyHomeSure() {
   );
 }
 
-// Stat Box Component
-function StatBox({ stat }: { stat: (typeof statsData)[0] }) {
+// ── Live Stats Component with Client-Side Fetch ────────────────────────────
+function StatBox({ stat }: { stat: { end: number; suffix: string; label: string } }) {
   const ref = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(false);
   const [val, setVal] = useState(0);
@@ -882,8 +1308,9 @@ function StatBox({ stat }: { stat: (typeof statsData)[0] }) {
   }, []);
 
   useEffect(() => {
-    if (!active || stat.end === 0) {
-      if (active && stat.end === 0) setVal(0);
+    if (!active) return;
+    if (stat.end <= 0) {
+      setVal(stat.end);
       return;
     }
     let start = 0;
@@ -912,15 +1339,54 @@ function StatBox({ stat }: { stat: (typeof statsData)[0] }) {
   );
 }
 
-// Stats Component
 function Stats() {
   const [ref, visible] = useReveal();
+  const [liveStats, setLiveStats] = useState<{
+    barangays: number;
+    listings: number;
+    verifiedSellers: number;
+  } | null>(null);
+
+  // Client fetch live counts from Supabase
+  useEffect(() => {
+    let cancelled = false;
+    async function loadStats() {
+      try {
+        const supabase = createClient();
+        const [listingsRes, sellersRes, barangaysRes] = await Promise.all([
+          supabase.from("properties").select("*", { count: "exact", head: true }).eq("status", "approved"),
+          supabase.from("public_profiles").select("*", { count: "exact", head: true }).eq("role", "seller").eq("account_status", "verified"),
+          supabase.from("barangays").select("id", { count: "exact", head: true }),
+        ]);
+
+        if (!cancelled) {
+          setLiveStats({
+            listings: listingsRes.count || 0,
+            verifiedSellers: sellersRes.count || 0,
+            barangays: barangaysRes.count || 24,
+          });
+        }
+      } catch (err) {
+        console.error("Could not load public stats:", err);
+      }
+    }
+    loadStats();
+    return () => { cancelled = true; };
+  }, []);
+
+  const statsData = [
+    { key: "barangays", end: liveStats ? liveStats.barangays : 24, suffix: "", label: "Barangays Covered" },
+    { key: "listings", end: liveStats ? liveStats.listings : 0, suffix: "", label: "Listings Live" },
+    { key: "verifiedSellers", end: liveStats ? liveStats.verifiedSellers : 0, suffix: "", label: "Verified Sellers" },
+    { key: null, end: 0, suffix: "", label: "Unverified Listings" },
+  ];
+
   return (
     <section className={`section reveal-section${visible ? " in-view" : ""}`} ref={ref}>
       <div className="stats-inner">
         <span className="section-label">Our Numbers</span>
-        <h2 className="section-title">Trusted by Thousands</h2>
-        <p className="section-sub">Building a safer housing marketplace for everyone in Sta. Maria</p>
+        <h2 className="section-title">Where HomeSure Stands Today</h2>
+        <p className="section-sub">Counted live from the platform, not rounded up for a landing page</p>
         <div className="stats-grid">
           {statsData.map((s, i) => (
             <StatBox key={i} stat={s} />
@@ -931,34 +1397,7 @@ function Stats() {
   );
 }
 
-// Testimonials Component
-function Testimonials() {
-  const [ref, visible] = useReveal();
-  return (
-    <section className={`section-alt reveal-section${visible ? " in-view" : ""}`} ref={ref}>
-      <span className="section-label">Testimonials</span>
-      <h2 className="section-title">What Our Users Say</h2>
-      <p className="section-sub">Real stories from real people in the community</p>
-      <div className="testimonials-grid">
-        {testimonials.map((t, i) => (
-          <div key={i} className="testimonial-card">
-            <div className="t-stars">{"★".repeat(t.stars) + (t.stars < 5 ? "☆".repeat(5 - t.stars) : "")}</div>
-            <p className="t-quote">"{t.quote}"</p>
-            <div className="t-author">
-              <div className="t-avatar">{t.initials}</div>
-              <div>
-                <div className="t-name">{t.name}</div>
-                <div className="t-role">{t.role}</div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-// CTA Banner Component
+// ── CTA Banner Component ───────────────────────────────────────────────────
 function CTA() {
   const [ref, visible] = useReveal();
   return (
@@ -969,10 +1408,10 @@ function CTA() {
           Join thousands of verified users discovering trusted properties in Sta. Maria, Bulacan
         </p>
         <div className="cta-btns">
-          <Link href="/auth/signup" className="cta-btn-white" style={{ textDecoration: 'none' }}>
+          <Link href="/auth/signup.html" className="cta-btn-white" style={{ textDecoration: 'none' }}>
             Sign Up as Buyer
           </Link>
-          <Link href="/auth/signup" className="cta-btn-ghost" style={{ textDecoration: 'none' }}>
+          <Link href="/auth/signup.html" className="cta-btn-ghost" style={{ textDecoration: 'none' }}>
             List Your Property
           </Link>
         </div>
@@ -981,7 +1420,7 @@ function CTA() {
   );
 }
 
-// Footer Component
+// ── Footer Component ───────────────────────────────────────────────────────
 function Footer() {
   return (
     <footer>
@@ -997,10 +1436,10 @@ function Footer() {
         </div>
         <div>
           <div className="footer-col-title">Platform</div>
-          <Link href="/dashboard/properties" className="footer-link">
+          <Link href="/browse.html" className="footer-link">
             Browse Listings
           </Link>
-          <Link href="/auth/signup" className="footer-link">
+          <Link href="/auth/signup.html" className="footer-link">
             List Your Property
           </Link>
           <Link href="/about.html" className="footer-link">
@@ -1009,7 +1448,7 @@ function Footer() {
         </div>
         <div>
           <div className="footer-col-title">Support</div>
-          <Link href="/help.html" className="footer-link">
+          <Link href="/faqs.html" className="footer-link">
             Help & Support
           </Link>
           <Link href="/help.html" className="footer-link">
@@ -1029,11 +1468,13 @@ function Footer() {
           </Link>
         </div>
       </div>
+      <div className="footer-divider" />
+      <div className="footer-copy">© 2026 HomeSure. All rights reserved.</div>
     </footer>
   );
 }
 
-// Main Landing Page Component
+// ── Main Landing Page Component (Client Fetch) ─────────────────────────────
 export default function HomePage() {
   const [propertiesList, setPropertiesList] = useState<any[]>([]);
 
@@ -1043,11 +1484,25 @@ export default function HomePage() {
         const supabase = createClient();
         const { data, error } = await supabase
           .from("properties")
-          .select("*, seller:profiles(*)")
-          .eq("status", "available")
+          .select("id, title, price, listing_type, address, images, status, lifecycle_status, barangays(name)")
+          .eq("status", "approved")
           .limit(6);
+
         if (!error && data && data.length > 0) {
-          setPropertiesList(data);
+          const formatted = data
+            .filter((p: any) => p.lifecycle_status !== "sold" && p.lifecycle_status !== "rented")
+            .map((p: any) => ({
+              id: p.id,
+              title: p.title,
+              location: p.barangays?.name ? `${p.barangays.name}, Sta. Maria` : p.address,
+              price: typeof p.price === "number" ? `₱${p.price.toLocaleString()}` : p.price,
+              period: p.listing_type === "rent" ? "/month" : "",
+              verified: true,
+              image: (p.images && p.images[0]) || fallbackProperties[0].image,
+            }));
+          if (formatted.length > 0) {
+            setPropertiesList(formatted);
+          }
         }
       } catch (e) {
         console.error("Error fetching properties for landing page:", e);
@@ -1058,23 +1513,22 @@ export default function HomePage() {
 
   return (
     <>
-    <link rel="stylesheet" href="/assets/css/index.css" />
-   
-    <div style={{ minHeight: "100vh", backgroundColor: "var(--bg)", color: "var(--text)" }}>
-      <Navbar />
-      <Hero />
-      <FeatureHighlights />
-      <TrustBanner />
-      <PlatformFeatures />
-      <Categories />
-      <Carousel propertiesList={propertiesList} />
-      <HowItWorks />
-      <WhyHomeSure />
-      <Stats />
-      <Testimonials />
-      <CTA />
-      <Footer />
-    </div>
+      <link rel="stylesheet" href="/assets/css/index.css" />
+      <div style={{ minHeight: "100vh", backgroundColor: "var(--bg)", color: "var(--text)" }}>
+        <Navbar />
+        <Hero />
+        <FeatureHighlights />
+        <TrustBanner />
+        <PlatformFeatures />
+        <Categories />
+        <Carousel propertiesList={propertiesList} />
+        <HowItWorks />
+        <HowWeVerify />
+        <WhyHomeSure />
+        <Stats />
+        <CTA />
+        <Footer />
+      </div>
     </>
   );
 }
