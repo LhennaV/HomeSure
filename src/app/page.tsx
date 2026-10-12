@@ -1057,6 +1057,9 @@ export default function HomePage() {
   }, []);
 
   return (
+    <>
+    <link rel="stylesheet" href="/assets/css/index.css" />
+   
     <div style={{ minHeight: "100vh", backgroundColor: "var(--bg)", color: "var(--text)" }}>
       <Navbar />
       <Hero />
@@ -1072,5 +1075,6 @@ export default function HomePage() {
       <CTA />
       <Footer />
     </div>
+    </>
   );
 }
