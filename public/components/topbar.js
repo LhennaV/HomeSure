@@ -572,7 +572,7 @@
           <div class="hs-profile-dropdown" id="hsProfileDropdown">
             <div class="hs-profile-head">
               <div class="hs-profile-head-name">${fullName}</div>
-              <div class="hs-profile-head-role">${role}</div>
+              <div class="hs-profile-head-role">${role === 'super_duper_admin' ? 'Super Duper Admin' : role === 'superadmin' ? 'Super Admin' : role}</div>
             </div>
             <div class="hs-profile-menu" id="hsProfileMenu">
               <button class="hs-profile-menu-item" data-action="profile">
@@ -656,8 +656,14 @@
         { id: 3, type: 'system',  unread: false, time: 'Yesterday', msg: 'Monthly report generated for March 2026.' },
         { id: 4, type: 'system',  unread: false, time: '2 days ago', msg: 'Platform usage hit 500 active users this week.' },
       ],
+      super_duper_admin: [
+        { id: 1, type: 'system',  unread: true,  time: '15m ago',   msg: 'Admin <strong>Jose Reyes</strong> approved 5 new listings.' },
+        { id: 2, type: 'message', unread: true,  time: '2h ago',    msg: 'New admin account registered — pending super admin approval.' },
+        { id: 3, type: 'system',  unread: false, time: 'Yesterday', msg: 'Monthly report generated for March 2026.' },
+        { id: 4, type: 'system',  unread: false, time: '2 days ago', msg: 'Platform usage hit 500 active users this week.' },
+      ],
     };
-    let NOTIFS = (NOTIFS_BY_ROLE[role] || NOTIFS_BY_ROLE.buyer).map(n => Object.assign({}, n));
+    let NOTIFS = (NOTIFS_BY_ROLE[role] || NOTIFS_BY_ROLE.superadmin || NOTIFS_BY_ROLE.buyer).map(n => Object.assign({}, n));
 
     const ICONS = {
       listing: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
@@ -794,14 +800,15 @@
         const action = btn.dataset.action;
         const p = window.location.pathname;
 
+        const moduleDir = (role === 'super_duper_admin' || role === 'superadmin') ? 'super-admin' : role;
         if (action === 'profile') {
-          const basePath = p.includes('/module/') ? '../' + role + '/' : 'module/' + role + '/';
-          window.location.href = basePath + 'profile.html';
+          const basePath = p.includes('/module/') ? '../' + moduleDir + '/' : 'module/' + moduleDir + '/';
+          window.location.href = basePath + (role === 'super_duper_admin' || role === 'superadmin' ? 'super-admin-profile.html' : 'profile.html');
         } else if (action === 'settings') {
-          const basePath = p.includes('/module/') ? '../' + role + '/' : 'module/' + role + '/';
-          window.location.href = basePath + 'settings.html';
+          const basePath = p.includes('/module/') ? '../' + moduleDir + '/' : 'module/' + moduleDir + '/';
+          window.location.href = basePath + (role === 'super_duper_admin' || role === 'superadmin' ? 'super-admin-settings.html' : 'settings.html');
         } else if (action === 'help') {
-          const basePath = p.includes('/module/') ? '../' + role + '/' : 'module/' + role + '/';
+          const basePath = p.includes('/module/') ? '../' + moduleDir + '/' : 'module/' + moduleDir + '/';
           window.location.href = basePath + 'help.html';
         } else if (action === 'reverify') {
           if (typeof global._hsOpenReverify === 'function') global._hsOpenReverify();

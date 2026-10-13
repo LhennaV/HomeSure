@@ -44,7 +44,8 @@ function redirectToDashboard(role) {
     buyer:      '../module/buyer/buyer.html',
     seller:     '../module/seller/seller.html',
     admin:      '../module/admin/admin.html',
-    superadmin: '../module/super-admin/super-admin.html',
+    superadmin:         '../module/super-admin/super-admin.html',
+    super_duper_admin:  '../module/super-admin/super-admin.html',
   };
   const path = routes[role];
   if (path) window.location.href = path;

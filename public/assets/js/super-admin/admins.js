@@ -1,7 +1,7 @@
 // HomeSure – Super Admin: Admin Management Page
 
 const user = getSession();
-if (!user || user.role !== 'superadmin') window.location.href = '../../auth/signin.html';
+if (!user || (user.role !== 'superadmin' && user.role !== 'super_duper_admin')) window.location.href = '../../auth/signin.html';
 
 HomeSureSidebar.init({ activePage: 'admins' });
 HomeSureTopbar.init({ placeholder: 'Search admins...', onSearch: function() { searchQuery = (document.getElementById('hsSearch')||{}).value?.trim() || ''; renderAdminTable(); } });

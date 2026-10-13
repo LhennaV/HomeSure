@@ -2,7 +2,7 @@
 
 (function () {
   const user = getSession();
-  if (!user || user.role !== 'superadmin') {
+  if (!user || (user.role !== 'superadmin' && user.role !== 'super_duper_admin')) {
     window.location.href = '../../auth/signin.html';
     return;
   }
@@ -10,7 +10,7 @@
   HomeSureSidebar.init({ activePage: 'audit-trail' });
   HomeSureTopbar.init({ placeholder: 'Search user, action, IP…', onSearch: function() { searchQuery = (document.getElementById('hsSearch')||{}).value?.trim() || ''; renderTable(); } });
 
-  const roleColors = { admin: '#3b82f6', superadmin: '#8b5cf6' };
+  const roleColors = { admin: '#3b82f6', superadmin: '#8b5cf6', super_duper_admin: '#ec4899' };
   let auditFilter  = 'all';
   let searchQuery  = '';
   let entries      = [];      // loaded from audit_logs; only super admins can read it

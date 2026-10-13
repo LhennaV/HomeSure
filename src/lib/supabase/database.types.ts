@@ -283,7 +283,7 @@ export interface Database {
   };
 }
 
-export type UserRole = "buyer" | "seller" | "admin" | "superadmin";
+export type UserRole = "buyer" | "seller" | "admin" | "superadmin" | "super_duper_admin";
 export type AccountStatus = "unverified" | "pending" | "verified" | "reverification";
 export type VerificationStatus = "unverified" | "pending_ocr" | "pending_lra" | "verified" | "rejected";
 export type PaymentStatus = "pending" | "paid" | "failed" | "expired";

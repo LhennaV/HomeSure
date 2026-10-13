@@ -70,6 +70,23 @@
       { id: 'audit-trail', label: 'Audit Trail',      icon: 'flag'   },
       { id: 'reports',     label: 'System Reports',   icon: 'chart'  },
     ],
+    super_duper_admin: [
+      { id: 'dashboard',   label: 'Super Admin Panel', icon: 'shield' },
+      { id: 'admins',      label: 'Admin Management',  icon: 'users'  },
+      { id: 'audit-trail', label: 'Audit Trail',       icon: 'flag'   },
+      { id: 'reports',     label: 'System Reports',    icon: 'chart'  },
+      {
+        id: 'admin_operations',
+        label: 'Admin Hub',
+        icon: 'briefcase',
+        submenu: [
+          { id: 'admin-dashboard', label: 'Admin Dashboard', icon: 'grid'  },
+          { id: 'admin-listings',  label: 'Listings (Admin)', icon: 'home'  },
+          { id: 'admin-users',     label: 'Users (Admin)',    icon: 'users' },
+          { id: 'admin-payments',  label: 'Payments (Admin)', icon: 'wallet'},
+        ]
+      },
+    ],
   };
 
   // ── Injected CSS ─────────────────────────────────────────────────────────────
@@ -487,6 +504,16 @@
       seller:     { dashboard: 'seller.html', listings: 'listings.html', tenants: 'tenants.html', messages: 'messages.html', payments: 'payments.html' },
       admin:      { dashboard: 'admin.html', listings: 'listings.html', users: 'users.html', reports: 'reports.html', analytics: 'analytics.html', payments: 'payments.html' },
       superadmin: { dashboard: 'super-admin.html', admins: 'admins.html', 'audit-trail': 'audit-trail.html', reports: 'reports.html' },
+      super_duper_admin: {
+        dashboard: window.location.pathname.includes('/admin/') ? '../super-admin/super-admin.html' : 'super-admin.html',
+        admins: window.location.pathname.includes('/admin/') ? '../super-admin/admins.html' : 'admins.html',
+        'audit-trail': window.location.pathname.includes('/admin/') ? '../super-admin/audit-trail.html' : 'audit-trail.html',
+        reports: window.location.pathname.includes('/admin/') ? '../super-admin/reports.html' : 'reports.html',
+        'admin-dashboard': window.location.pathname.includes('/super-admin/') ? '../admin/admin.html' : 'admin.html',
+        'admin-listings': window.location.pathname.includes('/super-admin/') ? '../admin/listings.html' : 'listings.html',
+        'admin-users': window.location.pathname.includes('/super-admin/') ? '../admin/users.html' : 'users.html',
+        'admin-payments': window.location.pathname.includes('/super-admin/') ? '../admin/payments.html' : 'payments.html',
+      },
     };
     const sessionUser = typeof getSession === 'function' ? getSession() : null;
     const navRole = sessionUser ? sessionUser.role : 'buyer';
@@ -557,6 +584,7 @@
       seller:     { dashboard: 'seller.html',       listings: 'listings.html', messages: 'messages.html', payments: 'payments.html' },
       admin:      { dashboard: 'admin.html',        listings: 'listings.html', users: 'users.html',       reports: 'reports.html', analytics: 'analytics.html', payments: 'payments.html' },
       superadmin: { dashboard: 'super-admin.html',  admins: 'admins.html',     'audit-trail': 'audit-trail.html', reports: 'reports.html' },
+      super_duper_admin: { dashboard: 'super-admin.html',  admins: 'admins.html',     'audit-trail': 'audit-trail.html', reports: 'reports.html' },
     };
     const bnRoutes = BN_ROUTES[role] || {};
 
