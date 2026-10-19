@@ -8,6 +8,7 @@ const nextConfig = {
       { protocol: "https", hostname: "**.xendit.co" },
       { protocol: "https", hostname: "**.google.com" },
       { protocol: "https", hostname: "**.googleapis.com" },
+      { protocol: "https", hostname: "images.unsplash.com" },
     ],
   },
 };

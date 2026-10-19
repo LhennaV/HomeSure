@@ -89,9 +89,10 @@
                 <div class="field">
                   <label>Price (₱)</label>
                   <div class="price-wrap">
-                    <input type="number" id="listingPrice" placeholder="0" min="0" />
+                    <input type="number" id="listingPrice" placeholder="0" min="0" oninput="updatePriceHelper()" />
                     <span class="price-suffix" id="priceSuffix"></span>
                   </div>
+                  <div id="priceHelper" style="font-size:12px;margin-top:4px;min-height:16px;"></div>
                 </div>
               </div>
 
@@ -363,7 +364,10 @@
   </div>
 </div>
 
-<script src="../../assets/js/fake-data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.js"></script>
+<script src="../../assets/js/config.js"></script>
+<script src="../../assets/js/session.js"></script>
+<script src="../../assets/js/data.js"></script>
 <script src="../../components/sidebar.js"></script>
 <script src="../../components/topbar.js"></script>
 <script src="../../assets/js/camera-capture.js"></script>

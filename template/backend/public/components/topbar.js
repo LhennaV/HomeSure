@@ -498,8 +498,8 @@
     if (!el) { console.warn('HomeSureTopbar: #hs-topbar not found.'); return; }
 
     const user = typeof getSession === 'function' ? getSession() : null;
-    const initials  = user ? (user.firstName[0] + user.lastName[0]).toUpperCase() : 'U';
-    const fullName  = user ? user.firstName + ' ' + user.lastName : 'User';
+    const initials  = user ? hsInitials(user.firstName, user.lastName, user.email) : 'U';
+    const fullName  = hsDisplayName(user);
     const role      = user ? user.role : 'buyer';
     const avatarContent = user && user.avatar
       ? `<img src="${user.avatar}" alt="${fullName}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;" />`
@@ -572,7 +572,7 @@
           <div class="hs-profile-dropdown" id="hsProfileDropdown">
             <div class="hs-profile-head">
               <div class="hs-profile-head-name">${fullName}</div>
-              <div class="hs-profile-head-role">${role}</div>
+              <div class="hs-profile-head-role">${role === 'super_duper_admin' ? 'Super Duper Admin' : role === 'superadmin' ? 'Super Admin' : role}</div>
             </div>
             <div class="hs-profile-menu" id="hsProfileMenu">
               <button class="hs-profile-menu-item" data-action="profile">
@@ -656,8 +656,38 @@
         { id: 3, type: 'system',  unread: false, time: 'Yesterday', msg: 'Monthly report generated for March 2026.' },
         { id: 4, type: 'system',  unread: false, time: '2 days ago', msg: 'Platform usage hit 500 active users this week.' },
       ],
+      super_duper_admin: [
+        { id: 1, type: 'system',  unread: true,  time: '15m ago',   msg: 'Admin <strong>Jose Reyes</strong> approved 5 new listings.' },
+        { id: 2, type: 'message', unread: true,  time: '2h ago',    msg: 'New admin account registered — pending super admin approval.' },
+        { id: 3, type: 'system',  unread: false, time: 'Yesterday', msg: 'Monthly report generated for March 2026.' },
+        { id: 4, type: 'system',  unread: false, time: '2 days ago', msg: 'Platform usage hit 500 active users this week.' },
+      ],
     };
-    let NOTIFS = (NOTIFS_BY_ROLE[role] || NOTIFS_BY_ROLE.buyer).map(n => Object.assign({}, n));
+
+    const notifStorageKey = 'hs_read_notifs_' + role + '_' + (user ? user.id : 'anon');
+    let readIds = [];
+    try {
+      readIds = JSON.parse(localStorage.getItem(notifStorageKey) || '[]');
+    } catch (_) { readIds = []; }
+
+    let NOTIFS = (NOTIFS_BY_ROLE[role] || NOTIFS_BY_ROLE.superadmin || NOTIFS_BY_ROLE.buyer).map(n => {
+      const isRead = Array.isArray(readIds) && readIds.includes(n.id);
+      return Object.assign({}, n, { unread: isRead ? false : n.unread });
+    });
+
+    function updateNotifDot() {
+      const hasUnread = NOTIFS.some(n => n.unread);
+      const dot = el.querySelector('#hsNotifDot');
+      if (dot) dot.style.display = hasUnread ? 'block' : 'none';
+    }
+
+    function saveReadState() {
+      const read = NOTIFS.filter(n => !n.unread).map(n => n.id);
+      try {
+        localStorage.setItem(notifStorageKey, JSON.stringify(read));
+      } catch (_) {}
+      updateNotifDot();
+    }
 
     const ICONS = {
       listing: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
@@ -693,7 +723,7 @@
 
     function notifItem(n) {
       return `
-        <div class="hs-notif-item ${n.unread ? 'unread' : ''}">
+        <div class="hs-notif-item ${n.unread ? 'unread' : ''}" data-id="${n.id}">
           <div class="hs-notif-avatar ${n.type === 'system' ? 'system' : ''}">${ICONS[n.type] || ''}</div>
           <div class="hs-notif-content">
             <div class="hs-notif-msg">${n.msg}</div>
@@ -703,6 +733,7 @@
     }
 
     renderNotifs('all');
+    updateNotifDot();
 
     // Tab switching
     el.querySelectorAll('.hs-notif-tab').forEach(tab => {
@@ -714,14 +745,29 @@
       });
     });
 
+    // Individual notification click
+    const notifBody = el.querySelector('#hsNotifBody');
+    if (notifBody) {
+      notifBody.addEventListener('click', e => {
+        const item = e.target.closest('.hs-notif-item');
+        if (!item) return;
+        const id = Number(item.dataset.id);
+        const target = NOTIFS.find(n => n.id === id);
+        if (target && target.unread) {
+          target.unread = false;
+          saveReadState();
+          renderNotifs(activeTab);
+        }
+      });
+    }
+
     // Mark all as read
     const markRead = el.querySelector('#hsMarkRead');
     if (markRead) {
       markRead.addEventListener('click', () => {
         NOTIFS.forEach(n => n.unread = false);
+        saveReadState();
         renderNotifs(activeTab);
-        const dot = el.querySelector('#hsNotifDot');
-        if (dot) dot.style.display = 'none';
       });
     }
 
@@ -794,23 +840,26 @@
         const action = btn.dataset.action;
         const p = window.location.pathname;
 
+        const moduleDir = (role === 'super_duper_admin' || role === 'superadmin') ? 'super-admin' : role;
         if (action === 'profile') {
-          const basePath = p.includes('/module/') ? '../' + role + '/' : 'module/' + role + '/';
-          window.location.href = basePath + 'profile.html';
+          const basePath = p.includes('/module/') ? '../' + moduleDir + '/' : 'module/' + moduleDir + '/';
+          window.location.href = basePath + (role === 'super_duper_admin' || role === 'superadmin' ? 'super-admin-profile.html' : 'profile.html');
         } else if (action === 'settings') {
-          const basePath = p.includes('/module/') ? '../' + role + '/' : 'module/' + role + '/';
-          window.location.href = basePath + 'settings.html';
+          const basePath = p.includes('/module/') ? '../' + moduleDir + '/' : 'module/' + moduleDir + '/';
+          window.location.href = basePath + (role === 'super_duper_admin' || role === 'superadmin' ? 'super-admin-settings.html' : 'settings.html');
         } else if (action === 'help') {
-          const basePath = p.includes('/module/') ? '../' + role + '/' : 'module/' + role + '/';
+          const basePath = p.includes('/module/') ? '../' + moduleDir + '/' : 'module/' + moduleDir + '/';
           window.location.href = basePath + 'help.html';
         } else if (action === 'reverify') {
           if (typeof global._hsOpenReverify === 'function') global._hsOpenReverify();
         } else if (action === 'logout') {
-          if (typeof clearSession === 'function') clearSession();
           const logoutPath = p.includes('/module/') ? '../../auth/signin.html'
             : p.includes('/auth/') ? '../auth/signin.html'
             : 'auth/signin.html';
-          window.location.href = logoutPath;
+          // Sign out of Supabase too (not just the cached copy), then leave.
+          const done = () => { window.location.href = logoutPath; };
+          if (typeof hsSignOut === 'function') hsSignOut().then(done, done);
+          else { if (typeof clearSession === 'function') clearSession(); done(); }
         }
       });
     }

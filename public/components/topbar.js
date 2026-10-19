@@ -663,7 +663,31 @@
         { id: 4, type: 'system',  unread: false, time: '2 days ago', msg: 'Platform usage hit 500 active users this week.' },
       ],
     };
-    let NOTIFS = (NOTIFS_BY_ROLE[role] || NOTIFS_BY_ROLE.superadmin || NOTIFS_BY_ROLE.buyer).map(n => Object.assign({}, n));
+
+    const notifStorageKey = 'hs_read_notifs_' + role + '_' + (user ? user.id : 'anon');
+    let readIds = [];
+    try {
+      readIds = JSON.parse(localStorage.getItem(notifStorageKey) || '[]');
+    } catch (_) { readIds = []; }
+
+    let NOTIFS = (NOTIFS_BY_ROLE[role] || NOTIFS_BY_ROLE.superadmin || NOTIFS_BY_ROLE.buyer).map(n => {
+      const isRead = Array.isArray(readIds) && readIds.includes(n.id);
+      return Object.assign({}, n, { unread: isRead ? false : n.unread });
+    });
+
+    function updateNotifDot() {
+      const hasUnread = NOTIFS.some(n => n.unread);
+      const dot = el.querySelector('#hsNotifDot');
+      if (dot) dot.style.display = hasUnread ? 'block' : 'none';
+    }
+
+    function saveReadState() {
+      const read = NOTIFS.filter(n => !n.unread).map(n => n.id);
+      try {
+        localStorage.setItem(notifStorageKey, JSON.stringify(read));
+      } catch (_) {}
+      updateNotifDot();
+    }
 
     const ICONS = {
       listing: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
@@ -699,7 +723,7 @@
 
     function notifItem(n) {
       return `
-        <div class="hs-notif-item ${n.unread ? 'unread' : ''}">
+        <div class="hs-notif-item ${n.unread ? 'unread' : ''}" data-id="${n.id}">
           <div class="hs-notif-avatar ${n.type === 'system' ? 'system' : ''}">${ICONS[n.type] || ''}</div>
           <div class="hs-notif-content">
             <div class="hs-notif-msg">${n.msg}</div>
@@ -709,6 +733,7 @@
     }
 
     renderNotifs('all');
+    updateNotifDot();
 
     // Tab switching
     el.querySelectorAll('.hs-notif-tab').forEach(tab => {
@@ -720,14 +745,29 @@
       });
     });
 
+    // Individual notification click
+    const notifBody = el.querySelector('#hsNotifBody');
+    if (notifBody) {
+      notifBody.addEventListener('click', e => {
+        const item = e.target.closest('.hs-notif-item');
+        if (!item) return;
+        const id = Number(item.dataset.id);
+        const target = NOTIFS.find(n => n.id === id);
+        if (target && target.unread) {
+          target.unread = false;
+          saveReadState();
+          renderNotifs(activeTab);
+        }
+      });
+    }
+
     // Mark all as read
     const markRead = el.querySelector('#hsMarkRead');
     if (markRead) {
       markRead.addEventListener('click', () => {
         NOTIFS.forEach(n => n.unread = false);
+        saveReadState();
         renderNotifs(activeTab);
-        const dot = el.querySelector('#hsNotifDot');
-        if (dot) dot.style.display = 'none';
       });
     }
 

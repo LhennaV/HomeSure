@@ -387,9 +387,13 @@
     [data-theme="light"] .doc-upload-box:hover { background: var(--teal-faint); }
     [data-theme="light"] .doc-upload-box.has-file { background: var(--teal-faint); }
     [data-theme="light"] .toggle-track { background: rgba(0,0,0,0.1); }
-    [data-theme="light"] .toggle-track::before { box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
-    [data-theme="light"] .pill-toggle { background: rgba(0,0,0,0.03); }
-    [data-theme="light"] .tag-checkbox { background: rgba(0,0,0,0.03); }
+    [data-theme="light"] .pill-toggle { background: rgba(0,0,0,0.03); color: #1e293b; border-color: rgba(0,0,0,0.15); }
+    [data-theme="light"] .pill-toggle.active,
+    .pill-toggle.active {
+      background: var(--teal) !important;
+      border-color: var(--teal) !important;
+      color: #ffffff !important;
+    }
     [data-theme="light"] .toast { box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
     [data-theme="light"] .success-modal { box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
     [data-theme="light"] .btn-primary {

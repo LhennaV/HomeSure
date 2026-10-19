@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 
 // ── Fallback Featured Properties Data ──────────────────────────────────────
@@ -492,10 +493,10 @@ function Navbar() {
     <nav>
       <Link className="nav-logo" href="/">
         <span className="nav-catstone-wrap">
-          <img src="/assets/img/CatsTone Logo.png" alt="CatsTone" className="nav-catstone-img" />
+          <Image src="/assets/img/CatsTone Logo.png" alt="CatsTone" width={28} height={28} className="nav-catstone-img" priority />
         </span>
         <span className="nav-logo-divider" />
-        <img src="/assets/img/HomeSure_Logo.svg" alt="HomeSure" className="img-logo" style={{ display: "block", height: 30 }} />
+        <Image src="/assets/img/HomeSure_Logo.svg" alt="HomeSure" width={30} height={30} className="img-logo" style={{ display: "block" }} priority />
         <span>HomeSure</span>
       </Link>
       <div className="nav-btns">
@@ -887,7 +888,7 @@ function Carousel({ propertiesList }: { propertiesList: any[] }) {
 
   const SideCard = (prop: any) => (
     <div className="crd-side">
-      <img className="crd-img" src={prop.image || prop.images?.[0] || fallbackProperties[0].image} alt={prop.title} />
+      <Image className="crd-img" src={prop.image || prop.images?.[0] || fallbackProperties[0].image} alt={prop.title || "Property"} width={320} height={130} unoptimized />
       <div className="crd-body-side">
         <div className="card-title-side">{prop.title}</div>
         <div className="card-loc">
@@ -922,10 +923,14 @@ function Carousel({ propertiesList }: { propertiesList: any[] }) {
             </div>
             <div className="crd-center">
               <div style={{ position: "relative" }}>
-                <img
+                <Image
                   className="crd-img-center"
                   src={centerProp.image || centerProp.images?.[0] || fallbackProperties[0].image}
-                  alt={centerProp.title}
+                  alt={centerProp.title || "Property"}
+                  width={600}
+                  height={200}
+                  unoptimized
+                  priority
                 />
                 {(centerProp.verified || centerProp.seller?.is_verified) && (
                   <div className="verified-badge">
@@ -1427,7 +1432,7 @@ function Footer() {
       <div className="footer-grid">
         <div>
           <div className="footer-logo">
-            <img src="/assets/img/HomeSure_Logo.svg" alt="HomeSure" height={28} style={{ display: "block" }} />
+            <Image src="/assets/img/HomeSure_Logo.svg" alt="HomeSure" width={28} height={28} style={{ display: "block" }} />
             HomeSure
           </div>
           <p className="footer-tagline">
@@ -1512,23 +1517,20 @@ export default function HomePage() {
   }, []);
 
   return (
-    <>
-      <link rel="stylesheet" href="/assets/css/index.css" />
-      <div style={{ minHeight: "100vh", backgroundColor: "var(--bg)", color: "var(--text)" }}>
-        <Navbar />
-        <Hero />
-        <FeatureHighlights />
-        <TrustBanner />
-        <PlatformFeatures />
-        <Categories />
-        <Carousel propertiesList={propertiesList} />
-        <HowItWorks />
-        <HowWeVerify />
-        <WhyHomeSure />
-        <Stats />
-        <CTA />
-        <Footer />
-      </div>
-    </>
+    <div style={{ minHeight: "100vh", backgroundColor: "var(--bg)", color: "var(--text)" }}>
+      <Navbar />
+      <Hero />
+      <FeatureHighlights />
+      <TrustBanner />
+      <PlatformFeatures />
+      <Categories />
+      <Carousel propertiesList={propertiesList} />
+      <HowItWorks />
+      <HowWeVerify />
+      <WhyHomeSure />
+      <Stats />
+      <CTA />
+      <Footer />
+    </div>
   );
 }

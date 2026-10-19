@@ -273,8 +273,11 @@ async function resendEmail() {
 // /api/auth/verify-email sends people here with ?verified=… so they see a sentence rather than
 // a bare JSON response.
 (function showVerificationResult() {
-  const status = new URLSearchParams(window.location.search).get('verified');
-  if (!status) return;
+  const urlParams = new URLSearchParams(window.location.search);
+  const status = urlParams.get('verified');
+  const errorParam = urlParams.get('error');
+
+  if (!status && !errorParam) return;
 
   const MESSAGES = {
     success: ['Your email is confirmed. You can sign in now.', 'ok'],
@@ -283,8 +286,17 @@ async function resendEmail() {
     invalid: ['That confirmation link is not valid. Please request a new one.', 'error'],
     missing: ['That confirmation link was incomplete. Please request a new one.', 'error'],
     failed:  ['We could not confirm your email. Please try the link again shortly.', 'error'],
+    google_cancelled: ['Google sign-in was cancelled.', 'error'],
+    google_not_configured: ['Google sign-in is not configured yet.', 'error'],
+    google_exchange_failed: ['Could not complete Google authentication. Please try again.', 'error'],
+    google_profile_failed: ['Could not read your Google profile. Please try again.', 'error'],
+    create_failed: ['Could not create account via Google. Please try regular sign up.', 'error'],
+    update_failed: ['Could not update account for Google sign-in. Please try again.', 'error'],
+    signin_failed: ['Could not start session after Google sign-in. Please try again.', 'error'],
   };
-  const [text, kind] = MESSAGES[status] || MESSAGES.invalid;
+
+  const key = status || errorParam;
+  const [text, kind] = MESSAGES[key] || ['An error occurred during authentication. Please try again.', 'error'];
 
   const banner = document.createElement('div');
   banner.setAttribute('role', 'status');
@@ -351,36 +363,21 @@ async function resendReset() {
 // ── Dodge Button Easter Egg REMOVED ───────────────────────────────────────────
 // QA feedback: Button moving causes bad UX. Removed all dodge functionality.
 
-// ── Google Toast ──────────────────────────────────────────────────────────────
+// ── Google Authentication ───────────────────────────────────────────────────
+
+function signInWithGoogle() {
+  const back = new URLSearchParams(window.location.search).get('redirect');
+  const redirectParam = back ? '&redirect=' + encodeURIComponent(back) : '';
+  window.location.href = '/api/auth/google?action=signin' + redirectParam;
+}
+
+function signUpWithGoogle() {
+  const role = document.getElementById('sellerBtn')?.classList.contains('active') ? 'seller' : 'buyer';
+  window.location.href = '/api/auth/google?action=signup&role=' + encodeURIComponent(role);
+}
 
 function showGoogleToast() {
-  let toast = document.getElementById('googleToast');
-  if (!toast) {
-    toast = document.createElement('div');
-    toast.id = 'googleToast';
-    toast.style.cssText = `
-      position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(12px);
-      background:#1c2f42; border:1px solid rgba(255,255,255,0.1);
-      color:#e8f0f5; font-family:'Plus Jakarta Sans',sans-serif;
-      font-size:13px; font-weight:500; padding:12px 20px;
-      border-radius:10px; box-shadow:0 8px 32px rgba(0,0,0,0.4);
-      display:flex; align-items:center; gap:10px;
-      opacity:0; transition:opacity 0.2s, transform 0.2s; z-index:9999;
-      white-space:nowrap;
-    `;
-    toast.innerHTML = `
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      Google Sign-In? Still cooking! 🍳
-    `;
-    document.body.appendChild(toast);
-  }
-  toast.style.opacity = '1';
-  toast.style.transform = 'translateX(-50%) translateY(0)';
-  clearTimeout(toast._hideTimer);
-  toast._hideTimer = setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateX(-50%) translateY(12px)';
-  }, 3000);
+  signInWithGoogle();
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────

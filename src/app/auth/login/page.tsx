@@ -1,14 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import NextAuth from "next-auth"
-import Google from "next-auth/providers/google"
-
-export const { handlers, auth, signIn, signOut } = NextAuth({
-  providers: [Google],
-})
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -38,7 +33,7 @@ export default function LoginPage() {
       <div className="auth-left">
         <header className="auth-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 0', maxWidth: '400px', width: '100%', margin: '0 auto' }}>
           <a href="/" className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text)', fontWeight: 700, fontSize: '18px', textDecoration: 'none' }}>
-            <img src="/assets/img/image.png" alt="HomeSure" height="30" style={{ display: 'block' }} />
+            <Image src="/assets/img/image.png" alt="HomeSure" width={30} height={30} style={{ display: 'block' }} priority />
             HomeSure
           </a>
           <a href="/" className="back-link" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--muted)', fontSize: '13px', fontWeight: 500, textDecoration: 'none' }}>

@@ -104,33 +104,22 @@ async function submitSignin() {
 
   if (!valid) return;
 
-  const { data, error } = await sb.auth.signInWithPassword({
-    email: email.value.trim(),
-    password: pw.value
-  });
-
-  if (error) {
-    // Supabase gives one generic message for wrong email or password
-    showError(pw, 'Incorrect email or password');
+  // Signs in, loads the profile (role, verification status, saved listings) and caches it for the pages.
+  let user;
+  try {
+    user = await HS.auth.signIn(email.value.trim(), pw.value);
+  } catch (err) {
+    showError(pw, err.message);
     return;
   }
 
-  // Role lives in the profiles table
-  const { data: profile } = await sb
-    .from('profiles')
-    .select('full_name, role')
-    .eq('id', data.user.id)
-    .single();
+  // Coming from a public listing? Buyers go straight back to it (only our own buyer pages are allowed).
+  const back = new URLSearchParams(window.location.search).get('redirect');
+  if (user.role === 'buyer' && back && /^module\/buyer\/[a-z-]+\.html(\?[\w=&-]*)?$/.test(back)) {
+    window.location.href = '../' + back;
+    return;
+  }
 
-  const user = {
-    id: data.user.id,
-    email: data.user.email,
-    name: profile?.full_name || '',
-    role: profile?.role || 'buyer'
-  };
-
-  // These two still come from fake-data.js, so keep that script on the sign-in page for now
-  saveSession(user);
   redirectToDashboard(user.role);
 }
 
@@ -197,27 +186,38 @@ async function openVerifyModal() {
   const password  = document.getElementById('pw1').value;
   const role      = document.getElementById('sellerBtn').classList.contains('active') ? 'seller' : 'buyer';
 
-  const { error } = await sb.auth.signUp({
-    email,
-    password,
-    options: {
-      emailRedirectTo: window.location.origin + '/auth/signin.html',
-      data: {
-        full_name: `${firstName} ${surname}`,
-        phone_number: phone,
-        role: role
-      }
-    }
-  });
+  // Signing up goes through our own API, not straight to Supabase.
+  //
+  // The auth server insists on a confirmed email but has no mail sender of its own, so its signup
+  // endpoint fails every time with "Error sending confirmation email". Our route creates the
+  // account unconfirmed — which sends nothing and so cannot fail that way — and emails the link
+  // from this app instead. The account still cannot be used until the link is opened.
+  const btn = document.getElementById('signupBtn');
+  const label = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Creating your account…'; }
 
-  if (error) {
-    showError(emailEl, error.message);
+  let result;
+  try {
+    const res = await fetch('/api/auth/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email, password, firstName, lastName: surname, phone, role,
+      }),
+    });
+    result = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(result.error || 'Could not create your account.');
+  } catch (err) {
+    if (btn) { btn.disabled = false; btn.textContent = label; }
+    showError(emailEl, err.message);
     return;
   }
 
+  if (btn) { btn.disabled = false; btn.textContent = label; }
+
   document.getElementById('modalEmail').textContent = email;
   document.getElementById('verifyModal').classList.add('active');
-  startCountdown(32);
+  startCountdown(60);
 }
 
 function closeModal() {
@@ -245,10 +245,77 @@ function startCountdown(seconds) {
 
 async function resendEmail() {
   const email = document.getElementById('modalEmail').textContent;
-  await sb.auth.resend({ type: 'signup', email });
+  const countdown = document.getElementById('resendCountdown');
+
+  try {
+    const res = await fetch('/api/auth/resend-verification', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      if (countdown) countdown.textContent = body.error || 'Could not resend. Try again shortly.';
+      clearInterval(_resendTimer);
+      startCountdown(body.retryAfter || 60);
+      return;
+    }
+  } catch (err) {
+    if (countdown) countdown.textContent = 'Could not resend. Check your connection.';
+    return;
+  }
+
   clearInterval(_resendTimer);
-  startCountdown(32);
+  startCountdown(60);
 }
+
+// ── Coming back from the confirmation link ───────────────────────────────────
+// /api/auth/verify-email sends people here with ?verified=… so they see a sentence rather than
+// a bare JSON response.
+(function showVerificationResult() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const status = urlParams.get('verified');
+  const errorParam = urlParams.get('error');
+
+  if (!status && !errorParam) return;
+
+  const MESSAGES = {
+    success: ['Your email is confirmed. You can sign in now.', 'ok'],
+    already: ['That email was already confirmed. Go ahead and sign in.', 'ok'],
+    expired: ['That link has expired. Sign up again, or use "Resend" to get a new one.', 'error'],
+    invalid: ['That confirmation link is not valid. Please request a new one.', 'error'],
+    missing: ['That confirmation link was incomplete. Please request a new one.', 'error'],
+    failed:  ['We could not confirm your email. Please try the link again shortly.', 'error'],
+    google_cancelled: ['Google sign-in was cancelled.', 'error'],
+    google_not_configured: ['Google sign-in is not configured yet.', 'error'],
+    google_exchange_failed: ['Could not complete Google authentication. Please try again.', 'error'],
+    google_profile_failed: ['Could not read your Google profile. Please try again.', 'error'],
+    create_failed: ['Could not create account via Google. Please try regular sign up.', 'error'],
+    update_failed: ['Could not update account for Google sign-in. Please try again.', 'error'],
+    signin_failed: ['Could not start session after Google sign-in. Please try again.', 'error'],
+  };
+
+  const key = status || errorParam;
+  const [text, kind] = MESSAGES[key] || ['An error occurred during authentication. Please try again.', 'error'];
+
+  const banner = document.createElement('div');
+  banner.setAttribute('role', 'status');
+  banner.textContent = text;
+  banner.style.cssText = `
+    margin: 0 0 18px; padding: 12px 14px; border-radius: 10px;
+    font-size: 13px; font-weight: 600; line-height: 1.5;
+    background: ${kind === 'ok' ? 'rgba(0,201,167,0.12)' : 'rgba(248,113,113,0.12)'};
+    border: 1px solid ${kind === 'ok' ? 'rgba(0,201,167,0.35)' : 'rgba(248,113,113,0.35)'};
+    color: ${kind === 'ok' ? '#0d8f7b' : '#b91c1c'};
+  `;
+
+  const form = document.querySelector('form') || document.body.firstElementChild;
+  if (form && form.parentNode) form.parentNode.insertBefore(banner, form);
+
+  // Keep the page shareable/reloadable without re-triggering the banner.
+  const clean = window.location.pathname;
+  window.history.replaceState({}, '', clean);
+})();
 
 // ── Forgot Password ───────────────────────────────────────────────────────────
 
@@ -296,42 +363,27 @@ async function resendReset() {
 // ── Dodge Button Easter Egg REMOVED ───────────────────────────────────────────
 // QA feedback: Button moving causes bad UX. Removed all dodge functionality.
 
-// ── Google Toast ──────────────────────────────────────────────────────────────
+// ── Google Authentication ───────────────────────────────────────────────────
+
+function signInWithGoogle() {
+  const back = new URLSearchParams(window.location.search).get('redirect');
+  const redirectParam = back ? '&redirect=' + encodeURIComponent(back) : '';
+  window.location.href = '/api/auth/google?action=signin' + redirectParam;
+}
+
+function signUpWithGoogle() {
+  const role = document.getElementById('sellerBtn')?.classList.contains('active') ? 'seller' : 'buyer';
+  window.location.href = '/api/auth/google?action=signup&role=' + encodeURIComponent(role);
+}
 
 function showGoogleToast() {
-  let toast = document.getElementById('googleToast');
-  if (!toast) {
-    toast = document.createElement('div');
-    toast.id = 'googleToast';
-    toast.style.cssText = `
-      position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(12px);
-      background:#1c2f42; border:1px solid rgba(255,255,255,0.1);
-      color:#e8f0f5; font-family:'Plus Jakarta Sans',sans-serif;
-      font-size:13px; font-weight:500; padding:12px 20px;
-      border-radius:10px; box-shadow:0 8px 32px rgba(0,0,0,0.4);
-      display:flex; align-items:center; gap:10px;
-      opacity:0; transition:opacity 0.2s, transform 0.2s; z-index:9999;
-      white-space:nowrap;
-    `;
-    toast.innerHTML = `
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      Google Sign-In? Still cooking! 🍳
-    `;
-    document.body.appendChild(toast);
-  }
-  toast.style.opacity = '1';
-  toast.style.transform = 'translateX(-50%) translateY(0)';
-  clearTimeout(toast._hideTimer);
-  toast._hideTimer = setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateX(-50%) translateY(12px)';
-  }, 3000);
+  signInWithGoogle();
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
-  applyAuthTheme(localStorage.getItem('hs-theme') || 'light');
+  applyAuthTheme(localStorage.getItem('hs-theme') || 'dark');
 
   const backdrop = document.getElementById('verifyModal');
   if (backdrop) backdrop.addEventListener('click', e => { if (e.target === backdrop) closeModal(); });

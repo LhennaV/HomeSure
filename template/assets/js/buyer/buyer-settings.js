@@ -83,19 +83,26 @@
     label.textContent   = texts[score] || '';
   }
 
-  function savePassword() {
+  async function savePassword() {
     const cur = document.getElementById('currentPw').value;
     const nw  = document.getElementById('newPw').value;
     const cf  = document.getElementById('confirmPw').value;
-    const fullUser = FAKE_USERS.find(u => u.id === user.id);
 
     if (!cur || !nw || !cf) { showToast('Please fill in all password fields.', 'error'); return; }
-    if (fullUser && cur !== fullUser.password) { showToast('Current password is incorrect.', 'error'); return; }
     if (nw.length < 8)          { showToast('Password must be at least 8 characters.', 'error'); return; }
     if (!/[A-Z]/.test(nw))      { showToast('Password must include an uppercase letter.', 'error'); return; }
     if (!/[0-9]/.test(nw))      { showToast('Password must include a number.', 'error'); return; }
     if (!/[^A-Za-z0-9]/.test(nw)) { showToast('Password must include a special character.', 'error'); return; }
     if (nw !== cf) { showToast('New passwords do not match.', 'error'); return; }
+
+    // Supabase verifies the current password by re-signing in, then sets the new one.
+    // Nothing here ever sees a stored password.
+    try {
+      await HS.auth.changePassword(cur, nw);
+    } catch (err) {
+      showToast(err.message, 'error');
+      return;
+    }
 
     document.getElementById('pwForm').classList.remove('open');
     document.getElementById('changePwBtn').innerHTML =
@@ -105,8 +112,15 @@
   }
 
   // ── 2FA ──────────────────────────────────────────────────────────────────
-  let twoFaEnabled = false;
+  const twoFaStorageKey = 'hs_2fa_' + (user ? user.id : 'default');
+  let twoFaEnabled = localStorage.getItem(twoFaStorageKey) === 'true';
   let twoFaResendInterval = null;
+
+  if (twoFaEnabled) {
+    const toggleEl = document.getElementById('twoFaToggle');
+    if (toggleEl) toggleEl.checked = true;
+    setTwoFaStatus(true);
+  }
 
   function handle2FA(checkbox) {
     if (checkbox.checked && !twoFaEnabled) {
@@ -118,6 +132,7 @@
       setTimeout(() => document.querySelectorAll('#twoFaBoxes .otp-box')[0].focus(), 100);
     } else if (!checkbox.checked && twoFaEnabled) {
       twoFaEnabled = false;
+      localStorage.removeItem(twoFaStorageKey);
       setTwoFaStatus(false);
       showToast('Two-factor authentication disabled.');
     }
@@ -163,6 +178,7 @@
     if (code.length < 6) { showToast('Please enter the full 6-digit code.', 'error'); return; }
     if (code === '123456') {
       twoFaEnabled = true;
+      localStorage.setItem(twoFaStorageKey, 'true');
       clearInterval(twoFaResendInterval);
       setTwoFaStatus(true);
       document.getElementById('twoFaToggle').checked = true;
@@ -196,13 +212,25 @@
     box.addEventListener('keydown', e => {
       if (e.key === 'Backspace' && !box.value && i > 0) boxes[i - 1].focus();
     });
+    box.addEventListener('paste', e => {
+      e.preventDefault();
+      const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+      if (!paste) return;
+      boxes.forEach((b, idx) => {
+        b.value = paste[idx] || '';
+        b.classList.toggle('filled', !!b.value);
+      });
+      const nextIdx = Math.min(paste.length, 5);
+      if (boxes[nextIdx]) boxes[nextIdx].focus();
+    });
   });
 
   // ── SMS toggle: requires verified phone ───────────────────────────────────
   (function initSmsToggle() {
     const smsInput = document.getElementById('notifSms');
     const smsRow   = smsInput.closest('.setting-row');
-    if (!user.phoneVerified) {
+    const hasPhone = Boolean(user && (user.phone || user.phoneVerified));
+    if (!hasPhone) {
       smsInput.disabled = true;
       smsInput.checked  = false;
       document.getElementById('notifSms-lbl').textContent = 'Off';
@@ -211,9 +239,11 @@
       if (!hint) {
         hint = document.createElement('div');
         hint.className = 'sms-hint';
-        hint.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Verify your phone number in <a href="profile.html">My Profile</a> to enable SMS`;
+        hint.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Add your phone number in <a href="profile.html">My Profile</a> to enable SMS`;
         smsRow.querySelector('.setting-info').appendChild(hint);
       }
+    } else {
+      smsInput.disabled = false;
     }
   })();
 
@@ -284,7 +314,7 @@
 
   // ── Theme Toggle ─────────────────────────────────────────────────────────
   function getTheme() {
-    return localStorage.getItem('hs-theme') || 'light';
+    return localStorage.getItem('hs-theme') || 'dark';
   }
 
   function applyTheme(mode) {

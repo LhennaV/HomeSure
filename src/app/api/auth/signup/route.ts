@@ -2,14 +2,6 @@ import { NextResponse } from "next/server";
 import { getAdminSupabase } from "@/lib/supabase/admin-client";
 import { sendMail, verificationEmail, appOrigin, isEmailConfigured } from "@/lib/email";
 import { issueToken } from "@/lib/verification";
-// auth.ts
-import NextAuth from "next-auth"
-import Google from "next-auth/providers/google"
- 
-export const { handlers, auth, signIn, signOut } = NextAuth({
-  providers: [Google],
-})
-
 
 export async function GET() {
   return NextResponse.json({ error: "Method not allowed" }, { status: 405 });

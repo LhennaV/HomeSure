@@ -42,7 +42,7 @@
           <div class="verify-banner-title">Verification Required</div>
           <div class="verify-banner-sub">To publish listings on HomeSure, you need to complete identity verification. This helps build trust and ensures a safe marketplace for all users.</div>
         </div>
-        <button class="verify-btn">
+        <button class="verify-btn" onclick="window.location.href='verification.html'">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
           Start Verification
         </button>
@@ -115,11 +115,11 @@
           </div>
           <div class="filter-group">
             <label>Min Price</label>
-            <input class="filter-input" type="number" id="filterMin" placeholder="0" oninput="renderListings()" />
+            <input class="filter-input" type="number" id="filterMin" placeholder="0" oninput="renderListingsSoon()" />
           </div>
           <div class="filter-group">
             <label>Max Price</label>
-            <input class="filter-input" type="text" id="filterMax" placeholder="No limit" oninput="renderListings()" />
+            <input class="filter-input" type="text" id="filterMax" placeholder="No limit" oninput="renderListingsSoon()" />
           </div>
         </div>
       </div>
@@ -150,7 +150,10 @@
   </div>
 </div>
 
-<script src="../../assets/js/fake-data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0/dist/umd/supabase.js"></script>
+<script src="../../assets/js/config.js"></script>
+<script src="../../assets/js/session.js"></script>
+<script src="../../assets/js/data.js"></script>
 <script src="../../components/sidebar.js"></script>
 <script src="../../components/topbar.js"></script>
 <script src="../../assets/js/seller/seller-dashboard.js"></script>
