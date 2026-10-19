@@ -1111,6 +1111,25 @@ const HS = (function () {
     });
   }
 
+  // A single real photo for the sign-in/sign-up pages' background — those used to hardcode one
+  // stock photo (house_image.jpg), the same image regardless of what is actually listed. Picks
+  // randomly among a handful of recent approved listings that actually have a photo, so a reload
+  // does not always show the same one, and a listing with no image never gets chosen. Returns null
+  // if nothing qualifies — the page keeps its gradient background in that case.
+  async function randomListingPhoto() {
+    const rows = unwrap(await sb.from('properties')
+      .select('images, thumbnail_url')
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false })
+      .limit(20));
+
+    const photos = (rows || [])
+      .map((r) => r.thumbnail_url || (Array.isArray(r.images) && r.images[0]))
+      .filter(Boolean);
+    if (!photos.length) return null;
+    return photos[Math.floor(Math.random() * photos.length)];
+  }
+
   // ── Tenants ─────────────────────────────────────────────────────────────────
   // Not a table. A tenant is a conclusion drawn from the rows that already exist: somebody with a
   // confirmed payment or a security deposit on one of your listings. Messaging you or asking for a
@@ -1383,6 +1402,6 @@ const HS = (function () {
     PLACEHOLDER_IMG, cover, mapProfile, mapProperty, userId,
     auth, profiles, listings, favorites, storage, verification, viewing, messages, reviews, payments,
     deposits, tenants, reports, admin, audit, barangays, barangayId,
-    publicStats, listingCountsByBarangay, listingCountsByType, featuredListings,
+    publicStats, listingCountsByBarangay, listingCountsByType, featuredListings, randomListingPhoto,
   };
 })();

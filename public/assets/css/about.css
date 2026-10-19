@@ -33,7 +33,12 @@ nav {
 .nav-logo > img { width: 26px; height: 26px; object-fit: contain; }
 
 .nav-theme-btn {
-  width: 36px; height: 36px; border-radius: 50%;
+  /* Same fix as index.css's copy: a <button> can measure taller than its own height because of
+     UA-default padding/line-height, so those are reset explicitly rather than assumed zero. */
+  box-sizing: border-box;
+  width: 40px; height: 40px; min-width: 40px; min-height: 40px;
+  padding: 0; margin: 0; line-height: 1;
+  border-radius: 50%;
   background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
   color: rgba(255,255,255,0.65); cursor: pointer;
   display: flex; align-items: center; justify-content: center;

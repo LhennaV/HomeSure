@@ -6,6 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HomeSure – Help & Support</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Same issue as buyer/help.html: seller.css says "Requires: dashboard.css" in its own header
+       comment, but this page never linked it, so every CSS variable and the base body font were
+       undefined. seller-dashboard.css carries the same tokens seller.html itself uses. -->
+  <link rel="stylesheet" href="../../assets/css/seller/seller-dashboard.css" />
   <link rel="stylesheet" href="../../assets/css/seller/seller.css" />
   <link rel="stylesheet" href="../../assets/css/chatbot-widget.css" />
   <link rel="stylesheet" href="../../assets/css/responsive.css" />
@@ -82,20 +86,24 @@
     }
 
     .chatbot-avatar {
+      /* Was 20% opacity — same fix as the buyer version of this same page template: a
+         teal-gradient logo needs real contrast against the teal header, not a faint tint. */
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.2);
+      background: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
       backdrop-filter: blur(10px);
     }
 
-    .chatbot-avatar svg {
-      width: 24px;
-      height: 24px;
+    .chatbot-avatar svg,
+    .chatbot-avatar img {
+      width: 36px;
+      height: 36px;
       color: #fff;
+      display: block;
     }
 
     .chatbot-header-info {
@@ -316,6 +324,28 @@
       height: 20px;
       color: #fff;
     }
+
+    /* Same fix as buyer/help.html — no mobile handling existed at all, so the fixed mobile bottom
+       nav (.hs-bottom-nav, sidebar.js, 62px tall) sat on top of the chat input. */
+    @media (max-width: 768px) {
+      .help-container {
+        padding: 16px 14px;
+        padding-bottom: calc(62px + env(safe-area-inset-bottom, 0px));
+      }
+      .page-header { margin-bottom: 14px; }
+      .page-title { font-size: 19px; }
+      .page-sub { font-size: 12px; }
+      .chatbot-header { padding: 14px 16px; }
+      .chatbot-avatar { width: 46px; height: 46px; }
+      .chatbot-avatar svg, .chatbot-avatar img { width: 38px; height: 38px; }
+      .chatbot-header-title { font-size: 15px; }
+      .chatbot-messages { padding: 16px; }
+      .chat-message .message-bubble,
+      .chatbot-message-bubble { max-width: 85%; }
+      .chatbot-input-area { padding: 12px; }
+      .quick-actions { gap: 6px; }
+      .quick-action-btn { padding: 6px 12px; font-size: 11.5px; }
+    }
   </style>
 </head>
 <body>
@@ -334,13 +364,10 @@
       <div class="chatbot-window open" id="chatbotWindow">
         <div class="chatbot-header">
           <div class="chatbot-avatar">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 2a4 4 0 0 1 4 4v2h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h2V6a4 4 0 0 1 4-4z"/>
-              <circle cx="12" cy="14" r="2"/>
-            </svg>
+            <img src="../../assets/img/homesure-cat.svg" alt="Meowrie" />
           </div>
           <div class="chatbot-header-info">
-            <div class="chatbot-header-title">HomeSure Assistant</div>
+            <div class="chatbot-header-title">Meowrie</div>
             <div class="chatbot-header-status">
               <span class="chatbot-status-dot"></span>
               Online - Always here to help

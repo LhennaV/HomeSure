@@ -1641,6 +1641,20 @@ function Footer() {
   const supportLinks = ["Help & Support", "Contact Us", "Report a Listing"];
   const legalLinks = ["Privacy Policy", "Terms of Service"];
 
+  // Most of these were "#" — dead links that went nowhere. Browse and About are genuinely public
+  // pages, so they go straight there; Help & Support already pointed at the public FAQ page
+  // correctly. List Your Property, Contact Us and Report a Listing have no public page to land
+  // on yet (reporting needs to know who is reporting; listing needs an account either way), so
+  // those go to sign in instead of doing nothing.
+  const footerHref = {
+    "Browse Listings": "browse.html",
+    "List Your Property": "auth/signup.html",
+    "About Us": "about.html",
+    "Help & Support": "faqs.html",
+    "Contact Us": "auth/signin.html",
+    "Report a Listing": "auth/signin.html",
+  };
+
   return React.createElement(
     "footer",
     null,
@@ -1681,7 +1695,7 @@ function Footer() {
             {
               key: l,
               className: "footer-link",
-              href: l === "About Us" ? "about.html" : "#",
+              href: footerHref[l],
             },
             l,
           ),
@@ -1701,7 +1715,7 @@ function Footer() {
             {
               key: l,
               className: "footer-link",
-              href: l === "Help & Support" ? "faqs.html" : "#"
+              href: footerHref[l],
             },
             l,
           ),
