@@ -1045,6 +1045,91 @@ const HS = (function () {
     return counts;
   }
 
+  // Same shape as listingCountsByBarangay, grouped by property_type instead. The landing page's
+  // "Browse by Type" cards used to show fixed numbers (342, 218, 97) that were never real — this is
+  // what replaced them. property_type is one of 'house' | 'apartment' | 'condo' | 'commercial' |
+  // 'lot' (the CHECK constraint in 006_frontend_alignment.sql); there is no 'townhouse' in the
+  // schema, so a page that wants that exact label has to fold it into one of these.
+  async function listingCountsByType() {
+    const rows = unwrap(await sb.from('properties')
+      .select('property_type, lifecycle_status')
+      .eq('status', 'approved')
+      .limit(LIST_CAP));
+
+    const counts = {};
+    for (const r of rows || []) {
+      if (r.lifecycle_status === 'sold' || r.lifecycle_status === 'rented') continue;
+      const type = r.property_type;
+      if (!type) continue;
+      counts[type] = (counts[type] || 0) + 1;
+    }
+    return counts;
+  }
+
+  // Listings for the landing page — the "Featured Properties" carousel, the hero bento grid, and
+  // the hero's orbiting cards all used to show their own hardcoded placeholder arrays, none of them
+  // real. One query now backs all three; each reads the subset of these fields it needs.
+  //
+  // Newest first; `featured = true` goes first among them, but nothing is ever hidden just for
+  // lacking that flag — an empty carousel from a strict filter would be worse than one with
+  // un-flagged listings.
+  async function featuredListings(limit = 8) {
+    const rows = unwrap(await sb.from('properties')
+      .select('id, title, price, listing_type, bedrooms, bathrooms, images, thumbnail_url, verification_state, lifecycle_status, created_at, barangays(name), city')
+      .eq('status', 'approved')
+      .order('featured', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(LIST_CAP));
+
+    const live = (rows || []).filter((r) => r.lifecycle_status !== 'sold' && r.lifecycle_status !== 'rented');
+    const NEW_WITHIN_DAYS = 14;
+    const now = Date.now();
+
+    return live.slice(0, limit).map((r) => {
+      const price = num(r.price) || 0;
+      const barangay = (r.barangays && r.barangays.name) || '';
+      const isNew = r.created_at && (now - new Date(r.created_at).getTime()) < NEW_WITHIN_DAYS * 86400000;
+      const badgeType = isNew ? 'new' : r.listing_type === 'rent' ? 'rent' : 'sale';
+      const badge = isNew ? 'New' : r.listing_type === 'rent' ? 'For Rent' : 'For Sale';
+      return {
+        id: r.id,
+        title: r.title,
+        name: r.title,  // same value, different callers (carousel vs. bento tiles) expect different keys
+        location: [barangay, r.city || 'Sta. Maria'].filter(Boolean).join(', '),
+        barangay,
+        // Kept apart rather than baked into one string: the carousel renders price and period as
+        // two separate elements, so concatenating here would double up for whichever caller adds
+        // its own suffix.
+        price: '₱' + price.toLocaleString('en-PH'),
+        period: r.listing_type === 'rent' ? '/month' : '',
+        beds: r.bedrooms ?? 0,
+        baths: r.bathrooms ?? 0,
+        badge, badgeType,
+        verified: r.verification_state === 'verified',
+        image: r.thumbnail_url || (Array.isArray(r.images) && r.images[0]) || PLACEHOLDER_IMG,
+      };
+    });
+  }
+
+  // A single real photo for the sign-in/sign-up pages' background — those used to hardcode one
+  // stock photo (house_image.jpg), the same image regardless of what is actually listed. Picks
+  // randomly among a handful of recent approved listings that actually have a photo, so a reload
+  // does not always show the same one, and a listing with no image never gets chosen. Returns null
+  // if nothing qualifies — the page keeps its gradient background in that case.
+  async function randomListingPhoto() {
+    const rows = unwrap(await sb.from('properties')
+      .select('images, thumbnail_url')
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false })
+      .limit(20));
+
+    const photos = (rows || [])
+      .map((r) => r.thumbnail_url || (Array.isArray(r.images) && r.images[0]))
+      .filter(Boolean);
+    if (!photos.length) return null;
+    return photos[Math.floor(Math.random() * photos.length)];
+  }
+
   // ── Tenants ─────────────────────────────────────────────────────────────────
   // Not a table. A tenant is a conclusion drawn from the rows that already exist: somebody with a
   // confirmed payment or a security deposit on one of your listings. Messaging you or asking for a
@@ -1317,6 +1402,6 @@ const HS = (function () {
     PLACEHOLDER_IMG, cover, mapProfile, mapProperty, userId,
     auth, profiles, listings, favorites, storage, verification, viewing, messages, reviews, payments,
     deposits, tenants, reports, admin, audit, barangays, barangayId,
-    publicStats, listingCountsByBarangay,
+    publicStats, listingCountsByBarangay, listingCountsByType, featuredListings, randomListingPhoto,
   };
 })();
