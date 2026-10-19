@@ -395,7 +395,7 @@
   }
   .hero-left {
     max-width: 100% !important;
-    padding: 60px 24px 44px !important;
+    padding: 96px 24px 44px !important;
     align-items: center !important;
     text-align: center !important;
   }
@@ -498,7 +498,7 @@
 
 @media (max-width: 480px) {
   .hero-left {
-    padding: 40px 16px 32px !important;
+    padding: 76px 16px 32px !important;
   }
   .hero-title {
     font-size: clamp(24px, 7vw, 32px) !important;
@@ -922,7 +922,10 @@
   .nav-logo-divider {
     height: 16px !important;
   }
-  .btn-outline, .btn-primary {
+  /* .btn-primary was a typo for .btn-solid — the real class on the nav's Sign Up button. Left
+     correct but currently unreachable: the 768px block above already sets both nav buttons to
+     display: none at this width, so there is nothing here to pad or resize. */
+  .btn-outline, .btn-solid {
     padding: 6px 10px !important;
     font-size: 11px !important;
   }
@@ -948,9 +951,11 @@
     height: 24px !important;
   }
   .btn-outline {
-    display: none !important; /* Hide Sign In on very small screens */
+    display: none !important; /* Already hidden by the 768px block above; redundant but harmless. */
   }
-  .btn-primary {
+  /* .btn-primary was a typo for .btn-solid, same as above — fixed, though still unreachable here
+     for the same reason: both nav buttons are already display: none at this width. */
+  .btn-solid {
     padding: 6px 12px !important;
     font-size: 11px !important;
   }
