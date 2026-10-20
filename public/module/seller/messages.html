@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../../assets/css/buyer/buyer-messages.css" />
   <link rel="stylesheet" href="../../assets/css/seller/seller-messages.css" />
+  <link rel="stylesheet" href="../../assets/css/phone-input.css" />
   <link rel="stylesheet" href="../../assets/css/close-listing-modal.css" />
   <link rel="stylesheet" href="../../assets/css/adjust-availability-modal.css" />
   <link rel="stylesheet" href="../../assets/css/responsive.css" />
@@ -253,8 +254,10 @@
               </div>
               <label for="enableGcash" style="font-size:13px;font-weight:700;color:#f1f5f9;cursor:pointer;flex:1;">GCash</label>
             </div>
-            <input id="gcashNumber" type="text" placeholder="09XX XXX XXXX" maxlength="11"
-              style="background:#1a2739;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px 12px;color:#f1f5f9;font-family:inherit;font-size:12.5px;outline:none;width:100%;display:none;" />
+            <div class="hs-phone-input" style="display:none;">
+              <span class="hs-phone-prefix">0</span>
+              <input id="gcashNumber" type="tel" inputmode="numeric" placeholder="9XX XXX XXXX" maxlength="10" />
+            </div>
             <input id="gcashName" type="text" placeholder="Account Name"
               style="background:#1a2739;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px 12px;color:#f1f5f9;font-family:inherit;font-size:12.5px;outline:none;width:100%;margin-top:6px;display:none;" />
           </div>
@@ -268,8 +271,10 @@
               </div>
               <label for="enableMaya" style="font-size:13px;font-weight:700;color:#f1f5f9;cursor:pointer;flex:1;">Maya</label>
             </div>
-            <input id="mayaNumber" type="text" placeholder="09XX XXX XXXX" maxlength="11"
-              style="background:#1a2739;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px 12px;color:#f1f5f9;font-family:inherit;font-size:12.5px;outline:none;width:100%;display:none;" />
+            <div class="hs-phone-input" style="display:none;">
+              <span class="hs-phone-prefix">0</span>
+              <input id="mayaNumber" type="tel" inputmode="numeric" placeholder="9XX XXX XXXX" maxlength="10" />
+            </div>
             <input id="mayaName" type="text" placeholder="Account Name"
               style="background:#1a2739;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px 12px;color:#f1f5f9;font-family:inherit;font-size:12.5px;outline:none;width:100%;margin-top:6px;display:none;" />
           </div>
@@ -309,6 +314,7 @@
 <script src="../../assets/js/config.js"></script>
 <script src="../../assets/js/session.js"></script>
 <script src="../../assets/js/data.js"></script>
+<script src="../../assets/js/phone-input.js"></script>
 <script src="../../components/sidebar.js"></script>
 <script src="../../components/topbar.js"></script>
 <script src="../../assets/js/close-listing.js"></script>

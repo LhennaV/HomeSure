@@ -212,7 +212,7 @@
     const selected = document.querySelector('input[name="rejectReason"]:checked');
     const custom   = document.getElementById('rejectCustom').value.trim();
     const reason   = custom || (selected ? REJECT_REASONS[selected.value] : null);
-    if (!reason) { alert('Please select or write a rejection reason.'); return; }
+    if (!reason) { hsToast('Please select or write a rejection reason.', 'error'); return; }
     try {
       await HS.listings.reject(l.id, reason);
       HS.audit.log('Rejected listing', 'listing', l.title + ' – ' + reason);

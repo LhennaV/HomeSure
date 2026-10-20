@@ -221,7 +221,7 @@
     const selected = document.querySelector('input[name="rejectReason"]:checked');
     const custom   = document.getElementById('rejectCustom').value.trim();
     const reason   = custom || (selected ? reasons[selected.value] : null);
-    if (!reason) { alert('Please select or write a rejection reason.'); return; }
+    if (!reason) { hsToast('Please select or write a rejection reason.', 'error'); return; }
     try {
       await HS.admin.rejectVerification(u.id, reason);
       HS.audit.log('Rejected verification', 'user', u.name + ' – ' + reason);

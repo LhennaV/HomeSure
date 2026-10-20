@@ -64,7 +64,13 @@
     .setting-info { flex: 1; min-width: 0; }
     .setting-label { font-size: 14px; font-weight: 600; color: var(--text); }
     .setting-desc  { font-size: 12.5px; color: var(--muted2); margin-top: 4px; line-height: 1.5; }
-    .sms-hint { display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--danger); margin-top: 5px; }
+    /* display:flex used to make each piece of the sentence (the leading icon, the plain text, the
+       <a> link, the trailing text) its own flex item — none of them wrap, so a narrow row forced
+       them into cramped, oddly-broken fragments instead of one sentence that wraps normally. The
+       icon stays its own flex item (fixed size, aligned to the first line); everything else is one
+       <span> so it wraps together as ordinary text. */
+    .sms-hint { display: flex; align-items: flex-start; gap: 5px; font-size: 11.5px; color: var(--danger); margin-top: 5px; line-height: 1.5; }
+    .sms-hint svg { flex-shrink: 0; margin-top: 2px; }
     .sms-hint a { color: var(--teal); text-decoration: none; }
     .sms-hint a:hover { text-decoration: underline; }
     .toggle input:disabled + .toggle-track { opacity: 0.35; cursor: not-allowed; }

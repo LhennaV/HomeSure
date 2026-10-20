@@ -555,12 +555,12 @@
     const methods = {
       gcash: {
         enabled: document.getElementById('enableGcashPay').checked,
-        number: document.getElementById('gcashNumberPay').value.trim(),
+        number: HSPhone.full('0', document.getElementById('gcashNumberPay').value),
         name: document.getElementById('gcashNamePay').value.trim(),
       },
       maya: {
         enabled: document.getElementById('enableMayaPay').checked,
-        number: document.getElementById('mayaNumberPay').value.trim(),
+        number: HSPhone.full('0', document.getElementById('mayaNumberPay').value),
         name: document.getElementById('mayaNamePay').value.trim(),
       },
       bank: {
@@ -612,7 +612,9 @@
       document.getElementById(fields.toggle).checked = !!saved.enabled;
       Object.keys(fields.inputs).forEach((id) => {
         const el = document.getElementById(id);
-        if (el) el.value = saved[fields.inputs[id]] || '';
+        if (!el) return;
+        const key = fields.inputs[id];
+        el.value = key === 'number' ? HSPhone.strip(saved[key]) : (saved[key] || '');
       });
       if (saved.enabled) {
         const box = document.getElementById(fields.box);

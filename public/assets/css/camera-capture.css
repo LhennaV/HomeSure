@@ -295,12 +295,22 @@
 
   .camera-body {
     flex: 1;
+    min-height: 0;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
   }
 
   .camera-viewport {
-    flex: 1;
+    /* The base rule's aspect-ratio: 4/3 was never reset here — paired with flex: 1 in a column
+       flex container, that conflicting intrinsic ratio could inflate the viewport's computed
+       height well past what's visible, pushing the capture button near its bottom edge out of
+       view with no scroll affordance to reach it. flex: 1 alone (no ratio) sizes it to whatever
+       space is actually left after the header/instructions/actions, which is what this layout
+       wants on a phone anyway. min-height keeps it from collapsing to nothing. */
+    aspect-ratio: auto;
+    flex: 1 1 auto;
+    min-height: 240px;
     margin-bottom: 16px;
   }
 

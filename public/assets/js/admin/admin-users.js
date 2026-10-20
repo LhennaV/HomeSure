@@ -239,7 +239,7 @@
     const selected = document.querySelector('input[name="verifRejectReason"]:checked');
     const custom   = document.getElementById('verifRejectCustom').value.trim();
     const reason   = custom || (selected ? VERIF_REJECT_REASONS[selected.value] : null);
-    if (!reason) { alert('Please select or write a rejection reason.'); return; }
+    if (!reason) { hsToast('Please select or write a rejection reason.', 'error'); return; }
     closeVerifRejectModal();
     resolveVerif('rejected', reason);
   };

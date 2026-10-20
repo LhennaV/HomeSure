@@ -67,11 +67,15 @@
         document.getElementById("reportReason").value = "";
         document.getElementById("reportDetails").value = "";
         document.getElementById("reportReasonErr").style.display = "none";
-        document.getElementById("reportModal").classList.add("open");
+        // Was "open" — the CSS only shows .modal-overlay when it has .active (see
+        // .modal-overlay.active in buyer-listing.css), same class the schedule modal next to this
+        // one already uses correctly. Nothing was wrong with the click handler; it was toggling a
+        // class the stylesheet never checked for, so the modal stayed display:none the whole time.
+        document.getElementById("reportModal").classList.add("active");
       }
 
       function closeReportModal() {
-        document.getElementById("reportModal").classList.remove("open");
+        document.getElementById("reportModal").classList.remove("active");
       }
 
       function toast(text) {
@@ -293,6 +297,33 @@
       }
 
       // ── Schedule Viewing Functions ─────────────────────────────────────────────
+      // Slots other buyers already have confirmed for this listing — fetched once per modal
+      // open, used to grey out time options for whichever date is picked and as a final guard
+      // at submit (in case a slot gets confirmed by someone else in between).
+      let confirmedSlots = [];
+      const TIME_SLOT_LABELS = {
+        '09:00': '9:00 AM', '10:00': '10:00 AM', '11:00': '11:00 AM', '13:00': '1:00 PM',
+        '14:00': '2:00 PM', '15:00': '3:00 PM', '16:00': '4:00 PM', '17:00': '5:00 PM',
+      };
+
+      // requested_time comes back from Postgres as "HH:MM:SS"; the <option> values are "HH:MM".
+      function isSlotTaken(date, time) {
+        return confirmedSlots.some(s => s.date === date && s.time.slice(0, 5) === time);
+      }
+
+      window.updateTimeOptionsForDate = function() {
+        const date = document.getElementById('viewingDate').value;
+        const timeSelect = document.getElementById('viewingTime');
+        [...timeSelect.options].forEach(opt => {
+          if (!opt.value) return;
+          const label = TIME_SLOT_LABELS[opt.value] || opt.textContent;
+          const taken = date && isSlotTaken(date, opt.value);
+          opt.disabled = taken;
+          opt.textContent = taken ? `${label} — Already booked` : label;
+          if (taken && timeSelect.value === opt.value) timeSelect.value = '';
+        });
+      };
+
       window.openScheduleModal = function() {
         // Set minimum date to tomorrow
         const tomorrow = new Date();
@@ -307,10 +338,18 @@
 
         // Hide errors
         document.getElementById('viewingDateErr').style.display = 'none';
-        document.getElementById('viewingTimeErr').style.display = 'none';
+        const timeErr = document.getElementById('viewingTimeErr');
+        timeErr.textContent = 'Please select a time';
+        timeErr.style.display = 'none';
 
         // Show modal
         document.getElementById('scheduleModal').classList.add('active');
+
+        // Refresh which slots are taken, then re-apply to whatever's currently selected
+        confirmedSlots = [];
+        HS.viewing.confirmedSlots(listing.id)
+          .then(slots => { confirmedSlots = slots; window.updateTimeOptionsForDate(); })
+          .catch(err => console.error('Could not load booked viewing slots:', err));
       };
 
       window.closeScheduleModal = function() {
@@ -341,6 +380,21 @@
         }
 
         if (hasError) return;
+
+        // Final guard: the disabled options were set from a snapshot taken when the modal opened,
+        // so re-check fresh in case a slot got confirmed by someone else in the meantime. The
+        // database's own unique index is still the real guarantee either way — this is just so
+        // the buyer finds out before submitting instead of from a generic error afterward.
+        try {
+          confirmedSlots = await HS.viewing.confirmedSlots(listing.id);
+        } catch (err) { /* stale cache is still better than blocking submission on this failing */ }
+        if (isSlotTaken(date, time)) {
+          const timeErr = document.getElementById('viewingTimeErr');
+          timeErr.textContent = 'That time slot was just booked by another buyer. Please choose another time.';
+          timeErr.style.display = 'block';
+          window.updateTimeOptionsForDate();
+          return;
+        }
 
         // Format date for display
         const dateObj = new Date(date + 'T00:00:00');

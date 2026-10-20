@@ -24,6 +24,7 @@
     /* ── Search ── */
     .hs-topbar-search {
       flex: 1;
+      min-width: 0;
       max-width: 400px;
       position: relative;
     }
@@ -72,6 +73,11 @@
 
     /* ── Right side ── */
     .hs-topbar-right {
+      /* margin-left: auto pins this to the right regardless of how many siblings are actually
+         rendered. Relying on .hs-topbar's justify-content: space-between alone breaks once the
+         hamburger is hidden (mobile) and the search box is absent (no onSearch) — with only one
+         visible flex child, space-between places it at the START of the row instead of the end. */
+      margin-left: auto;
       display: flex;
       align-items: center;
       gap: 10px;
@@ -404,10 +410,11 @@
     .hs-hamburger svg { width: 17px; height: 17px; color: rgba(255,255,255,0.8); display: block; }
     @media (max-width: 768px) {
       .hs-hamburger { display: none; }
-      .hs-topbar-search { max-width: 200px; }
-    }
-    @media (max-width: 400px) {
-      .hs-topbar-search { max-width: 130px; }
+      /* These used to cap the search box at 200px (then 130px below 400px) to leave room for
+         the hamburger — but the hamburger is display:none right above this, so nothing was
+         actually competing for that space, and 130px clipped the placeholder text down to
+         "Search by pr...". flex: 1 + min-width: 0 on .hs-topbar-search already shares the row
+         correctly with the bell/avatar; it doesn't need a hardcoded ceiling here at all. */
     }
     [data-theme="light"] .hs-hamburger {
       background: rgba(0,0,0,0.05);
@@ -505,15 +512,10 @@
       ? `<img src="${user.avatar}" alt="${fullName}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;" />`
       : initials;
 
-    el.className = 'hs-topbar';
-    el.innerHTML = `
-      <button class="hs-hamburger" id="hsHamburger" aria-label="Open menu">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="3" y1="6" x2="21" y2="6"/>
-          <line x1="3" y1="12" x2="21" y2="12"/>
-          <line x1="3" y1="18" x2="21" y2="18"/>
-        </svg>
-      </button>
+    // A search box that does nothing when typed into is worse than no search box — most pages
+    // never pass onSearch (it's dead UI left over from before the front end was wired to real
+    // data), so only render it where there's an actual handler for it.
+    const searchHTML = typeof onSearch === 'function' ? `
       <div class="hs-topbar-search">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
              stroke-linecap="round" stroke-linejoin="round">
@@ -533,6 +535,18 @@
           onblur="if(!this.value)this.setAttribute('readonly','')"
         />
       </div>
+    ` : '';
+
+    el.className = 'hs-topbar';
+    el.innerHTML = `
+      <button class="hs-hamburger" id="hsHamburger" aria-label="Open menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      ${searchHTML}
       <div class="hs-topbar-right">
 
         <!-- Notification Bell -->
@@ -583,10 +597,11 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                 Settings
               </button>
+              ${(role === 'buyer' || role === 'seller') ? `
               <button class="hs-profile-menu-item" data-action="help">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                 Help & Support
-              </button>
+              </button>` : ''}
               ${(role === 'buyer' || role === 'seller') ? `
               <div class="hs-profile-divider"></div>
               <button class="hs-profile-menu-item reverify" data-action="reverify">
@@ -631,33 +646,22 @@
     }
 
     // ── Notification panel ──────────────────────────────────────────────────
-    const NOTIFS_BY_ROLE = {
-      buyer: [
-        { id: 1, type: 'message', unread: true,  time: '2m ago',    msg: '<strong>Ramon Cruz</strong> sent you a message about a property.' },
-        { id: 2, type: 'listing', unread: true,  time: '18m ago',   msg: '<strong>New listing</strong> in Poblacion matches your saved preferences.' },
-        { id: 3, type: 'price',   unread: false, time: '2h ago',    msg: 'Price dropped on a saved listing — <strong>1-Bedroom Apartment near Town Proper</strong>.' },
-        { id: 4, type: 'system',  unread: false, time: 'Yesterday', msg: 'Your account was successfully verified.' },
-      ],
-      seller: [
-        { id: 1, type: 'message', unread: true,  time: '5m ago',    msg: '<strong>Maria Santos</strong> sent an inquiry about your listing in Poblacion.' },
-        { id: 2, type: 'listing', unread: true,  time: '1h ago',    msg: 'Your listing <strong>2-Bedroom Unit in Sta. Maria</strong> has been approved.' },
-        { id: 3, type: 'price',   unread: false, time: '3h ago',    msg: '3 buyers viewed your listing in Pulong Yantok today.' },
-        { id: 4, type: 'system',  unread: false, time: 'Yesterday', msg: 'Your seller account has been successfully verified.' },
-      ],
-      admin: [
-        { id: 1, type: 'listing', unread: true,  time: '10m ago',   msg: '<strong>New listing</strong> submitted by Juan Dela Cruz — pending approval.' },
-        { id: 2, type: 'message', unread: true,  time: '45m ago',   msg: 'User <strong>Maria Santos</strong> filed a report against a listing.' },
-        { id: 3, type: 'system',  unread: false, time: '4h ago',    msg: '2 listings flagged for review by the content filter.' },
-        { id: 4, type: 'system',  unread: false, time: 'Yesterday', msg: 'System backup completed successfully.' },
-      ],
-      superadmin: [
-        { id: 1, type: 'system',  unread: true,  time: '15m ago',   msg: 'Admin <strong>Jose Reyes</strong> approved 5 new listings.' },
-        { id: 2, type: 'message', unread: true,  time: '2h ago',    msg: 'New admin account registered — pending super admin approval.' },
-        { id: 3, type: 'system',  unread: false, time: 'Yesterday', msg: 'Monthly report generated for March 2026.' },
-        { id: 4, type: 'system',  unread: false, time: '2 days ago', msg: 'Platform usage hit 500 active users this week.' },
-      ],
-    };
-    let NOTIFS = (NOTIFS_BY_ROLE[role] || NOTIFS_BY_ROLE.buyer).map(n => Object.assign({}, n));
+    // Reads the real `notifications` table (HS.notifications) instead of fabricated per-role
+    // messages — nothing currently inserts rows into that table, so most accounts will honestly
+    // show "No notifications" here rather than invented activity that never happened.
+    let NOTIFS = [];
+
+    function timeAgo(iso) {
+      const minutes = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+      if (minutes < 1) return 'Just now';
+      if (minutes < 60) return `${minutes}m ago`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours}h ago`;
+      const days = Math.floor(hours / 24);
+      if (days === 1) return 'Yesterday';
+      if (days < 7) return `${days}d ago`;
+      return new Date(iso).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
+    }
 
     const ICONS = {
       listing: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
@@ -693,16 +697,47 @@
 
     function notifItem(n) {
       return `
-        <div class="hs-notif-item ${n.unread ? 'unread' : ''}">
-          <div class="hs-notif-avatar ${n.type === 'system' ? 'system' : ''}">${ICONS[n.type] || ''}</div>
+        <div class="hs-notif-item ${n.unread ? 'unread' : ''}" data-id="${n.id}">
+          <div class="hs-notif-avatar ${n.type === 'system' ? 'system' : ''}">${ICONS[n.type] || ICONS.system}</div>
           <div class="hs-notif-content">
-            <div class="hs-notif-msg">${n.msg}</div>
-            <div class="hs-notif-time">${n.time}</div>
+            <div class="hs-notif-msg">${n.title ? `<strong>${n.title}</strong> ` : ''}${n.body}</div>
+            <div class="hs-notif-time">${timeAgo(n.createdAt)}</div>
           </div>
         </div>`;
     }
 
+    // Clicking an item marks just that one read (and follows its link, if it has one).
+    const notifBody = el.querySelector('#hsNotifBody');
+    if (notifBody) {
+      notifBody.addEventListener('click', async (e) => {
+        const item = e.target.closest('.hs-notif-item');
+        if (!item) return;
+        const id = item.dataset.id;
+        const n = NOTIFS.find((x) => String(x.id) === id);
+        if (n && n.unread) {
+          n.unread = false;
+          renderNotifs(activeTab);
+          try { await HS.notifications.markRead(id); } catch (err) { console.error('Could not mark notification read:', err); }
+        }
+        if (n && n.link) window.location.href = n.link;
+      });
+    }
+
+    async function loadNotifs() {
+      if (typeof HS === 'undefined' || !HS.notifications) return;
+      try {
+        NOTIFS = await HS.notifications.list();
+      } catch (err) {
+        console.error('Could not load notifications:', err);
+        return;
+      }
+      renderNotifs(activeTab);
+      const dot = el.querySelector('#hsNotifDot');
+      if (dot) dot.style.display = NOTIFS.some((n) => n.unread) ? '' : 'none';
+    }
+
     renderNotifs('all');
+    loadNotifs();
 
     // Tab switching
     el.querySelectorAll('.hs-notif-tab').forEach(tab => {
@@ -717,58 +752,42 @@
     // Mark all as read
     const markRead = el.querySelector('#hsMarkRead');
     if (markRead) {
-      markRead.addEventListener('click', () => {
+      markRead.addEventListener('click', async () => {
         NOTIFS.forEach(n => n.unread = false);
         renderNotifs(activeTab);
         const dot = el.querySelector('#hsNotifDot');
         if (dot) dot.style.display = 'none';
+        try { await HS.notifications.markAllRead(); } catch (err) { console.error('Could not mark notifications read:', err); }
       });
     }
 
     // Navigate to full notifications page
     function goToNotifPage() {
       const p = window.location.pathname;
+      // '../<folder>/' rather than a bare filename: module/buyer/listing.html is shared by buyers
+      // and sellers, and from there a bare name opened the buyer's page for a seller too.
+      const folder = role === 'superadmin' ? 'super-admin' : role;
       let path;
-      if (p.includes('/module/'))    path = 'notifications.html';
-      else if (p.includes('/auth/')) path = '../module/' + role + '/notifications.html';
-      else                           path = 'module/' + role + '/notifications.html';
+      if (p.includes('/module/'))    path = '../' + folder + '/notifications.html';
+      else if (p.includes('/auth/')) path = '../module/' + folder + '/notifications.html';
+      else                           path = 'module/' + folder + '/notifications.html';
       window.location.href = path;
     }
 
     const seeAllBtn = el.querySelector('#hsNotifSeeAll');
     if (seeAllBtn) seeAllBtn.addEventListener('click', goToNotifPage);
 
-    // Toggle notification panel (desktop) or navigate to page (mobile)
+    // Toggle notification panel — same popup behavior as the profile button, at every width.
+    // This used to redirect to the full notifications page on mobile instead of opening the
+    // panel, which was inconsistent with how the profile button always just opens its dropdown.
     const notifBtn   = el.querySelector('#hsNotifBtn');
     const notifPanel = el.querySelector('#hsNotifPanel');
     if (notifBtn && notifPanel) {
       notifBtn.addEventListener('click', e => {
         e.stopPropagation();
-
-        // On mobile (< 768px), go to notifications page instead
-        if (window.innerWidth < 768) {
-          // Determine the correct path based on current role
-          const currentPath = window.location.pathname;
-          let notifPath = 'notifications.html';
-
-          if (currentPath.includes('/buyer/')) {
-            notifPath = 'notifications.html';
-          } else if (currentPath.includes('/seller/')) {
-            notifPath = 'notifications.html';
-          } else if (currentPath.includes('/admin/')) {
-            notifPath = 'notifications.html';
-          }
-
-          window.location.href = notifPath;
-          return;
-        }
-
-        // Desktop: Toggle dropdown
         notifPanel.classList.toggle('open');
         const profileDropdown = el.querySelector('#hsProfileDropdown');
         if (profileDropdown) profileDropdown.classList.remove('open');
-        const dot = el.querySelector('#hsNotifDot');
-        if (dot) dot.style.display = 'none';
       });
     }
 
@@ -793,15 +812,16 @@
         profileDropdown.classList.remove('open');
         const action = btn.dataset.action;
         const p = window.location.pathname;
+        // The role is 'superadmin' but its folder is module/super-admin/ — using the role name as
+        // the folder sent a superadmin's View Profile / Settings to a nonexistent path (404).
+        const folder = role === 'superadmin' ? 'super-admin' : role;
+        const basePath = p.includes('/module/') ? '../' + folder + '/' : 'module/' + folder + '/';
 
         if (action === 'profile') {
-          const basePath = p.includes('/module/') ? '../' + role + '/' : 'module/' + role + '/';
           window.location.href = basePath + 'profile.html';
         } else if (action === 'settings') {
-          const basePath = p.includes('/module/') ? '../' + role + '/' : 'module/' + role + '/';
           window.location.href = basePath + 'settings.html';
         } else if (action === 'help') {
-          const basePath = p.includes('/module/') ? '../' + role + '/' : 'module/' + role + '/';
           window.location.href = basePath + 'help.html';
         } else if (action === 'reverify') {
           if (typeof global._hsOpenReverify === 'function') global._hsOpenReverify();

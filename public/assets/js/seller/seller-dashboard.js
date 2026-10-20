@@ -18,10 +18,12 @@
     isVerified = fullUser.accountStatus === 'verified';
     const isPending = fullUser.accountStatus === 'pending';
 
+    // Verified sellers don't get a badge here at all — once there's nothing to act on, it's just
+    // clutter next to the page title. Pending/unverified sellers still need the nudge, and an
+    // expiring-soon verified seller already gets the separate expiry banner below.
     const badge = document.getElementById('verifyBadge');
     if (isVerified) {
-      badge.textContent = '✓ Verified';
-      badge.className = 'verify-badge verified';
+      badge.classList.add('is-hidden');
     } else if (isPending) {
       badge.textContent = '⏳ Pending Review';
       badge.className = 'verify-badge pending';
@@ -30,7 +32,7 @@
       badge.className = 'verify-badge unverified';
     }
 
-    if (!isVerified) document.getElementById('verifyBanner').style.display = 'flex';
+    document.getElementById('verifyBanner').classList.toggle('is-hidden', isVerified);
 
     // Show expiry banner on dashboard only when near expiry (≤30 days) or expired
     if (isVerified && fullUser.verificationExpiry) {
@@ -68,18 +70,6 @@
           </div>`;
       }
     }
-
-
-    const addBtn = document.getElementById('addListingBtn');
-    if (!isVerified) {
-      addBtn.disabled = true;
-      addBtn.title = 'Complete identity verification to post listings';
-    }
-  }
-
-  function handleAddListing() {
-    if (!isVerified) return;
-    window.location.href = 'post.html';
   }
 
   // ── Populate barangay dropdown (once the listings are in) ─────────────────
@@ -126,6 +116,33 @@
   // Only the search box uses this. renderListings() itself stays immediate, so the first render and
   // every call from code are unaffected.
   window.renderListingsSoon = hsDebounce(() => window.renderListings(), 200);
+
+  // ── Mobile filter sheet ───────────────────────────────────────────────────
+  // Same pattern as buyer-dashboard.js's #filterPanel: on mobile the Marketplace filters open as
+  // a bottom sheet instead of sitting inline above the listings.
+  function resetFilters() {
+    document.getElementById('filterBarangay').value = '';
+    document.getElementById('filterType').value = '';
+    document.getElementById('filterMin').value = '';
+    document.getElementById('filterMax').value = '';
+    renderListings();
+  }
+
+  function openFilterSheet() {
+    document.getElementById('sellerFilterPanel').classList.add('sheet-open');
+    document.getElementById('filterBackdrop').classList.add('open');
+    document.querySelector('.content').style.overflow = 'hidden';
+  }
+
+  function closeFilterSheet() {
+    document.getElementById('sellerFilterPanel').classList.remove('sheet-open');
+    document.getElementById('filterBackdrop').classList.remove('open');
+    document.querySelector('.content').style.overflow = '';
+  }
+
+  window.resetFilters     = resetFilters;
+  window.openFilterSheet  = openFilterSheet;
+  window.closeFilterSheet = closeFilterSheet;
 
   function renderListings() {
     const q        = (document.getElementById('hsSearch') || {}).value || '';

@@ -1,34 +1,33 @@
 // ── Data ──────────────────────────────────────────────────────────────────────
 
 // Counts used to come from fixed numbers here (342, 218, 97) that were never real — see
-// useTypeCounts() below for what replaced them. `types` lists which property_type values each
-// card adds together; the schema (006_frontend_alignment.sql) only has 'house' | 'apartment' |
-// 'condo' | 'commercial' | 'lot', so there is no single real type called "Townhouses" — that card
-// now covers everything that isn't a house or an apartment instead of claiming a type that
-// doesn't exist.
+// useTypeCounts() below for what replaced them. `type` is a property_type value; the schema
+// (006_frontend_alignment.sql) only has 'house' | 'apartment' | 'condo' | 'commercial' | 'lot', so
+// there is no real type called "Townhouses". The third card is land for sale — 'lot', what the
+// seller's post form calls "Lot Only".
+//
+// Each card shows a photo of the newest live listing of its type. When a type has none yet, it
+// falls back to `fallbacks` in order — drop a photo at assets/img/types/<type>.jpg to set one —
+// and if none of those load either, the card's own teal gradient shows instead of a broken image.
 const categories = [
-  {
-    name: "Houses",
-    types: ["house"],
-    color: "#1a9e8f",
-    bg: "rgba(26,158,143,0.15)",
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
-  },
-  {
-    name: "Apartments",
-    types: ["apartment"],
-    color: "#6c63ff",
-    bg: "rgba(108,99,255,0.15)",
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="8" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="16" y2="21"/><line x1="2" y1="9" x2="22" y2="9"/><line x1="2" y1="15" x2="22" y2="15"/></svg>`,
-  },
-  {
-    name: "Other Properties",
-    types: ["condo", "commercial", "lot"],
-    color: "#f59e0b",
-    bg: "rgba(245,158,11,0.15)",
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><path d="M1 22h22"/><path d="M5 22V7l7-5 7 5v15"/><path d="M9 22V12h6v10"/></svg>`,
-  },
+  { name: "Houses",      type: "house",     fallbacks: ["assets/img/types/house.jpg", "assets/img/house_image.jpg"] },
+  { name: "Apartments",  type: "apartment", fallbacks: ["assets/img/types/apartment.jpg"] },
+  { name: "Lots & Land", type: "lot",       fallbacks: ["assets/img/types/lot.jpg"] },
 ];
+
+// Tries each source in turn on load failure; hides itself once they're all used up.
+function CategoryPhoto({ sources, alt }) {
+  const [i, setI] = useState(0);
+  useEffect(() => { setI(0); }, [sources.join('|')]);
+  if (i >= sources.length) return null;
+  return React.createElement("img", {
+    className: "cat-photo",
+    src: sources[i],
+    alt,
+    loading: "lazy",
+    onError: () => setI((n) => n + 1),
+  });
+}
 
 // Each step is paired with the screen it describes, drawn the way the real page draws it — the
 // same listing card browse.html renders, the same chat bubbles and payment card. They hold
@@ -144,8 +143,8 @@ function useBarangayCounts() {
   return counts;
 }
 
-// Same caching pattern as useBarangayCounts, for the "Browse by Type" cards. Keyed by
-// property_type ('house' | 'apartment' | 'condo' | 'commercial' | 'lot').
+// Same caching pattern as useBarangayCounts, for the "Browse by Type" cards. Resolves to
+// { counts, photos }, both keyed by property_type ('house' | 'apartment' | 'condo' | 'commercial' | 'lot').
 let typeCountsPromise = null;
 
 function useTypeCounts() {
@@ -328,33 +327,59 @@ function HeroMap() {
 
   // Property markers.
   //
-  // The positions are measured against this SVG, so only these six barangays can carry a pin —
-  // the artwork has no per-barangay ids to place the rest against. The barangay list under the map
-  // covers all 24, so nothing is hidden by that.
+  // Every barangay, positioned on its own name label in the map artwork. The label shapes are
+  // paths in "Sta. Maria Map.svg" (no ids), so these are their centres in the SVG's own
+  // 1575 x 1816 viewBox units, measured from the file. They used to be percentages of the whole
+  // right-hand panel for only six barangays — so a listing in any other barangay (Silangan) never
+  // got a pin, and the six that did drifted off their barangay whenever the window's shape changed,
+  // since the panel and the drawing inside it don't scale together.
   //
-  // The counts used to be written in by hand (Pulong Buhangin claimed 20). They come from the
-  // database now, and a barangay with nothing in it gets no pin rather than an invented one.
+  // The counts come from the database; a barangay with nothing in it gets no pin.
   useEffect(() => {
     if (!containerRef.current || !svgContent || !counts) return;
 
-    const positions = [
-      { x: 35, y: 68, barangay: 'Poblacion' },
-      { x: 40, y: 58, barangay: 'Guyong' },
-      { x: 25, y: 73, barangay: 'Bagbaguin' },
-      { x: 45, y: 78, barangay: 'Tumana' },
-      { x: 63, y: 58, barangay: 'Catmon' },
-      { x: 63, y: 28, barangay: 'Pulong Buhangin' },
-    ];
+    const VB_W = 1575, VB_H = 1816;
+    const positions = {
+      'Silangan':         [905, 149],  'Mag-asawang Sapa': [786, 383],
+      'Pulong Buhangin':  [1093, 514], 'Cay Pombo':        [710, 668],
+      'Balasing':         [1273, 742], 'Caysio':           [531, 754],
+      'Manggahan':        [352, 829],  'Bulac':            [1399, 965],
+      'Santa Cruz':       [369, 1004], 'Guyong':           [637, 1012],
+      'Catmon':           [1093, 1095],'San Jose Patag':   [731, 1188],
+      'Santa Clara':      [260, 1189], 'Poblacion':        [466, 1250],
+      'Bagbaguin':        [315, 1326], 'Lalakhan':         [54, 1347],
+      'Tumana':           [642, 1372], 'Parada':           [890, 1384],
+      'San Vicente':      [1181, 1438],'San Gabriel':      [480, 1482],
+      'Tabing Bakod':     [280, 1540], 'Buenavista':       [786, 1607],
+      'Camangyanan':      [585, 1643], 'Mahabang Parang':  [317, 1743],
+    };
+
+    const container = containerRef.current;
+
+    // The SVG is centred in the container and scaled to fit (max-width/max-height 100%, never
+    // above its own 1575x1816), so a viewBox point maps to container pixels like this. Layout
+    // sizes (clientWidth/Height), not getBoundingClientRect, so the pan/zoom/rotate transform on
+    // the container isn't counted twice — the pins sit inside it and get that transform anyway.
+    const place = () => {
+      const cw = container.clientWidth, ch = container.clientHeight;
+      const s = Math.min(1, cw / VB_W, ch / VB_H);
+      const offX = (cw - VB_W * s) / 2, offY = (ch - VB_H * s) / 2;
+      pins.forEach(({ el, x, y }) => {
+        el.style.left = `${offX + x * s}px`;
+        el.style.top  = `${offY + y * s}px`;
+      });
+    };
 
     const pins = [];
-    positions
-      .filter((p) => (counts[p.barangay] || 0) > 0)
-      .forEach((p, i) => {
+    Object.keys(positions)
+      .filter((name) => (counts[name] || 0) > 0)
+      .forEach((name, i) => {
+        const p = { barangay: name };
+        const [x, y] = positions[name];
         const n = counts[p.barangay];
         const pin = document.createElement('div');
+        pins.push({ el: pin, x, y });
         pin.className = 'property-marker';
-        pin.style.left = `${p.x}%`;
-        pin.style.top = `${p.y}%`;
         pin.style.animationDelay = `${i * 0.3}s`;
         pin.setAttribute('role', 'link');
         pin.setAttribute('tabindex', '0');
@@ -376,13 +401,16 @@ function HeroMap() {
           if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(e); }
         });
 
-        containerRef.current.appendChild(pin);
-        pins.push(pin);
+        container.appendChild(pin);
       });
+
+    place();
+    const ro = new ResizeObserver(place);
+    ro.observe(container);
 
     // The SVG is injected with dangerouslySetInnerHTML, so React does not own these nodes and
     // will not clear them. Without this, a re-run leaves the old pins behind.
-    return () => pins.forEach((p) => p.remove());
+    return () => { ro.disconnect(); pins.forEach((p) => p.el.remove()); };
   }, [svgContent, counts]);
 
   useEffect(() => {
@@ -876,7 +904,9 @@ function Hero() {
 // Categories
 function Categories() {
   const [ref, visible] = useReveal();
-  const typeCounts = useTypeCounts();
+  const summary = useTypeCounts();
+  const typeCounts = summary && summary.counts;
+  const typePhotos = (summary && summary.photos) || {};
   return React.createElement(
     "section",
     { className: `section reveal-section${visible ? ' in-view' : ''}`, ref },
@@ -900,55 +930,156 @@ function Categories() {
       { className: "categories-grid" },
       categories.map((c, i) => {
         // null while still loading — say nothing definite yet rather than flash a wrong number.
-        const n = typeCounts && c.types.reduce((sum, t) => sum + (typeCounts[t] || 0), 0);
+        const n = typeCounts && (typeCounts[c.type] || 0);
         const countLabel = typeCounts == null ? ' ' : n === 1 ? '1 listing' : `${n} listings`;
+        // A real listing's photo first, then the bundled fallbacks — but only once the data is in.
+        // Starting on the fallbacks while it loads meant the stock photo flashed up, then got
+        // swapped for the real one a moment later; the gradient is the honest "loading" state.
+        const sources = summary == null ? []
+          : (typePhotos[c.type] ? [typePhotos[c.type]] : []).concat(c.fallbacks);
+        // Opens browse.html filtered to this card's type.
+        const open = () => { window.location.href = 'browse.html?type=' + encodeURIComponent(c.type); };
         return React.createElement(
           "div",
-          { key: i, className: "cat-card" },
+          {
+            key: i, className: "cat-card", role: "link", tabIndex: 0,
+            style: { cursor: "pointer" },
+            onClick: open,
+            onKeyDown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } },
+          },
+          React.createElement(CategoryPhoto, { sources, alt: c.name }),
+          React.createElement("div", { className: "cat-shade" }),
           React.createElement(
             "div",
-            { className: "cat-icon", style: { background: c.bg } },
-            React.createElement("span", {
-              style: { color: c.color },
-              dangerouslySetInnerHTML: { __html: c.icon },
-            }),
+            { className: "cat-text" },
+            React.createElement("div", { className: "cat-name" }, c.name),
+            React.createElement("div", { className: "cat-count" }, countLabel),
           ),
-          React.createElement("div", { className: "cat-name" }, c.name),
-          React.createElement("div", { className: "cat-count" }, countLabel),
         );
       }),
     ),
   );
 }
 
-// Spotlight Carousel
+// Featured Properties
+//
+// A row of real listing cards — up to three in view, the rest a swipe or an arrow away. It used to
+// be one card in the middle with half-faded neighbours, which with only one or two listings meant a
+// lone card and two arrows a long way off. Now the row simply holds however many there are: centred
+// when they all fit, scrollable (scroll-snap, so it works by touch too) when they don't, and the
+// arrows only appear when there is actually somewhere to go.
+const bedIcon  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg>`;
+const bathIcon = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6 6.5 3.5a1.5 1.5 0 0 0-1-.5C4.683 3 4 3.683 4 4.5V17a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/><line x1="2" y1="12" x2="22" y2="12"/></svg>`;
+
+// Same rule as browse.html: signed-in buyers and sellers go straight to the listing, everyone else
+// signs in first and is sent back to it afterwards.
+function openListing(id) {
+  const target = 'module/buyer/listing.html?id=' + encodeURIComponent(id);
+  const me = typeof getSession === 'function' ? getSession() : null;
+  if (me && (me.role === 'buyer' || me.role === 'seller')) { window.location.href = target; return; }
+  window.location.href = 'auth/signin.html?redirect=' + encodeURIComponent(target);
+}
+
+function FeaturedCard(prop) {
+  const specs = [];
+  // A lot has no rooms — showing "0 bed · 0 bath" on land would read like missing data.
+  if (prop.beds) specs.push({ icon: bedIcon, text: `${prop.beds} bed${prop.beds === 1 ? '' : 's'}` });
+  if (prop.baths) specs.push({ icon: bathIcon, text: `${prop.baths} bath${prop.baths === 1 ? '' : 's'}` });
+  const open = () => openListing(prop.id);
+
+  return React.createElement(
+    "article",
+    {
+      key: prop.id, className: "fp-card", role: "link", tabIndex: 0,
+      "aria-label": `${prop.title}, ${prop.price}${prop.period}`,
+      onClick: open,
+      onKeyDown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } },
+    },
+    React.createElement(
+      "div",
+      { className: "fp-media" },
+      React.createElement("img", { className: "fp-img", src: prop.image, alt: prop.title, loading: "lazy" }),
+      React.createElement("span", { className: `fp-badge fp-badge-${prop.badgeType}` }, prop.badge),
+      prop.verified && React.createElement("span", {
+        className: "fp-verified",
+        dangerouslySetInnerHTML: { __html: checkIcon + "<span>Verified</span>" },
+      }),
+    ),
+    React.createElement(
+      "div",
+      { className: "fp-body" },
+      React.createElement(
+        "div",
+        { className: "fp-price" },
+        prop.price,
+        prop.period && React.createElement("span", null, prop.period),
+      ),
+      React.createElement("h3", { className: "fp-title" }, prop.title),
+      React.createElement(
+        "div",
+        { className: "fp-loc" },
+        React.createElement("span", { dangerouslySetInnerHTML: { __html: pinIcon } }),
+        React.createElement("span", null, prop.location),
+      ),
+      React.createElement(
+        "div",
+        { className: "fp-foot" },
+        React.createElement(
+          "div",
+          { className: "fp-specs" },
+          specs.map((s, i) => React.createElement(
+            "span",
+            { key: i, className: "fp-spec" },
+            React.createElement("span", { dangerouslySetInnerHTML: { __html: s.icon } }),
+            s.text,
+          )),
+        ),
+        React.createElement("span", { className: "fp-cta" }, "View details →"),
+      ),
+    ),
+  );
+}
+
 function Carousel() {
   const [ref, visible] = useReveal();
   const listings = useFeaturedListings();
-  const len = listings ? listings.length : 0;
-  const [idx, setIdx] = useState(0);
-  const [autoKey, setAutoKey] = useState(0);
+  const trackRef = useRef(null);
+  const [edges, setEdges] = useState({ start: true, end: true });
 
+  // Which arrows make sense right now — re-checked on scroll and whenever the row resizes.
   useEffect(() => {
-    if (!len) return;
-    const t = setInterval(() => setIdx((i) => (i + 1) % len), 3500);
-    return () => clearInterval(t);
-  }, [autoKey, len]);
+    const track = trackRef.current;
+    if (!track) return;
+    const update = () => setEdges({
+      start: track.scrollLeft <= 2,
+      end: track.scrollLeft + track.clientWidth >= track.scrollWidth - 2,
+    });
+    update();
+    track.addEventListener('scroll', update, { passive: true });
+    const ro = new ResizeObserver(update);
+    ro.observe(track);
+    return () => { track.removeEventListener('scroll', update); ro.disconnect(); };
+  }, [listings]);
 
-  const go = (next) => {
-    setIdx((next + len) % len);
-    setAutoKey((k) => k + 1);
+  const scrollByCard = (dir) => {
+    const track = trackRef.current;
+    if (!track) return;
+    const card = track.querySelector('.fp-card');
+    const step = card ? card.getBoundingClientRect().width + 20 : track.clientWidth;
+    track.scrollBy({ left: dir * step, behavior: 'smooth' });
   };
 
-  // Still loading, or genuinely nothing approved yet — either way there is nothing to spin through.
-  // listings === null means "not back yet"; [] means "asked, got zero" — both skip the carousel
-  // rather than divide by a length of 0, which the index math above would do with NaN.
+  const header = [
+    React.createElement("span", { key: "l", className: "section-label" }, "Featured Properties"),
+    React.createElement("h2", { key: "t", className: "section-title" }, "Curated Listings Near You"),
+  ];
+
+  // Still loading, or genuinely nothing approved yet.
   if (!listings || !listings.length) {
     return React.createElement(
       "section",
       { className: `section-alt reveal-section${visible ? ' in-view' : ''}`, ref },
-      React.createElement("span", { className: "section-label" }, "Featured Properties"),
-      React.createElement("h2", { className: "section-title" }, "Curated Listings Near You"),
+      ...header,
       React.createElement(
         "p",
         { className: "section-sub" },
@@ -959,161 +1090,44 @@ function Carousel() {
     );
   }
 
-  const leftProp = listings[(idx - 1 + len) % len];
-  const centerProp = listings[idx];
-  const rightProp = listings[(idx + 1) % len];
-
-  const SideCard = (prop) =>
-    React.createElement(
-      "div",
-      { className: "crd-side" },
-      React.createElement("img", {
-        className: "crd-img",
-        src: prop.image,
-        alt: prop.title,
-      }),
-      React.createElement(
-        "div",
-        { className: "crd-body-side" },
-        React.createElement(
-          "div",
-          { className: "card-title-side" },
-          prop.title,
-        ),
-        React.createElement("div", {
-          className: "card-loc",
-          dangerouslySetInnerHTML: {
-            __html: pinIcon + `<span>${prop.location}</span>`,
-          },
-        }),
-        React.createElement(
-          "div",
-          { className: "card-price-side" },
-          prop.price,
-        ),
-      ),
-    );
+  const scrollable = !(edges.start && edges.end);
 
   return React.createElement(
     "section",
     { className: `section-alt reveal-section${visible ? ' in-view' : ''}`, ref },
-    React.createElement(
-      "span",
-      { className: "section-label" },
-      "Featured Properties",
-    ),
-    React.createElement(
-      "h2",
-      { className: "section-title" },
-      "Curated Listings Near You",
-    ),
+    ...header,
     React.createElement(
       "p",
       { className: "section-sub" },
-      "Hand-picked from verified sellers in Sta. Maria, Bulacan",
+      "Approved listings from verified sellers in Sta. Maria, Bulacan",
     ),
     React.createElement(
       "div",
-      { className: "crs-stage" },
+      { className: "fp-stage" },
+      scrollable && React.createElement("button", {
+        className: "fp-arrow fp-arrow-left", "aria-label": "Previous listings",
+        disabled: edges.start, onClick: () => scrollByCard(-1),
+        dangerouslySetInnerHTML: { __html: chevronLeft },
+      }),
       React.createElement(
         "div",
-        { className: "crs-row" },
-        React.createElement("button", {
-          className: "crs-btn",
-          onClick: () => go(idx - 1),
-          dangerouslySetInnerHTML: { __html: chevronLeft },
-        }),
-        React.createElement(
-          "div",
-          { className: "crs-clip" },
-          React.createElement(
-            "div",
-            {
-              className: "crd-side-wrap crd-side-left",
-              onClick: () => go(idx - 1),
-            },
-            SideCard(leftProp),
-          ),
-          React.createElement(
-            "div",
-            { className: "crd-center" },
-            React.createElement(
-              "div",
-              { style: { position: "relative" } },
-              React.createElement("img", {
-                className: "crd-img-center",
-                src: centerProp.image,
-                alt: centerProp.title,
-              }),
-              centerProp.verified &&
-                React.createElement("div", {
-                  className: "verified-badge",
-                  dangerouslySetInnerHTML: { __html: checkIcon + " Verified" },
-                }),
-            ),
-            React.createElement(
-              "div",
-              { className: "crd-body-center" },
-              React.createElement(
-                "div",
-                { className: "card-title" },
-                centerProp.title,
-              ),
-              React.createElement("div", {
-                className: "card-loc",
-                dangerouslySetInnerHTML: {
-                  __html: pinIcon + `<span>${centerProp.location}</span>`,
-                },
-              }),
-              React.createElement(
-                "div",
-                { className: "card-footer-row" },
-                React.createElement(
-                  "div",
-                  { className: "card-price" },
-                  centerProp.price,
-                  React.createElement("span", null, centerProp.period),
-                ),
-                React.createElement(
-                  "span",
-                  {
-                    className: "card-link",
-                    onClick: () => (window.location.href = "auth/signin.html"),
-                  },
-                  "View Details",
-                ),
-              ),
-            ),
-          ),
-          React.createElement(
-            "div",
-            {
-              className: "crd-side-wrap crd-side-right",
-              onClick: () => go(idx + 1),
-            },
-            SideCard(rightProp),
-          ),
-        ),
-        React.createElement("button", {
-          className: "crs-btn",
-          onClick: () => go(idx + 1),
-          dangerouslySetInnerHTML: { __html: chevronRight },
-        }),
+        { className: `fp-track${scrollable ? '' : ' fp-track-fits'}`, ref: trackRef },
+        listings.map((p) => FeaturedCard(p)),
       ),
+      scrollable && React.createElement("button", {
+        className: "fp-arrow fp-arrow-right", "aria-label": "More listings",
+        disabled: edges.end, onClick: () => scrollByCard(1),
+        dangerouslySetInnerHTML: { __html: chevronRight },
+      }),
     ),
     React.createElement(
-      "div",
-      { className: "dots" },
-      listings.map((_, i) =>
-        React.createElement("button", {
-          key: i,
-          className: "dot" + (i === idx ? " active" : ""),
-          onClick: () => go(i),
-        }),
-      ),
+      "a",
+      { className: "fp-all", href: "browse.html" },
+      "Browse all properties →",
     ),
   );
 }
+
 
 // How It Works
 // The curve running down the timeline.
@@ -1825,6 +1839,8 @@ function App() {
     React.createElement(Hero),
     React.createElement(FeatureHighlights),
     React.createElement(TrustBanner),
+    React.createElement(Categories),
+    React.createElement(Carousel),
     React.createElement(PlatformFeatures),
     React.createElement(HowItWorks),
     React.createElement(HowWeVerify),

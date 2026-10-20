@@ -96,6 +96,7 @@ const HS = (function () {
       warningCount: r.warning_count || 0,
       suspendedAt: r.suspended_at || null,
       joinedAt: day(r.created_at),
+      emailConfirmed: !!r.email_confirmed_at,
     };
   }
 
@@ -365,6 +366,18 @@ const HS = (function () {
       return (rows || []).map(mapProperty);
     },
 
+    // Does the signed-in seller have at least one approved "for rent" listing? Lightweight (a
+    // count, not the rows) — used to decide whether "My Tenants" even applies to this seller at
+    // all, since a tenant can only ever exist against an approved rental.
+    async hasApprovedRental() {
+      const id = await needUserId();
+      const { count, error } = await sb.from('properties')
+        .select('id', { count: 'exact', head: true })
+        .eq('landowner_id', id).eq('status', 'approved').eq('listing_type', 'rent');
+      if (error) throw new Error(error.message);
+      return (count || 0) > 0;
+    },
+
     // Admins: every listing, every status.
     async all() {
       const rows = unwrap(await sb.from('properties').select(PROPERTY_LIST_SELECT).order('created_at', { ascending: false }).limit(LIST_CAP));
@@ -580,6 +593,22 @@ const HS = (function () {
     async submit(docs) {
       const id = await needUserId();
       const me = await profiles.me();
+
+      // A verified account only needs to resubmit once it's expired or close to it — submitting
+      // earlier flips account_status to 'reverification', which reads as "not verified" (isVerified
+      // is a straight === 'verified' check) everywhere that gates on it, immediately suspending
+      // privileges an unexpired verification should still carry while the new documents sit in
+      // review. The UI already hides the submit form in this case; this is the same rule enforced
+      // at the one place every caller of submit() actually goes through.
+      if (me && me.accountStatus === 'verified') {
+        const daysLeft = me.verificationExpiry
+          ? Math.ceil((new Date(me.verificationExpiry) - new Date()) / (1000 * 60 * 60 * 24))
+          : null;
+        if (daysLeft === null || daysLeft > 30) {
+          throw new Error("Your verification doesn't need to be renewed yet.");
+        }
+      }
+
       const stored = [];
       for (const d of docs) {
         const paths = await storage.uploadPrivate(d.sources, d.label);
@@ -610,6 +639,17 @@ const HS = (function () {
         viewing_data: { listingId: propertyId, listingTitle, requestedDate: date, requestedTime: time, buyerNotes: notes || null },
       }));
       return mapViewing(row);
+    },
+
+    // Already-confirmed slots for a listing — [{ date, time }] — so the schedule modal can block
+    // a buyer from picking an exact match before even submitting. "Participants read viewing
+    // requests" (RLS) only lets buyer/seller see a given row, so this goes through
+    // get_confirmed_viewing_slots() (a SECURITY DEFINER RPC that returns only date/time, nothing
+    // identifying) rather than a plain select, which would come back empty for a buyer who hasn't
+    // requested this listing before — exactly the buyer who most needs to see what's taken.
+    async confirmedSlots(propertyId) {
+      const rows = unwrap(await sb.rpc('get_confirmed_viewing_slots', { p_property: propertyId }));
+      return (rows || []).map((r) => ({ date: r.requested_date, time: r.requested_time }));
     },
 
     // Every request the signed-in user is part of (RLS already limits it to those), newest first,
@@ -1050,20 +1090,27 @@ const HS = (function () {
   // what replaced them. property_type is one of 'house' | 'apartment' | 'condo' | 'commercial' |
   // 'lot' (the CHECK constraint in 006_frontend_alignment.sql); there is no 'townhouse' in the
   // schema, so a page that wants that exact label has to fold it into one of these.
+  //
+  // Returns { counts, photos }: photos[type] is the newest live listing of that type that has a
+  // photo, for the card's background — so the cards show what's actually listed, not stock art.
   async function listingCountsByType() {
     const rows = unwrap(await sb.from('properties')
-      .select('property_type, lifecycle_status')
+      .select('property_type, lifecycle_status, thumbnail_url, images')
       .eq('status', 'approved')
+      .order('created_at', { ascending: false })
       .limit(LIST_CAP));
 
     const counts = {};
+    const photos = {};
     for (const r of rows || []) {
       if (r.lifecycle_status === 'sold' || r.lifecycle_status === 'rented') continue;
       const type = r.property_type;
       if (!type) continue;
       counts[type] = (counts[type] || 0) + 1;
+      const photo = r.thumbnail_url || (Array.isArray(r.images) && r.images[0]) || null;
+      if (photo && !photos[type]) photos[type] = photo;
     }
-    return counts;
+    return { counts, photos };
   }
 
   // Listings for the landing page — the "Featured Properties" carousel, the hero bento grid, and
@@ -1269,13 +1316,32 @@ const HS = (function () {
 
   // ── Admin: users ────────────────────────────────────────────────────────────
   const admin = {
+    // Excludes an email that was never confirmed — per src/app/api/auth/signup's own design, that
+    // account "belongs to nobody yet" (a fresh sign-up to the same address replaces it outright).
+    // It's not a real, usable account, so it shouldn't inflate the Users list or any count built on
+    // this (dashboard totals, analytics, reports) — just an abandoned attempt at one.
     async users() {
-      const rows = unwrap(await sb.from('profiles').select('*').order('created_at', { ascending: false }));
+      const rows = unwrap(await sb.from('profiles').select('*')
+        .not('email_confirmed_at', 'is', null)
+        .order('created_at', { ascending: false }));
       return (rows || []).map(mapProfile);
     },
 
     async user(id) {
       return mapProfile(unwrap(await sb.from('profiles').select('*').eq('id', id).maybeSingle()));
+    },
+
+    // Every payment on the platform, newest first ("Admins read all payments" policy).
+    async payments() {
+      const rows = unwrap(await sb.from('payments').select(PAYMENT_SELECT)
+        .order('created_at', { ascending: false }));
+      return (rows || []).map(mapPayment);
+    },
+
+    // Every viewing request, just what analytics needs (RLS lets admins read all of them).
+    async viewingRequests() {
+      const rows = unwrap(await sb.from('viewing_requests').select('property_id, status, created_at'));
+      return (rows || []).map((r) => ({ listingId: r.property_id, status: r.status, createdAt: r.created_at }));
     },
 
     // Listings that have a confirmed payment (admins see every payment).
@@ -1398,10 +1464,48 @@ const HS = (function () {
     return hit ? hit.id : null;
   }
 
+  // ── Notifications ───────────────────────────────────────────────────────────
+  const notifications = {
+    async list() {
+      const id = await userId();
+      if (!id) return [];
+      const rows = unwrap(await sb.from('notifications').select('*')
+        .eq('user_id', id).order('created_at', { ascending: false }).limit(50));
+      return (rows || []).map((r) => ({
+        id: r.id,
+        type: r.type || 'system',
+        title: r.title || null,
+        body: r.body,
+        link: r.link || null,
+        unread: !r.read,
+        createdAt: r.created_at,
+      }));
+    },
+
+    async unreadCount() {
+      const id = await userId();
+      if (!id) return 0;
+      const { count, error } = await sb.from('notifications')
+        .select('id', { count: 'exact', head: true }).eq('user_id', id).eq('read', false);
+      if (error) return 0;
+      return count || 0;
+    },
+
+    async markRead(id) {
+      const me = await needUserId();
+      unwrap(await sb.from('notifications').update({ read: true }).eq('id', id).eq('user_id', me));
+    },
+
+    async markAllRead() {
+      const me = await needUserId();
+      unwrap(await sb.from('notifications').update({ read: true }).eq('user_id', me).eq('read', false));
+    },
+  };
+
   return {
     PLACEHOLDER_IMG, cover, mapProfile, mapProperty, userId,
     auth, profiles, listings, favorites, storage, verification, viewing, messages, reviews, payments,
-    deposits, tenants, reports, admin, audit, barangays, barangayId,
+    deposits, tenants, reports, admin, audit, barangays, barangayId, notifications,
     publicStats, listingCountsByBarangay, listingCountsByType, featuredListings, randomListingPhoto,
   };
 })();

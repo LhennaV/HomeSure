@@ -101,6 +101,13 @@
     .upload-label { font-size: 11.5px; font-weight: 700; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
 
     .upload-box {
+      /* #idPreview/#selfiePreview (buyer-verification.js) are position:absolute, meant to fill
+         this box once a photo is captured — that only contains itself within an ancestor that is
+         itself positioned. Without position:relative here, "absolute" falls back to the page's
+         initial containing block, which is why the captured photo was rendering pinned to the top
+         of the whole document instead of inside this small card. */
+      position: relative;
+      overflow: hidden;
       border: 1.5px dashed rgba(255,255,255,0.18);
       border-radius: 11px;
       padding: 22px 16px;

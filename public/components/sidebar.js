@@ -87,19 +87,97 @@
       50%       { opacity: 0.4; }
     }
 
+    /* #hs-sidebar is only the slot in each page's .layout flex row; everything visible lives in
+       .hs-sidebar-panel inside it. Splitting them is what lets the panel float over the page when
+       it expands while the slot itself never changes width, so .main never moves. */
     .hs-sidebar {
       width: 205px;
       min-width: 205px;
+      height: 100vh;
+      position: sticky;
+      top: 0;
+      z-index: 600;
+      flex-shrink: 0;
+    }
+    .hs-sidebar-panel {
+      width: 100%;
+      height: 100%;
       background: #0F766E;
       border-right: 1px solid rgba(0,0,0,0.15);
       display: flex;
       flex-direction: column;
       padding: 22px 14px 18px;
-      height: 100vh;
-      position: sticky;
-      top: 0;
       overflow: hidden;
       animation: hs-fade-down 0.4s ease;
+    }
+
+    /* ── Collapsed-by-default, hover-to-expand (desktop only — mobile replaces this whole
+       element with the bottom nav, see the display:none at <=768px below) ──
+       The slot stays 68px wide at all times. The panel is absolutely positioned inside it and is
+       the only thing that widens on hover, so it overlays .main instead of pushing it over.
+       Pure :hover + transition; no JS state to keep in sync. */
+    @media (min-width: 769px) {
+      .hs-sidebar {
+        width: 68px;
+        min-width: 68px;
+      }
+      .hs-sidebar-panel {
+        position: absolute;
+        top: 0; left: 0;
+        width: 68px;
+        transition: width 0.3s cubic-bezier(.22,1,.36,1), box-shadow 0.3s ease;
+      }
+      /* 228, not the old 205: labels stay on one line while they slide in, and the admin's
+         "Listings Management" — the longest label in any role — needs this much to fit. */
+      .hs-sidebar:hover .hs-sidebar-panel {
+        width: 228px;
+        box-shadow: 10px 0 32px rgba(0,0,0,0.3);
+      }
+
+      /* Labels: collapsed to zero width and faded out, then on hover each one slides in and fades
+         up, a beat after the one above it (--i, set per item in buildHTML). They're never
+         display:none, which is what made them pop in all at once before. Collapsing happens with
+         no stagger, so the rail closes cleanly. */
+      .hs-logo-text,
+      .hs-nav-item span,
+      .hs-logout-btn span {
+        display: inline-block; white-space: nowrap; overflow: hidden;
+        max-width: 160px; opacity: 1; transform: none;
+        transition: max-width 0.3s cubic-bezier(.22,1,.36,1), opacity 0.22s ease, transform 0.3s cubic-bezier(.22,1,.36,1);
+        transition-delay: calc(0.04s + var(--i, 0) * 0.03s);
+      }
+      .hs-sidebar:not(:hover) .hs-logo-text,
+      .hs-sidebar:not(:hover) .hs-nav-item span,
+      .hs-sidebar:not(:hover) .hs-logout-btn span {
+        max-width: 0; opacity: 0; transform: translateX(-8px);
+        transition-delay: 0s;
+      }
+
+      /* Collapsed, only icons show, centred in the rail. .active keeps its pill tint but drops the
+         left accent bar and the padding that went with it, so the icon stays centred. */
+      .hs-sidebar:not(:hover) .hs-logo { justify-content: center; padding: 0; gap: 0; }
+      .hs-sidebar:not(:hover) .hs-nav-item,
+      .hs-sidebar:not(:hover) .hs-logout-btn { justify-content: center; padding-left: 0; padding-right: 0; gap: 0; }
+      .hs-sidebar:not(:hover) .hs-nav-item.active { padding-left: 0; border-left: none; }
+      .hs-sidebar:not(:hover) .hs-nav-submenu-container { display: none; }
+    }
+
+    /* Page load: the menu items ease in one after another. 'backwards' fill, not 'both' — a fill
+       that outlived the animation would pin transform and break the hover nudge on each item. */
+    @keyframes hs-nav-in {
+      from { opacity: 0; transform: translateX(-10px); }
+      to   { opacity: 1; transform: none; }
+    }
+    .hs-nav > .hs-nav-item,
+    .hs-nav > .hs-nav-group {
+      animation: hs-nav-in 0.42s cubic-bezier(.22,1,.36,1) backwards;
+      animation-delay: calc(0.08s + var(--i, 0) * 0.05s);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hs-sidebar-panel,
+      .hs-logo-text, .hs-nav-item span, .hs-logout-btn span { transition: none !important; }
+      .hs-nav > .hs-nav-item, .hs-nav > .hs-nav-group { animation: none !important; }
     }
 
     /* ── Logo ── */
@@ -359,8 +437,18 @@
       transition: color 0.18s;
     }
     .hs-bn-item svg { width: 20px; height: 20px; stroke: currentColor; fill: none; flex-shrink: 0; }
-    .hs-bn-item span { font-size: 10px; font-weight: 600; letter-spacing: 0.02em; line-height: 1; }
+    .hs-bn-item .hs-bn-label { font-size: 10px; font-weight: 600; letter-spacing: 0.02em; line-height: 1; }
     .hs-bn-item.active { color: #fff; }
+    .hs-bn-icon-wrap { position: relative; display: flex; }
+    .hs-bn-badge {
+      position: absolute; top: -4px; right: -7px;
+      min-width: 15px; height: 15px; padding: 0 3px;
+      border-radius: 99px;
+      background: #ef4444; color: #fff;
+      font-size: 9px; font-weight: 700; line-height: 15px; text-align: center;
+      border: 1.5px solid #0F766E;
+    }
+    .is-hidden { display: none !important; }
     .hs-bn-item.active::before {
       content: '';
       position: absolute;
@@ -407,19 +495,23 @@
   function buildHTML(items, activePage, basePath, theme) {
     const isDark = theme === 'dark';
 
+    // --i is each row's place, top to bottom — the order the labels slide in on hover and the items
+    // ease in on page load (see the CSS above).
+    let row = 0;
     const navHTML = items.map((item) => {
       // Check if item has submenu (always expanded, no toggle)
       if (item.submenu) {
+        const groupRow = row++;
         const submenuHTML = item.submenu.map(sub => `
-          <button class="hs-nav-item hs-nav-submenu ${sub.id === activePage ? 'active' : ''}" data-page="${sub.id}">
+          <button class="hs-nav-item hs-nav-submenu ${sub.id === activePage ? 'active' : ''}" data-page="${sub.id}" style="--i:${row++}">
             ${IC[sub.icon] || IC.grid}
             <span>${sub.label}</span>
           </button>
         `).join('');
 
         return `
-          <div class="hs-nav-group expanded">
-            <div class="hs-nav-item hs-nav-header">
+          <div class="hs-nav-group expanded" style="--i:${groupRow}">
+            <div class="hs-nav-item hs-nav-header" style="--i:${groupRow}">
               ${IC[item.icon] || IC.grid}
               <span>${item.label}</span>
             </div>
@@ -432,7 +524,7 @@
 
       // Regular nav item (no submenu)
       return `
-        <button class="hs-nav-item ${item.id === activePage ? 'active' : ''}" data-page="${item.id}">
+        <button class="hs-nav-item ${item.id === activePage ? 'active' : ''}" data-page="${item.id}" style="--i:${row++}">
           ${IC[item.icon] || IC.grid}
           <span>${item.label}</span>
         </button>
@@ -440,6 +532,7 @@
     }).join('');
 
     return `
+      <div class="hs-sidebar-panel">
       <div class="hs-logo">
         <img class="hs-logo-img" src="${basePath}assets/img/image.png" alt="HomeSure"
              onerror="this.style.display='none'" />
@@ -450,10 +543,11 @@
 
       <div class="hs-bottom">
         <div class="hs-divider"></div>
-        <button class="hs-logout-btn" id="hsLogoutBtn" type="button">
+        <button class="hs-logout-btn" id="hsLogoutBtn" type="button" style="--i:${row}">
           ${IC.logout}
-          Log out
+          <span>Log out</span>
         </button>
+      </div>
       </div>
     `;
   }
@@ -484,12 +578,20 @@
       });
     }
 
-    // Nav routing
+    // Nav routing — every target is `../<role-folder>/<file>`, not a bare filename. Bare
+    // filenames only resolve correctly when the current page already lives in that role's own
+    // folder, which isn't true for module/buyer/listing.html: it's the one page both buyer and
+    // seller land on (a seller views it from their own Marketplace/listings), and from there a
+    // bare 'seller.html' resolves to the nonexistent module/buyer/seller.html (404) while
+    // 'messages.html' would silently load buyer.html's Messages page instead of the seller's own
+    // and immediately bounce them to sign-in (its own auth guard rejects a seller session). `..`
+    // always lands on module/ regardless of which folder the current page is actually in, so this
+    // resolves correctly both from a same-role page and from this one shared cross-role page.
     const NAV_ROUTES = {
-      buyer:      { dashboard: 'buyer.html', saved: 'saved.html', messages: 'messages.html', payments: 'payments.html' },
-      seller:     { dashboard: 'seller.html', listings: 'listings.html', tenants: 'tenants.html', messages: 'messages.html', payments: 'payments.html' },
-      admin:      { dashboard: 'admin.html', listings: 'listings.html', users: 'users.html', reports: 'reports.html', analytics: 'analytics.html', payments: 'payments.html' },
-      superadmin: { dashboard: 'super-admin.html', admins: 'admins.html', 'audit-trail': 'audit-trail.html', reports: 'reports.html' },
+      buyer:      { dashboard: '../buyer/buyer.html', saved: '../buyer/saved.html', messages: '../buyer/messages.html', payments: '../buyer/payments.html' },
+      seller:     { dashboard: '../seller/seller.html', listings: '../seller/listings.html', tenants: '../seller/tenants.html', messages: '../seller/messages.html', payments: '../seller/payments.html' },
+      admin:      { dashboard: '../admin/admin.html', listings: '../admin/listings.html', users: '../admin/users.html', reports: '../admin/reports.html', analytics: '../admin/analytics.html', payments: '../admin/payments.html' },
+      superadmin: { dashboard: '../super-admin/super-admin.html', admins: '../super-admin/admins.html', 'audit-trail': '../super-admin/audit-trail.html', reports: '../super-admin/reports.html' },
     };
     const sessionUser = typeof getSession === 'function' ? getSession() : null;
     const navRole = sessionUser ? sessionUser.role : 'buyer';
@@ -498,7 +600,8 @@
     el.querySelectorAll('.hs-nav-item:not(.hs-nav-header)').forEach(btn => {
       const page = btn.dataset.page;
       if (routes[page]) btn.addEventListener('click', () => {
-        if (window.location.href.includes(routes[page])) return;
+        const target = new URL(routes[page], window.location.href);
+        if (target.pathname === window.location.pathname) return;
         window.location.href = routes[page];
       });
     });
@@ -555,28 +658,62 @@
       document.body.appendChild(bn);
     }
 
+    // Same `../<role-folder>/<file>` reasoning as NAV_ROUTES above — this nav renders on
+    // module/buyer/listing.html too (a seller can land there from their own Marketplace), where a
+    // bare filename resolves against the wrong folder. Also adds seller's missing 'tenants' entry:
+    // without a matching key here, that bottom-nav button got no click handler at all — not a
+    // wrong destination, just silently did nothing.
     const BN_ROUTES = {
-      buyer:      { dashboard: 'buyer.html',       saved: 'saved.html',       messages: 'messages.html',  payments: 'payments.html' },
-      seller:     { dashboard: 'seller.html',       listings: 'listings.html', messages: 'messages.html', payments: 'payments.html' },
-      admin:      { dashboard: 'admin.html',        listings: 'listings.html', users: 'users.html',       reports: 'reports.html', analytics: 'analytics.html', payments: 'payments.html' },
-      superadmin: { dashboard: 'super-admin.html',  admins: 'admins.html',     'audit-trail': 'audit-trail.html', reports: 'reports.html' },
+      buyer:      { dashboard: '../buyer/buyer.html',       saved: '../buyer/saved.html',       messages: '../buyer/messages.html',  payments: '../buyer/payments.html' },
+      seller:     { dashboard: '../seller/seller.html',     listings: '../seller/listings.html', tenants: '../seller/tenants.html', messages: '../seller/messages.html', payments: '../seller/payments.html' },
+      admin:      { dashboard: '../admin/admin.html',       listings: '../admin/listings.html',  users: '../admin/users.html', reports: '../admin/reports.html', analytics: '../admin/analytics.html', payments: '../admin/payments.html' },
+      superadmin: { dashboard: '../super-admin/super-admin.html', admins: '../super-admin/admins.html', 'audit-trail': '../super-admin/audit-trail.html', reports: '../super-admin/reports.html' },
     };
     const bnRoutes = BN_ROUTES[role] || {};
 
     bn.innerHTML = items.map(item => `
       <button class="hs-bn-item ${item.id === activePage ? 'active' : ''}" data-page="${item.id}">
-        ${IC[item.icon] || IC.grid}
-        <span>${item.label}</span>
+        <span class="hs-bn-icon-wrap">
+          ${IC[item.icon] || IC.grid}
+          ${item.id === 'messages' ? '<span class="hs-bn-badge is-hidden" id="hsBnMsgBadge"></span>' : ''}
+        </span>
+        <span class="hs-bn-label">${item.label}</span>
       </button>
     `).join('');
 
     bn.querySelectorAll('.hs-bn-item').forEach(btn => {
       const page = btn.dataset.page;
       if (bnRoutes[page]) btn.addEventListener('click', () => {
-        if (window.location.href.includes(bnRoutes[page])) return;
+        const target = new URL(bnRoutes[page], window.location.href);
+        if (target.pathname === window.location.pathname) return;
         window.location.href = bnRoutes[page];
       });
     });
+
+    // Unread-messages badge on the bottom nav's Messages tab — buyer and seller only (the only
+    // roles with a 'messages' tab at all, per BN_ROUTES above). Replaces a hardcoded, never-updated
+    // count that used to live in a seller-dashboard stat card instead of on the nav itself.
+    if (items.some(i => i.id === 'messages') && typeof HS !== 'undefined' && HS.messages && HS.messages.unreadCount) {
+      HS.messages.unreadCount().then(count => {
+        const el = document.getElementById('hsBnMsgBadge');
+        if (!el) return;
+        if (count > 0) {
+          el.textContent = count > 99 ? '99+' : String(count);
+          el.classList.remove('is-hidden');
+        }
+      }).catch(err => console.error('Unread message count failed:', err));
+    }
+
+    // "My Tenants" only makes sense once a seller has at least one approved rental listing — a
+    // tenant can't exist otherwise. Rendered present-by-default above (avoids the tab flashing in
+    // then out), hidden here if the check comes back empty. Desktop nav and bottom nav both use
+    // data-page="tenants", so one query covers both.
+    if (role === 'seller' && typeof HS !== 'undefined' && HS.listings && HS.listings.hasApprovedRental) {
+      HS.listings.hasApprovedRental().then(has => {
+        if (has) return;
+        document.querySelectorAll('[data-page="tenants"]').forEach(node => node.classList.add('is-hidden'));
+      }).catch(err => console.error('hasApprovedRental check failed:', err));
+    }
   }
 
   global.HomeSureSidebar = { init };

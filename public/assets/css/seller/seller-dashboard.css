@@ -62,6 +62,13 @@
     }
 
     /* ── Verification Banner ────────────────────────── */
+    /* .is-hidden, not inline style="display:none" — responsive.css's mobile layout rule for this
+       banner has to set `display` too (flex isn't enough once it switches to a grid at 640px),
+       and an !important display there would always beat a plain inline display:none regardless
+       of verification status, which is exactly how a verified seller ended up seeing "Verification
+       Required" anyway. One class now owns "hidden" (also used on #verifyBadge), unaffected by
+       which display value a breakpoint picks for "shown". */
+    .is-hidden { display: none !important; }
     .verify-banner {
       background: linear-gradient(135deg, rgba(0,201,167,0.08) 0%, rgba(0,201,167,0.04) 100%);
       border: 1px solid rgba(0,201,167,0.28);
@@ -98,7 +105,7 @@
 
     /* ── Stats Row ──────────────────────────────────── */
     .stats-row {
-      display: grid; grid-template-columns: repeat(3,1fr); gap: 14px;
+      display: grid; grid-template-columns: repeat(2,1fr); gap: 14px;
       margin-bottom: 16px;
     }
     .stat-card {
@@ -123,37 +130,6 @@
     .stat-icon.amber { background: #f59e0b; color: #fff; }
     .stat-icon.blue  { background: #6366f1; color: #fff; }
 
-    /* ── Quick Actions ──────────────────────────────── */
-    .quick-card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 16px 18px;
-      margin-bottom: 22px;
-    }
-    .quick-label {
-      font-size: 11px; font-weight: 700; color: var(--muted);
-      text-transform: uppercase; letter-spacing: 0.06em;
-      margin-bottom: 13px;
-    }
-    .quick-buttons { display: flex; gap: 10px; }
-    .qa-btn {
-      flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px;
-      font-family: inherit; font-size: 13px; font-weight: 600;
-      border-radius: 9px; padding: 10px 16px; cursor: pointer;
-      border: none; transition: opacity 0.18s, transform 0.18s, background 0.18s;
-    }
-    .qa-btn:hover:not(:disabled) { transform: translateY(-1px); opacity: 0.88; }
-    .qa-btn svg { width: 14px; height: 14px; }
-    .qa-btn.primary { background: var(--teal); color: #ffffff; }
-    .qa-btn.primary:disabled {
-      background: rgba(0,201,167,0.2); color: rgba(0,201,167,0.45);
-      cursor: not-allowed; transform: none;
-    }
-    .qa-btn.secondary {
-      background: rgba(255,255,255,0.06); color: var(--muted2);
-      border: 1px solid var(--border);
-    }
-    .qa-btn.secondary:hover { background: rgba(255,255,255,0.1); color: var(--text); }
-
     /* ── Section Header ─────────────────────────────── */
     .section-header {
       font-size: 15px; font-weight: 700; color: var(--text);
@@ -166,6 +142,12 @@
       border-radius: var(--radius); padding: 16px 20px;
       margin-bottom: 18px;
     }
+    .filter-title {
+      font-size: 13px; font-weight: 700; color: var(--text);
+      margin-bottom: 13px;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .filter-title svg { color: var(--teal); width: 13px; height: 13px; }
     .filter-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
     .filter-group label {
       display: block; font-size: 10.5px; font-weight: 600;
@@ -187,6 +169,22 @@
     .filter-select option { background: #1E293B; }
     .filter-select:focus, .filter-input:focus { border-color: rgba(0,201,167,0.45); }
     .filter-input::placeholder { color: var(--muted); }
+
+    /* ── Mobile filter sheet ─────────────────
+       Hidden here on desktop; responsive.css turns them on and turns #sellerFilterPanel into a
+       bottom sheet below 768px — same pattern buyer-dashboard.css uses for #filterPanel. */
+    .mobile-filter-trigger {
+      display: none; width: 100%; align-items: center; gap: 8px;
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 12px 16px; margin-bottom: 20px;
+      color: var(--text); font-family: inherit; font-size: 13px; font-weight: 700;
+      cursor: pointer;
+    }
+    .mobile-filter-trigger svg { width: 14px; height: 14px; color: var(--teal); flex-shrink: 0; }
+    .filter-backdrop { display: none; }
+    .filter-title { position: relative; }
+    .filter-sheet-close { display: none; }
+    .filter-sheet-footer { display: none; }
 
     /* ── Listings Header ────────────────────────────── */
     .listings-header {

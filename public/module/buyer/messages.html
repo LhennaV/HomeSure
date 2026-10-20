@@ -149,7 +149,7 @@
   window.addEventListener('DOMContentLoaded', () => {
     // Close any open chat on mobile when page loads
     if (window.innerWidth <= 768) {
-      window.closeChat();
+      window.closeMobileChat();
     }
 
     // Listen for Messages nav item clicks (especially on mobile)
@@ -158,7 +158,7 @@
       if (navItem && window.innerWidth <= 768) {
         // Close chat to show conversation list
         setTimeout(() => {
-          window.closeChat();
+          window.closeMobileChat();
         }, 100);
       }
     });
@@ -170,7 +170,7 @@
       // If resizing to mobile, close chat
       const messagesLayout = document.querySelector('.messages-layout');
       if (messagesLayout && messagesLayout.classList.contains('chat-open')) {
-        window.closeChat();
+        window.closeMobileChat();
       }
     }
   });

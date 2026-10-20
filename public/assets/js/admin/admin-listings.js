@@ -147,7 +147,7 @@
     const custom   = document.getElementById('rejectCustom').value.trim();
     const reason   = custom || (selected ? REJECT_REASONS[selected.value] : null);
     if (!reason) {
-      alert('Please select or write a rejection reason.');
+      hsToast('Please select or write a rejection reason.', 'error');
       return;
     }
     setStatus(_rejectTargetId, 'rejected', reason);

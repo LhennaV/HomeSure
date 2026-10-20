@@ -153,7 +153,7 @@
 
       return `
         <div class="prop-card${l.lifecycleStatus ? ' listing-closed' : ''}"
-             onclick="window.location.href='listing.html?id=${l.id}'">
+             onclick="window.location.href='../buyer/listing.html?id=${l.id}'">
           <div class="prop-img-wrap">
             <img src="${l.images[0]}" alt="${l.title}" loading="lazy" />
             ${typeBadge}
@@ -278,7 +278,7 @@
     // Populate modal with current values
     document.getElementById('editFirstName').value = seller.firstName || '';
     document.getElementById('editLastName').value = seller.lastName || '';
-    document.getElementById('editPhone').value = seller.phone || '';
+    document.getElementById('editPhone').value = HSPhone.strip(seller.phone);
     document.getElementById('editEmail').value = seller.email || '';
 
     // Show modal
@@ -292,11 +292,11 @@
   window.saveProfile = async function() {
     const firstName = document.getElementById('editFirstName').value.trim();
     const lastName = document.getElementById('editLastName').value.trim();
-    const phone = document.getElementById('editPhone').value.trim();
+    const phone = HSPhone.full('+63', document.getElementById('editPhone').value);
 
     // Validation
     if (!firstName || !lastName) {
-      alert('Please enter both first and last name');
+      hsToast('Please enter both first and last name', 'error');
       return;
     }
 
@@ -304,15 +304,17 @@
     try {
       await HS.profiles.updateMe({ firstName, lastName, phone });
     } catch (err) {
-      alert('Could not save your profile: ' + err.message);
+      hsToast('Could not save your profile: ' + err.message, 'error');
       return;
     }
 
     closeEditModal();
 
-    // Refresh page to show updated info
-    alert('✅ Profile updated successfully!');
-    location.reload();
+    // Refresh page to show updated info. alert() used to block here until dismissed, so the
+    // reload only ever happened after you'd actually seen the message; hsToast doesn't block, so
+    // without this delay the page would reload before the toast was ever on screen.
+    hsToast('Profile updated successfully!');
+    setTimeout(() => location.reload(), 1200);
   };
 
 

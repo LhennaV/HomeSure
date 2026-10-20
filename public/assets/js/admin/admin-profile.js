@@ -8,7 +8,7 @@
   document.getElementById('firstName').value = user.firstName || '';
   document.getElementById('lastName').value  = user.lastName  || '';
   document.getElementById('email').value     = user.email     || '';
-  document.getElementById('phone').value     = user.phone     || '';
+  document.getElementById('phone').value     = HSPhone.strip(user.phone);
 
   const avatarCircle = document.getElementById('avatarCircle');
 
@@ -81,7 +81,7 @@
   }
 
   function savePhone() {
-    const ph = document.getElementById('phone').value.trim();
+    const ph = HSPhone.full('+63', document.getElementById('phone').value);
     if (!ph) { showToast('Please enter a phone number.', 'error'); return; }
     user.phone = ph;
     saveSession(user);

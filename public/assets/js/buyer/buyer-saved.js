@@ -46,7 +46,7 @@
           <div class="saved-img-wrap"><img class="saved-img" src="${HS.cover(l)}" alt="${l.title}" loading="lazy" /></div>
           <div class="saved-body">
             <div class="saved-title">${l.title}</div>
-            <div class="saved-location">${iconPin} ${l.address}</div>
+            <div class="saved-location">${iconPin} <span>${l.address}</span></div>
             <div class="saved-desc">${l.description}</div>
             <div class="saved-specs">
               <span>${bedsLabel}</span>

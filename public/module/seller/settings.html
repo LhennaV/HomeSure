@@ -7,6 +7,7 @@
   <title>HomeSure – Account Settings</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../../assets/css/seller/seller-settings.css" />
+  <link rel="stylesheet" href="../../assets/css/phone-input.css" />
   <link rel="stylesheet" href="../../assets/css/responsive.css" />
 </head>
 <body>
@@ -53,9 +54,9 @@
               </div>
               <div class="field">
                 <label>Phone Number</label>
-                <div class="field-input-wrap">
-                  <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.37 2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.27a16 16 0 0 0 5.82 5.82l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.18 14l.74 2.92z"/></svg>
-                  <input type="tel" id="profilePhone" placeholder="+63 9XX XXX XXXX" autocomplete="tel" />
+                <div class="hs-phone-input">
+                  <span class="hs-phone-prefix">+63</span>
+                  <input type="tel" inputmode="numeric" id="profilePhone" maxlength="10" placeholder="9XX XXX XXXX" autocomplete="tel" />
                 </div>
                 <span class="verify-phone-link" onclick="showToast('Phone verification coming soon.','error')">Verify Phone Number</span>
               </div>
@@ -211,9 +212,9 @@
               <div class="payment-method-fields" id="gcashFields" style="display:none">
                 <div class="field">
                   <label>GCash Number</label>
-                  <div class="field-input-wrap">
-                    <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.37A2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.27a16 16 0 0 0 5.82 5.82l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.18 14l.74 2.92z"/></svg>
-                    <input type="tel" id="gcashNumber" placeholder="09XX XXX XXXX" maxlength="13" />
+                  <div class="hs-phone-input">
+                    <span class="hs-phone-prefix">0</span>
+                    <input type="tel" inputmode="numeric" id="gcashNumber" maxlength="10" placeholder="9XX XXX XXXX" />
                   </div>
                 </div>
                 <div class="field">
@@ -244,9 +245,9 @@
               <div class="payment-method-fields" id="mayaFields" style="display:none">
                 <div class="field">
                   <label>Maya Number</label>
-                  <div class="field-input-wrap">
-                    <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.37A2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.27a16 16 0 0 0 5.82 5.82l.86-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.18 14l.74 2.92z"/></svg>
-                    <input type="tel" id="mayaNumber" placeholder="09XX XXX XXXX" maxlength="13" />
+                  <div class="hs-phone-input">
+                    <span class="hs-phone-prefix">0</span>
+                    <input type="tel" inputmode="numeric" id="mayaNumber" maxlength="10" placeholder="9XX XXX XXXX" />
                   </div>
                 </div>
                 <div class="field">
@@ -583,6 +584,7 @@
 <script src="../../assets/js/config.js"></script>
 <script src="../../assets/js/session.js"></script>
 <script src="../../assets/js/data.js"></script>
+<script src="../../assets/js/phone-input.js"></script>
 <script src="../../components/sidebar.js"></script>
 <script src="../../components/topbar.js"></script>
 <script src="../../assets/js/seller/seller-settings.js"></script>

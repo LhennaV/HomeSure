@@ -258,7 +258,7 @@
     // Populate modal with current values
     document.getElementById('editFirstName').value = buyer.firstName || '';
     document.getElementById('editLastName').value = buyer.lastName || '';
-    document.getElementById('editPhone').value = buyer.phone || '';
+    document.getElementById('editPhone').value = HSPhone.strip(buyer.phone);
     document.getElementById('editEmail').value = buyer.email || '';
 
     // Show modal
@@ -272,11 +272,11 @@
   window.saveProfile = async function() {
     const firstName = document.getElementById('editFirstName').value.trim();
     const lastName = document.getElementById('editLastName').value.trim();
-    const phone = document.getElementById('editPhone').value.trim();
+    const phone = HSPhone.full('+63', document.getElementById('editPhone').value);
 
     // Validation
     if (!firstName || !lastName) {
-      alert('Please enter both first and last name');
+      hsToast('Please enter both first and last name', 'error');
       return;
     }
 
@@ -284,13 +284,16 @@
     try {
       await HS.profiles.updateMe({ firstName, lastName, phone });
     } catch (err) {
-      alert('Could not save your profile: ' + err.message);
+      hsToast('Could not save your profile: ' + err.message, 'error');
       return;
     }
 
     closeEditModal();
-    alert('✅ Profile updated successfully!');
-    location.reload();
+    hsToast('Profile updated successfully!');
+    // alert() used to block here until dismissed, so the reload only ever happened after you'd
+    // actually seen the message. hsToast doesn't block, so without this delay the page would
+    // reload instantly and the toast would never be on screen long enough to read.
+    setTimeout(() => location.reload(), 1200);
   };
 
 

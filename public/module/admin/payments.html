@@ -34,21 +34,24 @@
         <input class="filter-input" type="date" id="fDateFrom" title="Date from" onchange="renderTransactions()" />
         <input class="filter-input" type="date" id="fDateTo" title="Date to" onchange="renderTransactions()" />
         <select class="filter-select" id="fLandlord" onchange="renderTransactions()">
-          <option value="">All Landlords</option>
-          <option value="Ramon Cruz">Ramon Cruz</option>
-          <option value="Lourdes Navarro">Lourdes Navarro</option>
+          <option value="">All Recipients</option>
+          <!-- filled from the actual payments by admin-payments.js -->
         </select>
         <select class="filter-select" id="fPaymentType" onchange="renderTransactions()">
           <option value="">All Payment Types</option>
           <option value="security">Security Deposit</option>
           <option value="rent">Rent Payment</option>
           <option value="both">Security + Rent</option>
+          <option value="reservation">Reservation</option>
+          <option value="sale">Sale</option>
+          <option value="land_title_verification_fee">Title Verification Fee</option>
         </select>
         <select class="filter-select" id="fStatus" onchange="renderTransactions()">
           <option value="">All Statuses</option>
           <option value="confirmed">Confirmed</option>
-          <option value="pending_confirmation">Pending</option>
-          <option value="overdue">Overdue</option>
+          <option value="pending_confirmation">Awaiting Seller</option>
+          <option value="pending">Awaiting Payment</option>
+          <option value="rejected">Rejected</option>
         </select>
         <input class="filter-search" type="text" id="fSearch" placeholder="Search tenant, landlord, reference…" oninput="renderTransactionsSoon()" />
       </div>
@@ -62,8 +65,8 @@
         <table class="pay-table">
           <thead>
             <tr>
-              <th>Tenant</th>
-              <th>Landlord</th>
+              <th>Paid By</th>
+              <th>Paid To</th>
               <th>Property</th>
               <th>Period</th>
               <th>Amount</th>

@@ -11,7 +11,7 @@
   function fillPersonalInfo() {
     document.getElementById('profileName').value     = fullUser.name  || user.name  || '';
     document.getElementById('profileEmail').value    = fullUser.email || user.email || '';
-    document.getElementById('profilePhone').value    = fullUser.phone || '';
+    document.getElementById('profilePhone').value    = HSPhone.strip(fullUser.phone);
     document.getElementById('profileLocation').value = fullUser.location || 'Sta. Maria, Bulacan';
   }
 
@@ -73,7 +73,6 @@
               ${verifiedFormatted ? `<span style="display:block;margin-top:3px;font-size:11.5px;color:var(--muted);">Verified on ${verifiedFormatted} · renews every 6 months</span>` : ''}
             </div>
           </div>
-          ${!isNearExpiry && !isExpired ? `<a href="verification.html?reverify=true" class="btn-ghost" style="text-decoration:none;white-space:nowrap;font-size:12.5px;">Re-verify</a>` : ''}
         </div>
         <div style="padding-bottom:16px;">${expiryBanner}</div>`;
 
@@ -119,7 +118,7 @@
   // ── Personal info ────────────────────────────────────────────────────────────
   async function savePersonalInfo() {
     const name  = document.getElementById('profileName').value.trim();
-    const phone = document.getElementById('profilePhone').value.trim();
+    const phone = HSPhone.full('+63', document.getElementById('profilePhone').value);
     if (!name) { showToast('Please enter your full name.', 'error'); return; }
 
     // The form has one name box; split it into the first/last the database keeps.
@@ -416,12 +415,12 @@ function savePaymentMethods() {
   const paymentMethods = {
     gcash: {
       enabled: document.getElementById('enableGcash').checked,
-      number: document.getElementById('gcashNumber').value.trim(),
+      number: HSPhone.full('0', document.getElementById('gcashNumber').value),
       name: document.getElementById('gcashName').value.trim()
     },
     maya: {
       enabled: document.getElementById('enableMaya').checked,
-      number: document.getElementById('mayaNumber').value.trim(),
+      number: HSPhone.full('0', document.getElementById('mayaNumber').value),
       name: document.getElementById('mayaName').value.trim()
     },
     bank: {
@@ -466,7 +465,7 @@ async function loadPaymentMethods() {
   // Load GCash
   if (pm.gcash) {
     document.getElementById('enableGcash').checked = pm.gcash.enabled || false;
-    document.getElementById('gcashNumber').value = pm.gcash.number || '';
+    document.getElementById('gcashNumber').value = HSPhone.strip(pm.gcash.number);
     document.getElementById('gcashName').value = pm.gcash.name || '';
     if (pm.gcash.enabled) {
       document.getElementById('gcashFields').style.display = 'grid';
@@ -477,7 +476,7 @@ async function loadPaymentMethods() {
   // Load Maya
   if (pm.maya) {
     document.getElementById('enableMaya').checked = pm.maya.enabled || false;
-    document.getElementById('mayaNumber').value = pm.maya.number || '';
+    document.getElementById('mayaNumber').value = HSPhone.strip(pm.maya.number);
     document.getElementById('mayaName').value = pm.maya.name || '';
     if (pm.maya.enabled) {
       document.getElementById('mayaFields').style.display = 'grid';
