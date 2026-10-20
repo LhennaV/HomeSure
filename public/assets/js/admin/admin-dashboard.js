@@ -1,6 +1,6 @@
 (async function () {
   const user = getSession();
-  if (!user || user.role !== 'admin') {
+  if (!user || (user.role !== 'admin' && user.role !== 'superadmin' && user.role !== 'super_duper_admin')) {
     window.location.href = '../../auth/signin.html';
     return;
   }

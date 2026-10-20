@@ -2,7 +2,7 @@
 
 (function () {
   const user = getSession();
-  if (!user || user.role !== 'admin') {
+  if (!user || (!['admin', 'superadmin', 'super_duper_admin'].includes(user.role))) {
     window.location.href = '../../auth/signin.html';
     return;
   }
@@ -308,3 +308,4 @@
 
   renderReports();
 })();
+

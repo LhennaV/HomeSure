@@ -1,12 +1,12 @@
 import { createBrowserClient } from '@supabase/ssr'
 
 export function createClient() {
-  // MUST have the 'return' keyword here!
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder'
+  return createBrowserClient(url, key)
 }
 
-// Shared instance for the dashboard components that import `{ supabase }`.
-export const supabase = createClient()
+// Lazy/guarded shared instance for legacy components
+export const supabase = typeof window !== 'undefined'
+  ? createClient()
+  : (createClient() as ReturnType<typeof createBrowserClient>)

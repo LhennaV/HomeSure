@@ -40,7 +40,7 @@ export async function POST(request: Request) {
   const body = (await request.json().catch(() => null)) as Body | null;
   const email = body?.email?.trim().toLowerCase();
   const { password, firstName, lastName, fullName, phone, role } = body ?? {};
-
+  console.log(body);
   if (!email || !password) {
     return NextResponse.json({ error: "Email and password are required." }, { status: 400 });
   }
@@ -54,7 +54,6 @@ export async function POST(request: Request) {
   // Only buyer and seller can be chosen here. Admin and superadmin are granted by an admin.
   const safeRole = role === "seller" ? "seller" : "buyer";
   const admin = getAdminSupabase();
-
   // An address with a sign-up started but never confirmed belongs to nobody yet. Whoever typed it
   // has not proved they can read that inbox, so they have no claim on it — and leaving the row in
   // place would lock the real owner out of their own address until an admin deleted it by hand.
@@ -104,7 +103,7 @@ export async function POST(request: Request) {
       role: safeRole,
     },
   });
-
+  console.log(createError);
   if (createError || !created?.user) {
     const message = createError?.message ?? "Could not create the account.";
     // Reached only if two sign-ups for the same address land at the same moment, since an

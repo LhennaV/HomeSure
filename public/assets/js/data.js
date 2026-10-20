@@ -1385,7 +1385,7 @@ const HS = (function () {
     // Admin and super-admin accounts, for the super admin's "Admin Management" page.
     async admins() {
       const rows = unwrap(await sb.from('profiles').select('*')
-        .in('role', ['admin', 'superadmin']).order('created_at', { ascending: false }));
+        .in('role', ['admin', 'superadmin', 'super_duper_admin']).order('created_at', { ascending: false }));
       return (rows || []).map(mapProfile).map((p) => ({
         ...p,
         status: p.suspendedAt ? 'suspended' : 'active',

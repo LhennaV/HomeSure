@@ -89,9 +89,10 @@
                 <div class="field">
                   <label>Price (₱)</label>
                   <div class="price-wrap">
-                    <input type="number" id="listingPrice" placeholder="0" min="0" />
+                    <input type="number" id="listingPrice" placeholder="0" min="0" oninput="updatePriceHelper()" />
                     <span class="price-suffix" id="priceSuffix"></span>
                   </div>
+                  <div id="priceHelper" style="font-size:12px;margin-top:4px;min-height:16px;"></div>
                 </div>
               </div>
 

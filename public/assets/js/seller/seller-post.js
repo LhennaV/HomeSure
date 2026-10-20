@@ -66,7 +66,35 @@
       btn.classList.toggle('active', btn.dataset.value === type);
     });
     document.getElementById('priceSuffix').textContent = type === 'rent' ? '/month' : '';
+    updatePriceHelper();
   }
+
+  function updatePriceHelper() {
+    const input = document.getElementById('listingPrice');
+    const helper = document.getElementById('priceHelper');
+    if (!input || !helper) return;
+    const val = Number(input.value);
+    if (!val || val <= 0) {
+      helper.textContent = '';
+      return;
+    }
+    const formatted = '₱' + val.toLocaleString('en-PH');
+    if (currentListingType === 'sale' && val < 50000) {
+      helper.style.color = '#fbbf24';
+      helper.innerHTML = `⚠️ ${formatted} — Did you mean <strong>₱${(val * 1000).toLocaleString('en-PH')}</strong> or <strong>₱${(val * 1000000).toLocaleString('en-PH')}</strong>? Please enter the full amount.`;
+    } else {
+      helper.style.color = 'var(--teal, #00c9a7)';
+      let words = '';
+      if (val >= 1000000) {
+        words = ` (${(val / 1000000).toFixed(val % 1000000 === 0 ? 0 : 2)} Million Pesos)`;
+      } else if (val >= 1000) {
+        words = ` (${(val / 1000).toFixed(val % 1000 === 0 ? 0 : 1)} Thousand Pesos)`;
+      }
+      helper.textContent = `${formatted}${words}${currentListingType === 'rent' ? ' / month' : ''}`;
+    }
+  }
+  window.updatePriceHelper = updatePriceHelper;
+
   // Set initial suffix
   setListingType('sale');
 

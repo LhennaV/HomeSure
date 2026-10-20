@@ -85,15 +85,12 @@
 
   // ── Format helpers ──────────────────────────────────────────────────────────
   function formatPrice(listing) {
-    const v = listing.price;
+    const v = Number(listing.price) || 0;
     if (listing.listingFor === 'rent') {
       return '₱' + v.toLocaleString('en-PH') + '/mo';
     }
     if (v >= 1000000) {
-      return '₱' + (v / 1000000).toFixed(v % 1000000 === 0 ? 0 : 1) + 'M';
-    }
-    if (v >= 1000) {
-      return '₱' + Math.round(v / 1000) + 'K';
+      return '₱' + (v / 1000000).toFixed(v % 1000000 === 0 ? 0 : 2) + 'M';
     }
     return '₱' + v.toLocaleString('en-PH');
   }

@@ -1,7 +1,7 @@
 // HomeSure – Admin Notifications
 
 const user = getSession();
-if (!user || user.role !== 'admin') window.location.href = '../../auth/signin.html';
+if (!user || (!['admin', 'superadmin', 'super_duper_admin'].includes(user.role))) window.location.href = '../../auth/signin.html';
 
 HomeSureSidebar.init({ activePage: 'notifications' });
 HomeSureTopbar.init({ placeholder: 'Search notifications...' });

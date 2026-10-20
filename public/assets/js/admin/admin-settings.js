@@ -1,6 +1,6 @@
 
   const user = getSession();
-  if (!user || user.role !== 'admin') window.location.href = '../../auth/signin.html';
+  if (!user || (!['admin', 'superadmin', 'super_duper_admin'].includes(user.role))) window.location.href = '../../auth/signin.html';
 
   HomeSureSidebar.init({ activePage: '' });
   HomeSureTopbar.init({ placeholder: 'Search settings...' });
@@ -260,3 +260,4 @@
       label.classList.remove('on');
     }
   })();
+

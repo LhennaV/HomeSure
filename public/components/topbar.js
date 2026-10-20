@@ -586,7 +586,7 @@
           <div class="hs-profile-dropdown" id="hsProfileDropdown">
             <div class="hs-profile-head">
               <div class="hs-profile-head-name">${fullName}</div>
-              <div class="hs-profile-head-role">${role}</div>
+              <div class="hs-profile-head-role">${role === 'super_duper_admin' ? 'Super Duper Admin' : role === 'superadmin' ? 'Super Admin' : role}</div>
             </div>
             <div class="hs-profile-menu" id="hsProfileMenu">
               <button class="hs-profile-menu-item" data-action="profile">
@@ -766,7 +766,7 @@
       const p = window.location.pathname;
       // '../<folder>/' rather than a bare filename: module/buyer/listing.html is shared by buyers
       // and sellers, and from there a bare name opened the buyer's page for a seller too.
-      const folder = role === 'superadmin' ? 'super-admin' : role;
+      const folder = (role === 'superadmin' || role === 'super_duper_admin') ? 'super-admin' : role;
       let path;
       if (p.includes('/module/'))    path = '../' + folder + '/notifications.html';
       else if (p.includes('/auth/')) path = '../module/' + folder + '/notifications.html';
@@ -812,9 +812,10 @@
         profileDropdown.classList.remove('open');
         const action = btn.dataset.action;
         const p = window.location.pathname;
-        // The role is 'superadmin' but its folder is module/super-admin/ — using the role name as
-        // the folder sent a superadmin's View Profile / Settings to a nonexistent path (404).
-        const folder = role === 'superadmin' ? 'super-admin' : role;
+        // The roles 'superadmin' and 'super_duper_admin' both live in module/super-admin/ — using
+        // the role name as the folder sent them to a nonexistent path (404). The pages there are
+        // profile.html / settings.html, same names as every other role's.
+        const folder = (role === 'superadmin' || role === 'super_duper_admin') ? 'super-admin' : role;
         const basePath = p.includes('/module/') ? '../' + folder + '/' : 'module/' + folder + '/';
 
         if (action === 'profile') {

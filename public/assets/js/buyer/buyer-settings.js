@@ -112,8 +112,15 @@
   }
 
   // ── 2FA ──────────────────────────────────────────────────────────────────
-  let twoFaEnabled = false;
+  const twoFaStorageKey = 'hs_2fa_' + (user ? user.id : 'default');
+  let twoFaEnabled = localStorage.getItem(twoFaStorageKey) === 'true';
   let twoFaResendInterval = null;
+
+  if (twoFaEnabled) {
+    const toggleEl = document.getElementById('twoFaToggle');
+    if (toggleEl) toggleEl.checked = true;
+    setTwoFaStatus(true);
+  }
 
   function handle2FA(checkbox) {
     if (checkbox.checked && !twoFaEnabled) {
@@ -125,6 +132,7 @@
       setTimeout(() => document.querySelectorAll('#twoFaBoxes .otp-box')[0].focus(), 100);
     } else if (!checkbox.checked && twoFaEnabled) {
       twoFaEnabled = false;
+      localStorage.removeItem(twoFaStorageKey);
       setTwoFaStatus(false);
       showToast('Two-factor authentication disabled.');
     }
@@ -170,6 +178,7 @@
     if (code.length < 6) { showToast('Please enter the full 6-digit code.', 'error'); return; }
     if (code === '123456') {
       twoFaEnabled = true;
+      localStorage.setItem(twoFaStorageKey, 'true');
       clearInterval(twoFaResendInterval);
       setTwoFaStatus(true);
       document.getElementById('twoFaToggle').checked = true;
@@ -203,13 +212,25 @@
     box.addEventListener('keydown', e => {
       if (e.key === 'Backspace' && !box.value && i > 0) boxes[i - 1].focus();
     });
+    box.addEventListener('paste', e => {
+      e.preventDefault();
+      const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+      if (!paste) return;
+      boxes.forEach((b, idx) => {
+        b.value = paste[idx] || '';
+        b.classList.toggle('filled', !!b.value);
+      });
+      const nextIdx = Math.min(paste.length, 5);
+      if (boxes[nextIdx]) boxes[nextIdx].focus();
+    });
   });
 
   // ── SMS toggle: requires verified phone ───────────────────────────────────
   (function initSmsToggle() {
     const smsInput = document.getElementById('notifSms');
     const smsRow   = smsInput.closest('.setting-row');
-    if (!user.phoneVerified) {
+    const hasPhone = Boolean(user && (user.phone || user.phoneVerified));
+    if (!hasPhone) {
       smsInput.disabled = true;
       smsInput.checked  = false;
       document.getElementById('notifSms-lbl').textContent = 'Off';
@@ -218,9 +239,11 @@
       if (!hint) {
         hint = document.createElement('div');
         hint.className = 'sms-hint';
-        hint.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>Verify your phone number in <a href="profile.html">My Profile</a> to enable SMS</span>`;
+        hint.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>Add your phone number in <a href="profile.html">My Profile</a> to enable SMS</span>`;
         smsRow.querySelector('.setting-info').appendChild(hint);
       }
+    } else {
+      smsInput.disabled = false;
     }
   })();
 

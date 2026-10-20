@@ -23,4 +23,4 @@ export async function guardApi(roles?: string[]): Promise<Guard> {
   return { ok: true, supabase, user, role };
 }
 
-export const ADMIN_ROLES = ["admin", "superadmin"];
+export const ADMIN_ROLES = ["admin", "superadmin", "super_duper_admin"];

@@ -31,11 +31,10 @@
 
   // ── Formatting helpers ──────────────────────────────────────────────────────
   function formatPrice(listing) {
-    const v = listing.price;
-    if (listing.listingFor === 'rent') return '\u20b1' + v.toLocaleString() + '/mo';
-    if (v >= 1000000) return '\u20b1' + (v / 1000000).toFixed(v % 1000000 === 0 ? 0 : 1) + 'M';
-    if (v >= 1000)    return '\u20b1' + Math.round(v / 1000) + 'K';
-    return '\u20b1' + v.toLocaleString();
+    const v = Number(listing.price) || 0;
+    if (listing.listingFor === 'rent') return '₱' + v.toLocaleString('en-PH') + '/mo';
+    if (v >= 1000000) return '₱' + (v / 1000000).toFixed(v % 1000000 === 0 ? 0 : 2) + 'M';
+    return '₱' + v.toLocaleString('en-PH');
   }
 
   function formatDate(str) {
