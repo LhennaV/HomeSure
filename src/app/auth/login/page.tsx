@@ -33,8 +33,8 @@ export default function LoginPage() {
       <div className="auth-left">
         <header className="auth-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 0', maxWidth: '400px', width: '100%', margin: '0 auto' }}>
           <a href="/" className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text)', fontWeight: 700, fontSize: '18px', textDecoration: 'none' }}>
-            <Image src="/assets/img/image.png" alt="HomeSure" width={30} height={30} style={{ display: 'block' }} priority />
-            HomeSure
+            <Image src="/assets/img/image.png" alt="Kasafide" width={30} height={30} style={{ display: 'block' }} priority />
+            Kasafide
           </a>
           <a href="/" className="back-link" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--muted)', fontSize: '13px', fontWeight: 500, textDecoration: 'none' }}>
             Back to Home
@@ -43,7 +43,7 @@ export default function LoginPage() {
 
         <div className="auth-form-wrap" style={{ flex: 1, maxWidth: '400px', width: '100%', margin: '0 auto', padding: '24px 0', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           <h1 className="auth-title" style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text)', marginBottom: '8px' }}>Welcome Back</h1>
-          <p className="auth-sub" style={{ color: 'var(--muted)', fontSize: '14px', marginBottom: '28px' }}>Sign in to access your HomeSure account</p>
+          <p className="auth-sub" style={{ color: 'var(--muted)', fontSize: '14px', marginBottom: '28px' }}>Sign in to access your Kasafide account</p>
 
           {error && <p style={{ color: '#ef4444', marginBottom: '16px', fontSize: '14px' }}>{error}</p>}
 
@@ -96,7 +96,7 @@ export default function LoginPage() {
         </div>
 
         <footer className="auth-page-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 0', borderTop: '1px solid var(--border)', fontSize: '12px', color: 'var(--muted)', maxWidth: '400px', width: '100%', margin: '0 auto' }}>
-          <span>© 2026 HomeSure.com</span>
+          <span>© 2026 Kasafide</span>
         </footer>
       </div>
 
@@ -106,7 +106,7 @@ export default function LoginPage() {
         <div style={{ position: 'absolute', bottom: '60px', left: '40px', right: '40px', zIndex: 2 }}>
           <div style={{ fontSize: '18px', marginBottom: '14px', letterSpacing: '3px', color: '#f59e0b' }}>★★★★★</div>
           <blockquote style={{ fontSize: '17px', fontWeight: 500, color: '#fff', lineHeight: 1.6, marginBottom: '22px', fontStyle: 'italic' }}>
-            &ldquo;Renting my property through HomeSure was effortless. The process gave me complete peace of mind.&rdquo;
+            &ldquo;Renting my property through Kasafide was effortless. The process gave me complete peace of mind.&rdquo;
           </blockquote>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '14px', color: '#fff' }}>MR</div>

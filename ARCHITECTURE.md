@@ -1,4 +1,4 @@
-# HomeSure — how the repo fits together
+# Kasafide — how the repo fits together
 
 One Next.js application. The front end and the backend live side by side in it, and the split is
 the top-level folder:
@@ -135,7 +135,7 @@ The Supabase auth server requires a confirmed email before anyone may sign in, b
 configured, and that server is not ours to change. Its own signup endpoint therefore fails every
 time with *"Error sending confirmation email"*.
 
-So HomeSure sends the mail:
+So Kasafide sends the mail:
 
 ```
 POST /api/auth/signup      creates the account UNCONFIRMED through the admin API
@@ -167,7 +167,7 @@ whole schema when a migration complains about something that should already be t
 | `005` | roles: `landowner` → `seller`, adds `superadmin` |
 | `006` | everything the front end needs: moderation columns, messages, reviews, reports, notifications, audit logs, and the RLS fixes |
 | `007` | payment periods and proofs, security deposits, seller payment details |
-| `008` | the confirmation tokens HomeSure emails itself |
+| `008` | the confirmation tokens Kasafide emails itself |
 | `009` | indexes for the queries the front end actually runs |
 | `010` | the `barangays` lookup corrected to the real 24 of Sta. Maria, Bulacan — the hand-filled table had picked up 9 from other municipalities and was missing 3 real ones. Also what seeds all 24 on a database where nothing has inserted one yet, not just a patch for the old hand-filled table. |
 | `011` | restores the `anon`/`authenticated`/`service_role` table-level grants a fresh Supabase project doesn't bootstrap on its own — without it every table answers permission denied no matter how correct its RLS policies are, since GRANT is checked before RLS ever runs |

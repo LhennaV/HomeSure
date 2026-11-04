@@ -72,7 +72,7 @@ const ChatbotWidget = (function() {
 
     // Send welcome message
     setTimeout(() => {
-      addBotMessage('Hi! 👋 I\'m Meowrie, your HomeSure assistant. How can I help you today?', true);
+      addBotMessage('Hi! 👋 I\'m Meowrie, your Kasafide assistant. How can I help you today?', true);
     }, 500);
   }
 
@@ -218,7 +218,7 @@ const ChatbotWidget = (function() {
       response = 'To list a property:\n1. Complete identity verification first\n2. Click "Post Property" from your dashboard\n3. Fill in property details, upload photos\n4. Submit required documents (TCT/Deed of Sale)\n5. Wait for admin approval (1-2 business days)';
     }
     else if (lowerText.includes('payment') || lowerText.includes('pay') && lowerText.includes('how')) {
-      response = 'HomeSure uses QRPH for secure payments. You can pay via:\n• GCash\n• Maya (Maya)\n• Credit/Debit Card\n\nPayments are confirmed instantly and sellers receive notifications.';
+      response = 'Kasafide uses QRPH for secure payments. You can pay via:\n• GCash\n• Maya (Maya)\n• Credit/Debit Card\n\nPayments are confirmed instantly and sellers receive notifications.';
     }
     else if (lowerText.includes('verify') || lowerText.includes('verification')) {
       response = 'To verify your account:\n1. Go to your Profile page\n2. Click "Re-verify Account"\n3. Take photos of your ID and selfie using your camera\n4. Submit for review\n5. Approval within 24 hours\n\nVerification is required to message sellers and list properties.';
@@ -230,7 +230,7 @@ const ChatbotWidget = (function() {
       response = 'For properties with multiple units (apartments, condos):\n1. Enable "Multiple Units" toggle when listing\n2. Set total units and available units\n3. Each booking automatically decreases available units\n4. You can adjust availability anytime from your listings page\n\nPerfect for apartment buildings!';
     }
     else if (lowerText.includes('camera') || lowerText.includes('photo')) {
-      response = 'HomeSure uses live camera capture for:\n• Identity verification (ID + selfie)\n• Property documents (TCT, permits)\n• Multiple pages supported\n\nTake photos of ALL pages (front & back if applicable). No file size limits!';
+      response = 'Kasafide uses live camera capture for:\n• Identity verification (ID + selfie)\n• Property documents (TCT, permits)\n• Multiple pages supported\n\nTake photos of ALL pages (front & back if applicable). No file size limits!';
     }
     else if (lowerText.includes('close') && lowerText.includes('listing')) {
       response = 'After receiving payment, you\'ll be prompted to close the listing. You can also:\n• Close manually from your listings page\n• Admin can close if you forget\n• For multi-unit properties, adjust availability instead\n\nClosed listings can be reopened anytime.';
@@ -321,7 +321,7 @@ const ChatbotWidget = (function() {
   function initFullPage() {
     // Send welcome message for full-page mode
     setTimeout(() => {
-      addBotMessage('Hi! 👋 I\'m Meowrie, your HomeSure assistant. How can I help you today?', true);
+      addBotMessage('Hi! 👋 I\'m Meowrie, your Kasafide assistant. How can I help you today?', true);
     }, 500);
 
     // Focus input

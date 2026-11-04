@@ -5,8 +5,8 @@
   if (!session || session.role !== 'buyer') window.location.href = '../../auth/signin.html';
 
   // ── Init shared components ──────────────────────────────────────────────────
-  HomeSureSidebar.init({ activePage: 'profile' });
-  HomeSureTopbar.init({ placeholder: 'Search properties...' });
+  KasafideSidebar.init({ activePage: 'profile' });
+  KasafideTopbar.init({ placeholder: 'Search properties...' });
 
   // ── Load the real profile, reviews and payments ─────────────────────────────
   const buyer = await HS.profiles.me();
@@ -227,7 +227,7 @@
       </div>
       <div class="reviews-list">
         ${buyerReviews.sort((a,b) => new Date(b.reviewDate) - new Date(a.reviewDate)).map(rev => {
-          const sellerName = rev.reviewerName || 'HomeSure user';
+          const sellerName = rev.reviewerName || 'Kasafide user';
           const sellerInitials = sellerName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?';
           const reviewDate = new Date(rev.reviewDate).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
           return `

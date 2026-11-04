@@ -1,5 +1,5 @@
 // FILE: assets/js/seller/seller-payments.js
-// HomeSure – Seller Payment Management
+// Kasafide – Seller Payment Management
 //
 // The payments are the real rows on this seller's own listings — the "Sellers read payments on own
 // properties" policy is what limits them, not any filter written here. Confirming or rejecting one
@@ -13,8 +13,8 @@
     return;
   }
 
-  HomeSureSidebar.init({ activePage: 'payments' });
-  HomeSureTopbar.init({ placeholder: 'Payment Management' });
+  KasafideSidebar.init({ activePage: 'payments' });
+  KasafideTopbar.init({ placeholder: 'Payment Management' });
 
   let ALL_PAYMENTS = [];
   let DEPOSITS = [];

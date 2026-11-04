@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
-//  HomeSure – Export Modal Component
+//  Kasafide – Export Modal Component
 //  Complete export system with format selection, loading, and success notification
-//  Usage: HomeSureExport.show({ title: 'Export Payments', onExport: (format, dateRange) => {...} })
+//  Usage: KasafideExport.show({ title: 'Export Payments', onExport: (format, dateRange) => {...} })
 // ─────────────────────────────────────────────────────────────────────────────
 
 (function (global) {
@@ -358,7 +358,7 @@
                 <p>${subtitle}</p>
               </div>
             </div>
-            <button class="hs-export-close" onclick="HomeSureExport.close()">
+            <button class="hs-export-close" onclick="KasafideExport.close()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
                 <line x1="18" y1="6" x2="6" y2="18"/>
                 <line x1="6" y1="6" x2="18" y2="18"/>
@@ -372,17 +372,17 @@
             <div class="hs-export-section">
               <label class="hs-export-label">Export Format</label>
               <div class="hs-export-formats">
-                <div class="hs-export-format recommended selected" data-format="excel" onclick="HomeSureExport.selectFormat('excel')">
+                <div class="hs-export-format recommended selected" data-format="excel" onclick="KasafideExport.selectFormat('excel')">
                   <div class="hs-export-format-icon">📊</div>
                   <div class="hs-export-format-name">Excel</div>
                   <div class="hs-export-format-desc">With styling</div>
                 </div>
-                <div class="hs-export-format" data-format="csv" onclick="HomeSureExport.selectFormat('csv')">
+                <div class="hs-export-format" data-format="csv" onclick="KasafideExport.selectFormat('csv')">
                   <div class="hs-export-format-icon">📄</div>
                   <div class="hs-export-format-name">CSV</div>
                   <div class="hs-export-format-desc">Plain text</div>
                 </div>
-                <div class="hs-export-format" data-format="pdf" onclick="HomeSureExport.selectFormat('pdf')">
+                <div class="hs-export-format" data-format="pdf" onclick="KasafideExport.selectFormat('pdf')">
                   <div class="hs-export-format-icon">📑</div>
                   <div class="hs-export-format-name">PDF</div>
                   <div class="hs-export-format-desc">Print ready</div>
@@ -411,10 +411,10 @@
 
           <!-- Footer -->
           <div class="hs-export-footer">
-            <button class="hs-export-btn hs-export-btn-cancel" onclick="HomeSureExport.close()">
+            <button class="hs-export-btn hs-export-btn-cancel" onclick="KasafideExport.close()">
               Cancel
             </button>
-            <button class="hs-export-btn hs-export-btn-export" onclick="HomeSureExport.export()">
+            <button class="hs-export-btn hs-export-btn-export" onclick="KasafideExport.export()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                 <polyline points="7 10 12 15 17 10"/>
@@ -505,7 +505,7 @@
       footer.style.display = 'flex';
 
       // Trigger actual download (simulation)
-      const filename = `homesure-export-${Date.now()}.${currentFormat === 'excel' ? 'xlsx' : currentFormat}`;
+      const filename = `kasafide-export-${Date.now()}.${currentFormat === 'excel' ? 'xlsx' : currentFormat}`;
       console.log(`📥 Downloading: ${filename}`, { format: currentFormat, dateFrom, dateTo });
 
       // In production, you would trigger actual file download here
@@ -529,7 +529,7 @@
   }
 
   // Public API
-  global.HomeSureExport = {
+  global.KasafideExport = {
     show,
     close,
     selectFormat,

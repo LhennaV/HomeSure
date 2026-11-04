@@ -1,4 +1,4 @@
-// HomeSure – Super Admin Dashboard
+// Kasafide – Super Admin Dashboard
 
 (async function () {
   const user = getSession();
@@ -7,8 +7,8 @@
     return;
   }
 
-  HomeSureSidebar.init({ activePage: 'dashboard' });
-  HomeSureTopbar.init({ placeholder: 'Search...' });
+  KasafideSidebar.init({ activePage: 'dashboard' });
+  KasafideTopbar.init({ placeholder: 'Search...' });
   let LISTINGS = [];
   let USERS = [];
   let REPORTS_DATA = [];

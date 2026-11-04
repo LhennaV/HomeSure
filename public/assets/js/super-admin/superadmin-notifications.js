@@ -1,10 +1,10 @@
-// HomeSure – Super Admin Notifications
+// Kasafide – Super Admin Notifications
 
 const user = getSession();
 if (!user || (user.role !== 'superadmin' && user.role !== 'super_duper_admin')) window.location.href = '../../auth/signin.html';
 
-HomeSureSidebar.init({ activePage: 'notifications' });
-HomeSureTopbar.init({ placeholder: 'Search notifications...' });
+KasafideSidebar.init({ activePage: 'notifications' });
+KasafideTopbar.init({ placeholder: 'Search notifications...' });
 
 const TYPE_BADGE = {
   admin:  { icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`, cls: 'badge-purple' },

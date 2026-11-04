@@ -2,8 +2,8 @@
   const user = getSession();
   if (!user || user.role !== 'seller') window.location.href = '../../auth/signin.html';
 
-  HomeSureSidebar.init({ activePage: 'settings' });
-  HomeSureTopbar.init({ placeholder: 'Search settings...' });
+  KasafideSidebar.init({ activePage: 'settings' });
+  KasafideTopbar.init({ placeholder: 'Search settings...' });
 
   // ── Personal info + verification status, filled in once the profile loads ───
   let fullUser = {};

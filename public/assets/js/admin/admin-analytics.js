@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// HomeSure – Admin Analytics
+// Kasafide – Admin Analytics
 // Where numbers tell stories and charts look pretty
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -14,8 +14,8 @@
     return;
   }
 
-  HomeSureSidebar.init({ activePage: 'analytics' });
-  HomeSureTopbar.init({ placeholder: 'Search...' });
+  KasafideSidebar.init({ activePage: 'analytics' });
+  KasafideTopbar.init({ placeholder: 'Search...' });
   let LISTINGS = [];
   let USERS = [];
   let REPORTS_DATA = [];
@@ -434,7 +434,7 @@
     const blob = new Blob([csv], { type: 'text/csv' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
-    a.href = url; a.download = 'homesure-listings.csv'; a.click();
+    a.href = url; a.download = 'kasafide-listings.csv'; a.click();
     URL.revokeObjectURL(url);
   };
 
@@ -448,7 +448,7 @@
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
-    a.href = url; a.download = 'homesure-analytics.json'; a.click();
+    a.href = url; a.download = 'kasafide-analytics.json'; a.click();
     URL.revokeObjectURL(url);
   };
 

@@ -1,9 +1,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
-//  HomeSure – Topbar Component
+//  Kasafide – Topbar Component
 //  Usage:
 //    <div id="hs-topbar"></div>
 //    <script src="../components/topbar.js"></script>
-//    <script>HomeSureTopbar.init({ placeholder: 'Search properties...' })</script>
+//    <script>KasafideTopbar.init({ placeholder: 'Search properties...' })</script>
 // ─────────────────────────────────────────────────────────────────────────────
 (function (global) {
   'use strict';
@@ -502,7 +502,7 @@
     injectCSS();
 
     const el = document.getElementById('hs-topbar');
-    if (!el) { console.warn('HomeSureTopbar: #hs-topbar not found.'); return; }
+    if (!el) { console.warn('KasafideTopbar: #hs-topbar not found.'); return; }
 
     const user = typeof getSession === 'function' ? getSession() : null;
     const initials  = user ? hsInitials(user.firstName, user.lastName, user.email) : 'U';
@@ -633,8 +633,8 @@
     const hamburger = el.querySelector('#hsHamburger');
     if (hamburger) {
       hamburger.addEventListener('click', () => {
-        if (typeof HomeSureSidebar !== 'undefined' && HomeSureSidebar.toggleMobile) {
-          HomeSureSidebar.toggleMobile();
+        if (typeof KasafideSidebar !== 'undefined' && KasafideSidebar.toggleMobile) {
+          KasafideSidebar.toggleMobile();
         }
       });
     }
@@ -847,6 +847,6 @@
     });
   }
 
-  global.HomeSureTopbar = { init };
+  global.KasafideTopbar = { init };
 
 })(window);

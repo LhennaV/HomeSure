@@ -1,5 +1,5 @@
 // FILE: assets/js/seller/seller-reviews.js
-// HomeSure – Seller Reviews
+// Kasafide – Seller Reviews
 //
 // What buyers have written about this seller. Reviews are public to read, so no filtering is done
 // here beyond asking for the ones about me — RLS already limits what anyone may write.
@@ -11,8 +11,8 @@
     return;
   }
 
-  HomeSureSidebar.init({ activePage: 'dashboard' });
-  HomeSureTopbar.init({ placeholder: 'Search reviews...' });
+  KasafideSidebar.init({ activePage: 'dashboard' });
+  KasafideTopbar.init({ placeholder: 'Search reviews...' });
 
   let REVIEWS = [];
   let filter = 'all';
@@ -137,7 +137,7 @@
     }
 
     listEl.innerHTML = shown.map((r) => {
-      const name = r.reviewerName || 'HomeSure user';
+      const name = r.reviewerName || 'Kasafide user';
       const title = r.listingId ? listingTitles[r.listingId] : null;
       return `
       <div class="review-card">

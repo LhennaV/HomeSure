@@ -125,7 +125,7 @@ const steps = [
     num: "03",
     label: "Connect",
     title: "Message the Owner",
-    desc: "Talk to the seller inside HomeSure. Arrange a viewing, ask about the place, and keep the whole conversation in one thread.",
+    desc: "Talk to the seller inside Kasafide. Arrange a viewing, ask about the place, and keep the whole conversation in one thread.",
     screen: "messages" as const,
   },
   {
@@ -496,8 +496,8 @@ function Navbar() {
           <Image src="/assets/img/CatsTone Logo.png" alt="CatsTone" width={28} height={28} className="nav-catstone-img" priority />
         </span>
         <span className="nav-logo-divider" />
-        <Image src="/assets/img/HomeSure_Logo.svg" alt="HomeSure" width={30} height={30} className="img-logo" style={{ display: "block" }} priority />
-        <span>HomeSure</span>
+        <Image src="/assets/img/HomeSure_Logo.svg" alt="Kasafide" width={30} height={30} className="img-logo" style={{ display: "block" }} priority />
+        <span>Kasafide</span>
       </Link>
       <div className="nav-btns">
         <button
@@ -552,7 +552,7 @@ function Hero() {
           </span>
         </h1>
         <p className="hero-desc">
-          HomeSure connects buyers with verified property owners across Sta. Maria, Bulacan. No hidden listings. No unverified sellers.
+          Kasafide connects buyers with verified property owners across Sta. Maria, Bulacan. No hidden listings. No unverified sellers.
         </p>
         <div className="hero-ctas">
           <Link href="/browse.html" className="hero-btn-primary hero-btn-browse" style={{ textDecoration: 'none' }}>
@@ -1120,7 +1120,7 @@ function StepPreview({ screen }: { screen: "verification" | "listing" | "message
           </span>
           <div>
             <div className="tl-verified-title">Verified Seller</div>
-            <div className="tl-verified-sub">Checked by a HomeSure admin</div>
+            <div className="tl-verified-sub">Checked by a Kasafide admin</div>
           </div>
         </div>
       </StepPreviewWindow>
@@ -1272,13 +1272,13 @@ function HowWeVerify() {
   );
 }
 
-// ── Why HomeSure Component ─────────────────────────────────────────────────
-function WhyHomeSure() {
+// ── Why Kasafide Component ─────────────────────────────────────────────────
+function WhyKasafide() {
   const [ref, visible] = useReveal();
   return (
     <section className={`section-alt reveal-section${visible ? " in-view" : ""}`} ref={ref}>
       <div className="features-inner">
-        <span className="section-label">Why HomeSure</span>
+        <span className="section-label">Why Kasafide</span>
         <h2 className="section-title">Built for Trust & Transparency</h2>
         <p className="section-sub">A platform designed with security and convenience at its core</p>
         <div className="features-card-wrap">
@@ -1390,7 +1390,7 @@ function Stats() {
     <section className={`section reveal-section${visible ? " in-view" : ""}`} ref={ref}>
       <div className="stats-inner">
         <span className="section-label">Our Numbers</span>
-        <h2 className="section-title">Where HomeSure Stands Today</h2>
+        <h2 className="section-title">Where Kasafide Stands Today</h2>
         <p className="section-sub">Counted live from the platform, not rounded up for a landing page</p>
         <div className="stats-grid">
           {statsData.map((s, i) => (
@@ -1432,8 +1432,8 @@ function Footer() {
       <div className="footer-grid">
         <div>
           <div className="footer-logo">
-            <Image src="/assets/img/HomeSure_Logo.svg" alt="HomeSure" width={28} height={28} style={{ display: "block" }} />
-            HomeSure
+            <Image src="/assets/img/HomeSure_Logo.svg" alt="Kasafide" width={28} height={28} style={{ display: "block" }} />
+            Kasafide
           </div>
           <p className="footer-tagline">
             A verified housing platform for secure property rentals and purchases in Sta. Maria, Bulacan.
@@ -1474,7 +1474,7 @@ function Footer() {
         </div>
       </div>
       <div className="footer-divider" />
-      <div className="footer-copy">© 2026 HomeSure. All rights reserved.</div>
+      <div className="footer-copy">© 2026 Kasafide. All rights reserved.</div>
     </footer>
   );
 }
@@ -1527,7 +1527,7 @@ export default function HomePage() {
       <Carousel propertiesList={propertiesList} />
       <HowItWorks />
       <HowWeVerify />
-      <WhyHomeSure />
+      <WhyKasafide />
       <Stats />
       <CTA />
       <Footer />

@@ -15,8 +15,8 @@
   HS.auth.refresh().then(me => { if (me) applyGate(me.accountStatus === 'verified'); }).catch(() => {});
 
   /* ── Init sidebar & topbar ── */
-  HomeSureSidebar.init({ activePage: 'listings' });
-  HomeSureTopbar.init({ placeholder: 'Post a property...' });
+  KasafideSidebar.init({ activePage: 'listings' });
+  KasafideTopbar.init({ placeholder: 'Post a property...' });
 
   /* ── Seller name in document section ── */
   const sellerFullName = (user.firstName || '') + ' ' + (user.lastName || '');

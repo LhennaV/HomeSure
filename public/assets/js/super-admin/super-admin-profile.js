@@ -2,8 +2,8 @@
   const user = getSession();
   if (!user || (user.role !== 'superadmin' && user.role !== 'super_duper_admin')) window.location.href = '../../auth/signin.html';
 
-  HomeSureSidebar.init({ activePage: '' });
-  HomeSureTopbar.init({ placeholder: 'Search...' });
+  KasafideSidebar.init({ activePage: '' });
+  KasafideTopbar.init({ placeholder: 'Search...' });
 
   document.getElementById('firstName').value = user.firstName || '';
   document.getElementById('lastName').value  = user.lastName  || '';

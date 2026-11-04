@@ -2,8 +2,8 @@
   const user = getSession();
   if (!user || user.role !== 'seller') window.location.href = '../../auth/signin.html';
 
-  HomeSureSidebar.init({ activePage: 'settings' });
-  HomeSureTopbar.init({ placeholder: 'Identity Verification' });
+  KasafideSidebar.init({ activePage: 'settings' });
+  KasafideTopbar.init({ placeholder: 'Identity Verification' });
 
   const col = document.getElementById('verifyCol');
 
@@ -75,7 +75,7 @@
             isExpired ? 'Re-upload your government ID and a selfie to renew your verification and keep your listings active.'
             : isNearExpiry ? `Your verification expires soon. Re-upload your government ID and a selfie to renew it and keep your listings active.`
             : isVerified ? `You're all set — your identity has been verified. You'll be able to re-verify starting 30 days before it expires.`
-            : 'Please submit your identity documents to start selling on HomeSure. This helps build trust and ensures a safe marketplace for all users.'
+            : 'Please submit your identity documents to start selling on Kasafide. This helps build trust and ensures a safe marketplace for all users.'
           }</div>
         </div>
       </div>

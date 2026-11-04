@@ -1,5 +1,5 @@
 // FILE: assets/js/admin/admin-payments.js
-// HomeSure – Admin Payments Overview
+// Kasafide – Admin Payments Overview
 //
 // Read-only monitoring of every payment and security deposit on the platform, straight from the
 // database (admins can read all rows of both by policy). Admins don't act on payments here — the
@@ -13,8 +13,8 @@
     return;
   }
 
-  HomeSureSidebar.init({ activePage: 'payments' });
-  HomeSureTopbar.init({ placeholder: 'Payments Overview' });
+  KasafideSidebar.init({ activePage: 'payments' });
+  KasafideTopbar.init({ placeholder: 'Payments Overview' });
 
   let ALL_TRANSACTIONS = [];
   let ALL_DEPOSITS = [];
@@ -55,7 +55,7 @@
     land_title_verification_fee: 'Title Verification Fee',
   };
 
-  // A title verification fee is a seller paying HomeSure, not a tenant paying a landlord.
+  // A title verification fee is a seller paying Kasafide, not a tenant paying a landlord.
   const PLATFORM_FEES = new Set(['land_title_verification_fee']);
   function formatPaymentType(type) {
     return TYPE_LABELS[type] || type || '—';
@@ -107,12 +107,12 @@
       ...payments.flatMap(p => [p.buyerId, p.sellerId]),
       ...deposits.flatMap(d => [d.buyerId, d.sellerId]),
     ]);
-    const nameOf = (id) => (people[id] && people[id].name) || 'HomeSure user';
+    const nameOf = (id) => (people[id] && people[id].name) || 'Kasafide user';
 
     ALL_TRANSACTIONS = payments.map(p => ({
       ...p,
       tenantName: nameOf(p.buyerId),
-      landlord: PLATFORM_FEES.has(p.paymentType) ? 'HomeSure' : nameOf(p.sellerId),
+      landlord: PLATFORM_FEES.has(p.paymentType) ? 'Kasafide' : nameOf(p.sellerId),
       // When it happened, for the date filters: when it was paid, or when it was raised if not yet.
       txDate: p.paidDate || (p.createdAt ? String(p.createdAt).slice(0, 10) : null),
     }));

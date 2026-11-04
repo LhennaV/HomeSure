@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// HomeSure – System Reports (Super Admin)
+// Kasafide – System Reports (Super Admin)
 // The big boss dashboard. With great power comes great... analytics?
 // Only the chosen ones (superadmins) shall pass.
 // ══════════════════════════════════════════════════════════════════════════════
@@ -15,8 +15,8 @@
     return;
   }
 
-  HomeSureSidebar.init({ activePage: 'reports' });
-  HomeSureTopbar.init({ placeholder: 'Search...' });
+  KasafideSidebar.init({ activePage: 'reports' });
+  KasafideTopbar.init({ placeholder: 'Search...' });
   let LISTINGS = [];
   let USERS = [];
   let REPORTS_DATA = [];

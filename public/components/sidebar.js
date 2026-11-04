@@ -1,9 +1,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
-//  HomeSure – Sidebar Component
+//  Kasafide – Sidebar Component
 //  Usage:
 //    <div id="hs-sidebar"></div>
 //    <script src="../components/sidebar.js"></script>
-//    <script>HomeSureSidebar.init({ activePage: 'dashboard' })</script>
+//    <script>KasafideSidebar.init({ activePage: 'dashboard' })</script>
 // ─────────────────────────────────────────────────────────────────────────────
 (function (global) {
   'use strict';
@@ -551,9 +551,9 @@
     return `
       <div class="hs-sidebar-panel">
       <div class="hs-logo">
-        <img class="hs-logo-img" src="${basePath}assets/img/image.png" alt="HomeSure"
+        <img class="hs-logo-img" src="${basePath}assets/img/image.png" alt="Kasafide"
              onerror="this.style.display='none'" />
-        <span class="hs-logo-text">HomeSure</span>
+        <span class="hs-logo-text">Kasafide</span>
       </div>
 
       <nav class="hs-nav" id="hsSidebarNav">${navHTML}</nav>
@@ -638,7 +638,7 @@
     injectCSS();
 
     const el = document.getElementById('hs-sidebar');
-    if (!el) { console.warn('HomeSureSidebar: #hs-sidebar not found.'); return; }
+    if (!el) { console.warn('KasafideSidebar: #hs-sidebar not found.'); return; }
 
     const user = typeof getSession === 'function' ? getSession() : null;
     const role = user ? user.role : 'buyer';
@@ -668,7 +668,7 @@
       overlay.classList.remove('active');
     });
 
-    global.HomeSureSidebar.toggleMobile = function () {
+    global.KasafideSidebar.toggleMobile = function () {
       const isOpen = el.classList.toggle('mobile-open');
       overlay.classList.toggle('active', isOpen);
     };
@@ -742,6 +742,6 @@
     }
   }
 
-  global.HomeSureSidebar = { init };
+  global.KasafideSidebar = { init };
 
 })(window);

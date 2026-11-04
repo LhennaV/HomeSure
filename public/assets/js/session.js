@@ -1,14 +1,24 @@
 // ─────────────────────────────────────────────────────────────────────────────
-//  HomeSure – Session helpers
+//  Kasafide – Session helpers
 //  Depends on: config.js (sb)
 //
-//  The real session lives in Supabase (localStorage, auto-refreshed). 'homesure_user' in
+//  The real session lives in Supabase (localStorage, auto-refreshed). 'kasafide_user' in
 //  sessionStorage is only a cached copy of the signed-in user's profile so pages can read
 //  it synchronously with getSession(). It is for UX (menus, redirects); the database never
 //  trusts it — Row Level Security decides what each request may do.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const SESSION_KEY = 'homesure_user';
+const SESSION_KEY = 'kasafide_user';
+
+// One-time move from the pre-rebrand key, so a tab that was signed in before the rename keeps
+// its cached profile instead of looking signed out until the next full sign-in.
+try {
+  const legacy = sessionStorage.getItem('homesure_user');
+  if (legacy !== null) {
+    if (sessionStorage.getItem(SESSION_KEY) === null) sessionStorage.setItem(SESSION_KEY, legacy);
+    sessionStorage.removeItem('homesure_user');
+  }
+} catch (e) { /* storage blocked: nothing to migrate */ }
 
 function saveSession(user) {
   const session = {

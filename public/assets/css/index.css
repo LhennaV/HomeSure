@@ -213,7 +213,7 @@ nav {
   .feature-grid { grid-template-columns: 1fr; gap: 30px; }
 }
 
-/* Shared with the "Why HomeSure" cards further down, which redefine most of it. The three tilting
+/* Shared with the "Why Kasafide" cards further down, which redefine most of it. The three tilting
    cards take their own rules from .feature-3d at the end of this file. */
 .feature-card {
   position: relative;
@@ -2063,7 +2063,7 @@ footer {
    The three cards that tilt
 
    This lives at the end of the file deliberately. .feature-card is defined twice — once above for
-   these cards and once further down for the "Why HomeSure" row — and the second definition wins,
+   these cards and once further down for the "Why Kasafide" row — and the second definition wins,
    including `.feature-card:hover { transform: translateY(-3px) }`. That hover rule would replace
    the tilt transform at exactly the moment the tilt is supposed to be running. Everything here is
    written as .feature-card.feature-3d and placed last, so neither can be contradicted later.

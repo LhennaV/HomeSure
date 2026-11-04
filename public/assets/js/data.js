@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-//  HomeSure – Data layer
+//  Kasafide – Data layer
 //  Depends on: config.js (sb), session.js
 //
 //  The only place the front end talks to the database (Supabase) — pages call HS.*
@@ -239,7 +239,7 @@ const HS = (function () {
         // The auth server is what refuses an unconfirmed account, so this is the real gate, not
         // a check this code could be talked out of.
         if (/confirm/i.test(error.message)) {
-          throw new Error('Please confirm your email first — check your inbox for the link from HomeSure.');
+          throw new Error('Please confirm your email first — check your inbox for the link from Kasafide.');
         }
         throw new Error('Incorrect email or password');
       }
@@ -247,7 +247,7 @@ const HS = (function () {
       if (!user) { await hsSignOut(); throw new Error('Your profile could not be loaded. Please try again.'); }
       if (user.suspendedAt) {
         await hsSignOut();
-        throw new Error('This account has been suspended. Please contact HomeSure support.');
+        throw new Error('This account has been suspended. Please contact Kasafide support.');
       }
       return user;
     },
@@ -486,7 +486,7 @@ const HS = (function () {
   // verification-docs : private bucket — IDs, titles, deeds (only the owner and admins can read)
   // Files live under "<user id>/…" so storage policies can check ownership from the path.
   // A phone camera photo is commonly 3–8 MB at full sensor resolution, and every buyer browsing
-  // afterwards downloads it. Nothing in HomeSure ever displays an image wider than this, so
+  // afterwards downloads it. Nothing in Kasafide ever displays an image wider than this, so
   // sending the original costs everyone bandwidth for detail no screen will show.
   const MAX_IMAGE_EDGE = 1600;        // px on the long side
   const IMAGE_QUALITY  = 0.82;        // JPEG quality after resizing
@@ -808,7 +808,7 @@ const HS = (function () {
       const people = await profiles.byIds(list.map((r) => r.reviewerId));
       list.forEach((r) => {
         r.reviewer = people[r.reviewerId] || null;
-        r.reviewerName = r.reviewer ? r.reviewer.name : 'HomeSure user';
+        r.reviewerName = r.reviewer ? r.reviewer.name : 'Kasafide user';
       });
       return list;
     },
@@ -907,7 +907,7 @@ const HS = (function () {
       const people = await profiles.byIds(list.map((p) => p.buyerId));
       list.forEach((p) => {
         p.payer = people[p.buyerId] || null;
-        p.tenantName = p.payer ? p.payer.name : 'HomeSure user';
+        p.tenantName = p.payer ? p.payer.name : 'Kasafide user';
       });
       return list;
     },
@@ -996,7 +996,7 @@ const HS = (function () {
       const people = await profiles.byIds(list.map((d) => d.buyerId));
       list.forEach((d) => {
         d.tenant = people[d.buyerId] || null;
-        d.tenantName = d.tenant ? d.tenant.name : 'HomeSure user';
+        d.tenantName = d.tenant ? d.tenant.name : 'Kasafide user';
       });
       return list;
     },
@@ -1245,7 +1245,7 @@ const HS = (function () {
       const people = await profiles.byIds(list.map((t) => t.id));
       list.forEach((t) => {
         const person = people[t.id] || null;
-        t.name = person ? person.name : 'HomeSure user';
+        t.name = person ? person.name : 'Kasafide user';
         t.avatar = person ? person.avatar : null;
         t.since = t.payments.reduce((earliest, p) => {
           const at = p.paidAt || p.createdAt;
@@ -1293,7 +1293,7 @@ const HS = (function () {
       const people = await profiles.byIds(list.flatMap((r) => [r.reportedBy, r.sellerId]));
       list.forEach((r) => {
         r.reporter = people[r.reportedBy] || null;
-        r.reporterName = r.reporter ? r.reporter.name : 'HomeSure user';
+        r.reporterName = r.reporter ? r.reporter.name : 'Kasafide user';
         r.seller = people[r.sellerId] || null;
         r.sellerName = r.seller ? r.seller.name : '';
       });

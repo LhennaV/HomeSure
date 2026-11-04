@@ -1,5 +1,5 @@
 // FILE: assets/js/buyer/buyer-payments.js
-// HomeSure – Buyer Payments
+// Kasafide – Buyer Payments
 //
 // Every row here comes from the payments and security_deposits tables. RLS is what limits them to
 // this buyer, so there is no user filter to get wrong.
@@ -11,8 +11,8 @@
     return;
   }
 
-  HomeSureSidebar.init({ activePage: 'payments' });
-  HomeSureTopbar.init({ placeholder: 'My Payments' });
+  KasafideSidebar.init({ activePage: 'payments' });
+  KasafideTopbar.init({ placeholder: 'My Payments' });
 
   let PAYMENTS = [];
   let DEPOSITS = [];

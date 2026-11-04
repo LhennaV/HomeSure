@@ -1,6 +1,6 @@
 # Changelog
 
-What changed in HomeSure, newest first. The front end and the database are the two halves that
+What changed in Kasafide, newest first. The front end and the database are the two halves that
 move most, so each entry says which one it touches and whether anything has to be run or re-sent
 after pulling.
 
@@ -310,8 +310,8 @@ Refunded, Refunded, Forfeited) with a read-only deduction list in place of the f
 User-entered text (names, titles, references) is now HTML-escaped on this page.
 
 The only payments on this database today are land-title verification fees — a seller paying
-HomeSure, not a tenant paying a landlord — so the columns now read "Paid By" / "Paid To", and those
-fees show HomeSure as the recipient instead of the seller paying themselves.
+Kasafide, not a tenant paying a landlord — so the columns now read "Paid By" / "Paid To", and those
+fees show Kasafide as the recipient instead of the seller paying themselves.
 
 ---
 
@@ -568,7 +568,7 @@ rather than new work.
 **Nothing in `public/` changed, and all 12 API routes still answer.** Git keeps the removed files
 if any turns out to be wanted again.
 
-### Email confirmation now comes from HomeSure
+### Email confirmation now comes from Kasafide
 
 **Front end · Backend · Database**
 
@@ -576,7 +576,7 @@ Signing up was impossible. The Supabase auth server requires a confirmed email b
 sign in, but it has no SMTP configured, so its own confirmation mail failed and every attempt died
 with *"Error sending confirmation email"*. That is a setting on a server we do not control.
 
-HomeSure sends the mail itself now:
+Kasafide sends the mail itself now:
 
 - `POST /api/auth/signup` creates the account **unconfirmed** through the admin API — which sends
   nothing, so it cannot fail that way — stores a hashed token, and emails the link.
@@ -604,7 +604,7 @@ leaving you to guess from a failed sign-up.
 
 `components/topbar.js` read `user.firstName[0] + user.lastName[0]`. That throws for any account
 whose name is empty — which is every account created straight in Supabase rather than through the
-sign-up form. The throw killed `HomeSureTopbar.init()`, and with it **every line of the page script
+sign-up form. The throw killed `KasafideTopbar.init()`, and with it **every line of the page script
 after it**, so the page was left showing its leftover placeholder markup with no data loaded.
 
 Eight call sites now go through `hsInitials()` in `session.js`, which falls back to the email and

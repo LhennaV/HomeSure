@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════
-//  HomeSure - Auto Review Prompt (Phone App Style)
+//  Kasafide - Auto Review Prompt (Phone App Style)
 //  Appears after payments, rentals, or randomly like mobile apps
 //  Usage: ReviewPrompt.trigger({ context: 'payment', propertyName: '...' })
 // ═══════════════════════════════════════════════════════════════════════════
@@ -382,7 +382,7 @@
           <div class="review-prompt-thanks" id="reviewPromptThanks">
             <div class="review-prompt-thanks-emoji">🎉</div>
             <div class="review-prompt-thanks-title">Thank you!</div>
-            <div class="review-prompt-thanks-text">Your feedback helps us improve HomeSure</div>
+            <div class="review-prompt-thanks-text">Your feedback helps us improve Kasafide</div>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-// HomeSure – User Detail Page (Admin)
+// Kasafide – User Detail Page (Admin)
 
 (async function () {
   const admin = getSession();
@@ -7,8 +7,8 @@
     return;
   }
 
-  HomeSureSidebar.init({ activePage: 'users' });
-  HomeSureTopbar.init({ placeholder: 'Search...' });
+  KasafideSidebar.init({ activePage: 'users' });
+  KasafideTopbar.init({ placeholder: 'Search...' });
 
   const params = new URLSearchParams(window.location.search);
   const id     = params.get('id');

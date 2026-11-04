@@ -1,4 +1,4 @@
-// HomeSure – Audit Trail (Super Admin)
+// Kasafide – Audit Trail (Super Admin)
 
 (function () {
   const user = getSession();
@@ -7,8 +7,8 @@
     return;
   }
 
-  HomeSureSidebar.init({ activePage: 'audit-trail' });
-  HomeSureTopbar.init({ placeholder: 'Search user, action, IP…', onSearch: function() { searchQuery = (document.getElementById('hsSearch')||{}).value?.trim() || ''; renderTable(); } });
+  KasafideSidebar.init({ activePage: 'audit-trail' });
+  KasafideTopbar.init({ placeholder: 'Search user, action, IP…', onSearch: function() { searchQuery = (document.getElementById('hsSearch')||{}).value?.trim() || ''; renderTable(); } });
 
   const roleColors = { admin: '#3b82f6', superadmin: '#8b5cf6', super_duper_admin: '#ec4899' };
   let auditFilter  = 'all';

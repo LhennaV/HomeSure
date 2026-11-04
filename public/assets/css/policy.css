@@ -2,7 +2,7 @@
 
 body {
   /* Was 'DM Sans' — every other page on the site uses Plus Jakarta Sans, so these two legal pages
-     read as visually disconnected from the rest of HomeSure. DM Serif Display stays for the
+     read as visually disconnected from the rest of Kasafide. DM Serif Display stays for the
      headings below; that's a deliberate editorial accent for a legal document, not a mismatch. */
   font-family: 'Plus Jakarta Sans', sans-serif;
   /* The page background belongs here, not only on .policy-main. A background on <body>

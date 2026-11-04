@@ -3,7 +3,7 @@ import path from "node:path";
 import nodemailer, { type Transporter } from "nodemailer";
 
 /**
- * Outgoing mail for HomeSure.
+ * Outgoing mail for Kasafide.
  *
  * This lives in the Next.js app rather than in the Supabase auth server on purpose: that server
  * belongs to someone else and has no SMTP configured, so its own confirmation mail fails. Sending
@@ -97,11 +97,11 @@ export async function sendMail({ to, subject, html, text, images }: {
   });
 }
 
-/** The HomeSure mark, attached to every message so it renders with no public URL. */
+/** The Kasafide mark, attached to every message so it renders with no public URL. */
 export function brandImages(): InlineImage[] {
   const logo = path.join(process.cwd(), "public", "assets", "img", "image.png");
   if (!fs.existsSync(logo)) return [];
-  return [{ filename: "homesure.png", path: logo, cid: "homesure-logo" }];
+  return [{ filename: "kasafide.png", path: logo, cid: "kasafide-logo" }];
 }
 
 /** The address the verification link points back at. */
@@ -133,7 +133,7 @@ export function verificationEmail({ firstName, link }: { firstName: string; link
   const hello = firstName ? `Hi ${escapeHtml(firstName)},` : "Hi,";
 
   const text = [
-    firstName ? `Hi ${firstName}, welcome to HomeSure.` : "Welcome to HomeSure.",
+    firstName ? `Hi ${firstName}, welcome to Kasafide.` : "Welcome to Kasafide.",
     "",
     "We are glad you are here. One tap on the link below confirms your email, and your account is",
     "ready to use:",
@@ -147,7 +147,7 @@ export function verificationEmail({ firstName, link }: { firstName: string; link
     "Not you? Nothing to do. Ignore this and no account will be created.",
     "",
     "See you soon,",
-    "The HomeSure team",
+    "The Kasafide team",
     "Sta. Maria, Bulacan",
   ].join("\n");
 
@@ -157,12 +157,12 @@ export function verificationEmail({ firstName, link }: { firstName: string; link
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light">
-    <title>Confirm your HomeSure email</title>
+    <title>Confirm your Kasafide email</title>
   </head>
   <body style="margin:0;padding:0;background:#eef2f6;">
     <!-- Shown in the inbox list under the subject, before anyone opens it. -->
     <div style="display:none;max-height:0;overflow:hidden;opacity:0;">
-      One tap and you are in. Your HomeSure account is almost ready.
+      One tap and you are in. Your Kasafide account is almost ready.
     </div>
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#eef2f6;">
@@ -179,13 +179,13 @@ export function verificationEmail({ firstName, link }: { firstName: string; link
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                   <tr>
                     <td style="padding-right:12px;vertical-align:middle;">
-                      <img src="cid:homesure-logo" width="40" height="40" alt=""
+                      <img src="cid:kasafide-logo" width="40" height="40" alt=""
                            style="display:block;width:40px;height:40px;border:0;">
                     </td>
                     <td style="vertical-align:middle;">
                       <div style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:22px;
                                   font-weight:800;color:#ffffff;letter-spacing:-0.4px;line-height:1;">
-                        HomeSure
+                        Kasafide
                       </div>
                       <div style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;
                                   color:rgba(255,255,255,0.55);margin-top:4px;letter-spacing:0.3px;">
@@ -204,7 +204,7 @@ export function verificationEmail({ firstName, link }: { firstName: string; link
             <tr>
               <td style="padding:40px 40px 8px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
                 <div style="font-size:26px;font-weight:800;color:${INK};letter-spacing:-0.5px;margin-bottom:18px;">
-                  Welcome to HomeSure
+                  Welcome to Kasafide
                 </div>
                 <p style="font-size:15.5px;color:${INK};line-height:1.7;margin:0 0 14px;">${hello}</p>
                 <p style="font-size:15.5px;color:#334155;line-height:1.75;margin:0 0 14px;">
@@ -249,7 +249,7 @@ export function verificationEmail({ firstName, link }: { firstName: string; link
               </td>
             </tr>
 
-            <!-- What HomeSure is, for anyone who does not recognise the name -->
+            <!-- What Kasafide is, for anyone who does not recognise the name -->
             <tr>
               <td style="padding:0 40px 36px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
@@ -281,7 +281,7 @@ export function verificationEmail({ firstName, link }: { firstName: string; link
                 </div>
                 <div style="font-size:12px;color:#94a3b8;margin-top:16px;">
                   See you soon,<br>
-                  <span style="color:#64748b;font-weight:600;">The HomeSure team</span><br>
+                  <span style="color:#64748b;font-weight:600;">The Kasafide team</span><br>
                   <span style="color:#cbd5e1;">Sta. Maria, Bulacan</span>
                 </div>
               </td>
@@ -295,7 +295,7 @@ export function verificationEmail({ firstName, link }: { firstName: string; link
   </body>
 </html>`;
 
-  return { subject: "Confirm your HomeSure email", text, html, images: brandImages() };
+  return { subject: "Confirm your Kasafide email", text, html, images: brandImages() };
 }
 
 function escapeHtml(value: string): string {

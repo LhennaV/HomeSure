@@ -1,4 +1,4 @@
-// HomeSure – Public Browse Listings
+// Kasafide – Public Browse Listings
 
 (function () {
   // ── Theme ───────────────────────────────────────────────────────────────────

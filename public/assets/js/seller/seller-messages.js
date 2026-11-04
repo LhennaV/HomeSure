@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-//  HomeSure – Seller Messages
+//  Kasafide – Seller Messages
 //  Depends on: config.js, session.js, data.js (HS.messages, HS.viewing), sidebar.js, topbar.js
 //
 //  A conversation is the pair of people. Row Level Security only ever returns messages the
@@ -16,8 +16,8 @@
     return;
   }
 
-  HomeSureSidebar.init({ activePage: 'messages' });
-  HomeSureTopbar.init({ placeholder: 'Search messages...' });
+  KasafideSidebar.init({ activePage: 'messages' });
+  KasafideTopbar.init({ placeholder: 'Search messages...' });
 
   // ── Icons ──────────────────────────────────────────────────────────────────
   const iconCheck2 = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
@@ -64,7 +64,7 @@
     }
 
     list.innerHTML = filtered.map((c) => {
-      const name = c.other ? c.other.name : 'HomeSure user';
+      const name = c.other ? c.other.name : 'Kasafide user';
       const title = c.listing ? c.listing.title : name;
       const preview = previewOf(c.lastMessage);
       const thumb = c.listing ? HS.cover(c.listing) : HS.PLACEHOLDER_IMG;
@@ -185,7 +185,7 @@
     if (!c) return;
 
     const me = user.id;
-    const name = c.other ? c.other.name : 'HomeSure user';
+    const name = c.other ? c.other.name : 'Kasafide user';
     const l = c.listing;
     const isRent = l && l.listingFor === 'rent';
     const price = l ? '₱' + Number(l.price).toLocaleString('en-PH') : '';

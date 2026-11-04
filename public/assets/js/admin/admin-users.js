@@ -1,4 +1,4 @@
-// HomeSure – Admin Users Management
+// Kasafide – Admin Users Management
 
 (function () {
   const user = getSession();
@@ -7,8 +7,8 @@
     return;
   }
 
-  HomeSureSidebar.init({ activePage: 'users' });
-  HomeSureTopbar.init({ placeholder: 'Search users...', onSearch: renderUsers });
+  KasafideSidebar.init({ activePage: 'users' });
+  KasafideTopbar.init({ placeholder: 'Search users...', onSearch: renderUsers });
 
   // Only buyers and sellers are shown here (loaded from the database; admins can read every profile)
   let users = [];

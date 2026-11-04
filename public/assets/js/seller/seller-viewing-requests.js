@@ -4,8 +4,8 @@
   if (!session || session.role !== 'seller') window.location.href = '../../auth/signin.html';
 
   // ── Init shared components ──────────────────────────────────────────────────
-  HomeSureSidebar.init({ activePage: 'viewing-requests' });
-  HomeSureTopbar.init({ placeholder: 'Search...' });
+  KasafideSidebar.init({ activePage: 'viewing-requests' });
+  KasafideTopbar.init({ placeholder: 'Search...' });
 
   // ── Viewing requests (from the database; RLS only returns ones you are part of) ──
   let currentFilter = 'all';

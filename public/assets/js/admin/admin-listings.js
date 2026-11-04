@@ -1,4 +1,4 @@
-// HomeSure – Admin Listings Management
+// Kasafide – Admin Listings Management
 
 (function () {
   const user = getSession();
@@ -7,8 +7,8 @@
     return;
   }
 
-  HomeSureSidebar.init({ activePage: 'listings' });
-  HomeSureTopbar.init({ placeholder: 'Search listings...', onSearch: () => window.renderListings && window.renderListings() });
+  KasafideSidebar.init({ activePage: 'listings' });
+  KasafideTopbar.init({ placeholder: 'Search listings...', onSearch: () => window.renderListings && window.renderListings() });
 
   let activeStatus = 'all';
 
@@ -119,7 +119,7 @@
     'Incomplete property documents. Please re-upload a valid Transfer Certificate of Title (TCT).',
     'Photos are unclear or do not accurately represent the property.',
     'Property details (price, area, amenities) are inaccurate or misleading.',
-    'Listing violates HomeSure community guidelines.',
+    'Listing violates Kasafide community guidelines.',
     'Duplicate listing — this property has already been posted.',
     'Property address could not be verified in Sta. Maria, Bulacan.',
   ];

@@ -2,8 +2,8 @@
   const user = getSession();
   if (!user || (!['admin', 'superadmin', 'super_duper_admin'].includes(user.role))) window.location.href = '../../auth/signin.html';
 
-  HomeSureSidebar.init({ activePage: '' });
-  HomeSureTopbar.init({ placeholder: 'Search settings...' });
+  KasafideSidebar.init({ activePage: '' });
+  KasafideTopbar.init({ placeholder: 'Search settings...' });
 
   function showToast(msg, type = 'success') {
     const t = document.getElementById('toast');

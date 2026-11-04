@@ -1,5 +1,5 @@
 // FILE: assets/js/seller/seller-tenants.js
-// HomeSure – My Tenants
+// Kasafide – My Tenants
 //
 // A tenant is not a row in a table. It is a conclusion: somebody with a confirmed payment or a
 // security deposit on one of your listings. HS.tenants.mine() draws it from what is already
@@ -13,8 +13,8 @@
     return;
   }
 
-  HomeSureSidebar.init({ activePage: 'tenants' });
-  HomeSureTopbar.init({ placeholder: 'Search tenants...' });
+  KasafideSidebar.init({ activePage: 'tenants' });
+  KasafideTopbar.init({ placeholder: 'Search tenants...' });
 
   let TENANTS = [];
 

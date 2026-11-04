@@ -52,7 +52,7 @@ const steps = [
     num: "03",
     label: "Connect",
     title: "Message the Owner",
-    desc: "Talk to the seller inside HomeSure. Arrange a viewing, ask about the place, and keep the whole conversation in one thread.",
+    desc: "Talk to the seller inside Kasafide. Arrange a viewing, ask about the place, and keep the whole conversation in one thread.",
     screen: "messages",
   },
   {
@@ -515,8 +515,8 @@ function Navbar() {
         React.createElement("img", { src: "assets/img/CatsTone Logo.svg", alt: "CatsTone", className: "nav-catstone-img" }),
       ),
       React.createElement("span", { className: "nav-logo-divider" }),
-      React.createElement("img", { src: LOGO_SRC, alt: "HomeSure", height: 30, style: { display: "block" } }),
-      React.createElement("span", { style: { display: "inline-block" } }, "HomeSure"),
+      React.createElement("img", { src: LOGO_SRC, alt: "Kasafide", height: 30, style: { display: "block" } }),
+      React.createElement("span", { style: { display: "inline-block" } }, "Kasafide"),
     ),
     React.createElement(
       "div",
@@ -847,7 +847,7 @@ function Hero() {
       React.createElement(
         "p",
         { className: "hero-desc" },
-        "HomeSure connects buyers with verified property owners across Sta. Maria, Bulacan. No hidden listings. No unverified sellers.",
+        "Kasafide connects buyers with verified property owners across Sta. Maria, Bulacan. No hidden listings. No unverified sellers.",
       ),
       React.createElement(
         "div",
@@ -1362,7 +1362,7 @@ function screenVerification() {
       h('span', { className: 'tl-verified-icon', dangerouslySetInnerHTML: { __html: tlShield } }),
       h('div', null,
         h('div', { className: 'tl-verified-title' }, 'Verified Seller'),
-        h('div', { className: 'tl-verified-sub' }, 'Checked by a HomeSure admin'),
+        h('div', { className: 'tl-verified-sub' }, 'Checked by a Kasafide admin'),
       ),
     ),
   ]);
@@ -1467,7 +1467,7 @@ function Features() {
       React.createElement(
         "span",
         { className: "section-label" },
-        "Why HomeSure",
+        "Why Kasafide",
       ),
       React.createElement(
         "h2",
@@ -1583,7 +1583,7 @@ function Stats() {
       React.createElement(
         "h2",
         { className: "section-title" },
-        "Where HomeSure Stands Today",
+        "Where Kasafide Stands Today",
       ),
       React.createElement(
         "p",
@@ -1683,11 +1683,11 @@ function Footer() {
           { className: "footer-logo" },
           React.createElement("img", {
             src: LOGO_SRC,
-            alt: "HomeSure",
+            alt: "Kasafide",
             height: 28,
             style: { display: "block" },
           }),
-          "HomeSure",
+          "Kasafide",
         ),
         React.createElement(
           "p",
@@ -1756,7 +1756,7 @@ function Footer() {
     React.createElement(
       "div",
       { className: "footer-copy" },
-      "© 2026 HomeSure. All rights reserved.",
+      "© 2026 Kasafide. All rights reserved.",
     ),
   );
 }

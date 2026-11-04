@@ -5,8 +5,8 @@
     return;
   }
 
-  HomeSureSidebar.init({ activePage: 'dashboard' });
-  HomeSureTopbar.init({ placeholder: 'Search...' });
+  KasafideSidebar.init({ activePage: 'dashboard' });
+  KasafideTopbar.init({ placeholder: 'Search...' });
 
   // ── Load everything the dashboard shows ───────────────────────────────────
   let LISTINGS, USERS, openReports;

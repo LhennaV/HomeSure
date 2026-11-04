@@ -1,5 +1,5 @@
 // FILE: assets/js/buyer/buyer-reviews.js
-// HomeSure – Buyer Reviews
+// Kasafide – Buyer Reviews
 //
 // The reviews this buyer has written, and the form for writing another.
 //
@@ -14,8 +14,8 @@
     return;
   }
 
-  HomeSureSidebar.init({ activePage: 'reviews' });
-  HomeSureTopbar.init({ placeholder: 'Search reviews...' });
+  KasafideSidebar.init({ activePage: 'reviews' });
+  KasafideTopbar.init({ placeholder: 'Search reviews...' });
 
   let REVIEWS = [];
   let REVIEWABLE = [];          // { propertyId, sellerId, title }

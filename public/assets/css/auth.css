@@ -375,7 +375,7 @@ body.light .auth-bg-overlay {
 }
 
 /* Soft decorative glow circles, teal rather than the gold a reference for this used — this is
-   still HomeSure, with its own established glow colour, not a borrowed palette. */
+   still Kasafide, with its own established glow colour, not a borrowed palette. */
 .auth-glow {
   position: absolute;
   border-radius: 50%;
@@ -387,7 +387,7 @@ body.light .auth-bg-overlay {
 
 
 /* Shown only on wide screens, to the left of the card — mirrors the reference's large marketing
-   line, but in HomeSure's own words rather than someone else's product promise, and nothing
+   line, but in Kasafide's own words rather than someone else's product promise, and nothing
    attributed to a made-up person the way the testimonial it replaces was. */
 .auth-tagline {
   display: none;

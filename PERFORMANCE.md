@@ -1,6 +1,6 @@
 # Performance review
 
-Eleven common optimisations, checked against what HomeSure actually does today. Each one says what
+Eleven common optimisations, checked against what Kasafide actually does today. Each one says what
 it is for, whether this project needs it, and what the change would be.
 
 Nothing here was assumed — every claim was measured against the code in this repo on 2026-10-12.
@@ -273,7 +273,7 @@ A load balancer is for the problem of **too many users at once**. We do not have
 adding one would mean running several servers, keeping them in step, and putting something in front
 to distribute requests — real cost and real complexity against a bottleneck that does not exist.
 
-**Needed:** no. If HomeSure ever grows into needing it, the host provides it: Vercel scales
+**Needed:** no. If Kasafide ever grows into needing it, the host provides it: Vercel scales
 automatically, and Supabase has connection pooling built in.
 
 ---

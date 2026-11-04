@@ -4,8 +4,8 @@
   if (!session || session.role !== 'seller') window.location.href = '../../auth/signin.html';
 
   // ── Init components ───────────────────────────────────────────────────────
-  HomeSureSidebar.init({ activePage: 'dashboard' });
-  HomeSureTopbar.init({
+  KasafideSidebar.init({ activePage: 'dashboard' });
+  KasafideTopbar.init({
     placeholder: 'Search by property, location, or seller...',
     onSearch: renderListings,
   });

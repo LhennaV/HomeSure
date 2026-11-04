@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   HOMESURE — PAYMENT MODAL
+   KASAFIDE — PAYMENT MODAL
 
    Two ways to pay, both real:
 
@@ -123,7 +123,7 @@ const PaymentIntegration = (function () {
         <div class="payment-method-option" onclick="PaymentIntegration.chooseRoute('qrph')">
           <div class="payment-method-icon gcash">QR Ph</div>
           <div class="payment-method-info">
-            <div class="payment-method-name">Pay through HomeSure</div>
+            <div class="payment-method-name">Pay through Kasafide</div>
             <div class="payment-method-desc">Scan one QR with GCash, Maya or your bank app. Confirmed automatically.</div>
           </div>
           <div class="payment-method-radio"></div>
@@ -148,7 +148,7 @@ const PaymentIntegration = (function () {
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
         </svg>
         <div class="payment-security-notice-text">
-          <strong>Paying through HomeSure is safer.</strong> The amount is set by the listing, the
+          <strong>Paying through Kasafide is safer.</strong> The amount is set by the listing, the
           payment is confirmed by the provider, and you have a record either side can show.
         </div>
       </div>
