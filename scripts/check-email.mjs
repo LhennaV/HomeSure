@@ -120,7 +120,7 @@ try {
     to,
     subject: "Kasafide — email is working",
     text: "If you are reading this, Kasafide can send email. Sign-up confirmation links will arrive the same way.",
-    html: `<p style="font-family:sans-serif;font-size:15px;color:#0f172a;">
+    html: `<p style="font-family:sans-serif;font-size:15px;color:#2B1B3D;">
              If you are reading this, Kasafide can send email.<br>
              Sign-up confirmation links will arrive the same way.
            </p>`,

@@ -372,6 +372,7 @@ body {
   .btn-signup {
     padding: 8px 16px;
     font-size: 13px;
+    white-space: nowrap;
   }
 
   .browse-container {
@@ -408,5 +409,15 @@ body {
   .footer-links {
     flex-direction: column;
     gap: 12px;
+  }
+}
+
+/* Phone width: the ExtraBold wordmark is wider than the old one, so the two buttons tighten up
+   rather than wrap their labels onto two lines. */
+@media (max-width: 420px) {
+  .btn-signin,
+  .btn-signup {
+    padding: 7px 11px;
+    font-size: 12.5px;
   }
 }

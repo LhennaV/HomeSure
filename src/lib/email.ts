@@ -176,7 +176,7 @@ export function verificationEmail({ firstName, link }: { firstName: string; link
 
           <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"
                  style="width:600px;max-width:100%;background:${CREAM};border-radius:16px;overflow:hidden;
-                        box-shadow:0 2px 16px rgba(15,23,42,0.08);">
+                        box-shadow:0 2px 16px rgba(43,27,61,0.08);">
 
             <!-- Header -->
             <tr>

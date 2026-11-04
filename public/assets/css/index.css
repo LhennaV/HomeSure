@@ -1835,7 +1835,7 @@ footer {
   /* Light mode mobile buttons - MOBILE ONLY. Sign In stays solid teal in both themes (it does not
      need a light variant); Sign Up is the glass one now, so it is the one that needs this. */
   [data-theme="light"] .hero-btn-mobile-signup {
-    border-color: var(--border);
+    border-color: var(--text);
     color: var(--text) !important;  /* the base rule's color is !important too, so this has to match */
   }
   [data-theme="light"] .hero-btn-mobile-signup:hover {

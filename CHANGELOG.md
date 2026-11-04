@@ -8,6 +8,36 @@ after pulling.
 
 ---
 
+## 2026-11-04
+
+### Rebrand: HomeSure is now Kasafide (name, Plum & Peach theme, logo, chatbot, map)
+
+**Front end** (most of it) **and backend** (`src/lib/email.ts`, `src/app/favicon.ico`, the two React
+pages under `src/app/`). Branch `rebrand/kasafide`, one commit per area so any piece can be reverted.
+
+- **Name.** Every visible "HomeSure" is "Kasafide". Domains, email addresses, the repo and folder
+  names, the pm2 process name and the seed-account emails are deliberately unchanged — they point
+  at real things.
+- **Theme.** `public/assets/css/kasafide-theme.css` is the only file that spells a colour; every
+  page loads it first. `public/assets/js/kasafide-theme.js` (first script in every `<head>`) sets
+  `<html data-theme>` before paint, defaults to the OS setting, and stores the visitor's choice in
+  `localStorage.kasafide_theme`. Pages change the theme through `KasafideTheme.set()`, not storage.
+- **Logo.** `public/assets/js/kasafide-logo.js` draws the cat-house mark inline so its outline turns
+  cream in dark mode. New favicon set, `site.webmanifest`, `og-image.png`, OG/Twitter meta tags.
+  The old logo files are deleted.
+- **Chatbot** is "Kasafide Assistant" with the new avatar. **Map** strokes/fills come from
+  `--map-*` tokens; the teal glow is gone.
+- **Storage keys** move once, on first load, with no sign-out: `hs-theme`/`theme` →
+  `kasafide_theme`, `hs_last_review_prompt` → `kasafide_last_review_prompt` (localStorage),
+  `homesure_user` → `kasafide_user` (sessionStorage).
+
+**You need to:** restart the server (the email template, its logo attachment and
+`src/app/favicon.ico` changed). In `.env.local` on every machine that sends mail, change the display
+name in `SMTP_FROM` from "HomeSure" to "Kasafide" if you want new emails to say so — the address
+part stays. No migration.
+
+---
+
 ## 2026-10-20
 
 ### Save Listing (and anything else writing to a profile-owned row) failed for real, logged-in accounts
