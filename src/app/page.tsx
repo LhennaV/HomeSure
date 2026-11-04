@@ -67,7 +67,7 @@ const categories = [
   {
     name: "Houses",
     count: "342 listings",
-    color: "#1a9e8f",
+    color: "var(--primary)",
     bg: "rgba(26,158,143,0.15)",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="24" height="24">
@@ -79,7 +79,7 @@ const categories = [
   {
     name: "Apartments",
     count: "218 listings",
-    color: "#6c63ff",
+    color: "var(--info)",
     bg: "rgba(108,99,255,0.15)",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="24" height="24">
@@ -94,7 +94,7 @@ const categories = [
   {
     name: "Townhouses",
     count: "97 listings",
-    color: "#f59e0b",
+    color: "var(--warning)",
     bg: "rgba(245,158,11,0.15)",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="24" height="24">
@@ -377,7 +377,7 @@ function HeroMap() {
       pin.innerHTML = `
         <div class="marker-pulse"></div>
         <div class="marker-icon">
-          <img src="/assets/img/House Icon.svg" alt="" />
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg>
         </div>
         <div class="marker-tooltip">${n || "View"} ${n === 1 ? "property" : "properties"} in ${p.barangay}</div>
       `;
@@ -492,11 +492,7 @@ function Navbar() {
   return (
     <nav>
       <Link className="nav-logo" href="/">
-        <span className="nav-catstone-wrap">
-          <Image src="/assets/img/CatsTone Logo.png" alt="CatsTone" width={28} height={28} className="nav-catstone-img" priority />
-        </span>
-        <span className="nav-logo-divider" />
-        <Image src="/assets/img/HomeSure_Logo.svg" alt="Kasafide" width={30} height={30} className="img-logo" style={{ display: "block" }} priority />
+        <Image src="/assets/img/kasafide-logo.svg" alt="Kasafide logo" width={30} height={30} className="img-logo" style={{ display: "block" }} priority />
         <span>Kasafide</span>
       </Link>
       <div className="nav-btns">
@@ -697,7 +693,7 @@ function FeatureHighlights() {
       ),
       title: "Admin-Verified Listings",
       desc: "Every listing reviewed before publishing",
-      color: "#00c9a7",
+      color: "var(--primary)",
       badge: "VERIFIED",
     },
     {
@@ -708,7 +704,7 @@ function FeatureHighlights() {
       ),
       title: "Secure In-Chat Payments",
       desc: "Agree on price and send payment requests within the chat",
-      color: "#3b82f6",
+      color: "var(--accent)",
       badge: "SECURE",
     },
     {
@@ -719,7 +715,7 @@ function FeatureHighlights() {
       ),
       title: "Anti-Fraud Protection",
       desc: "Government ID verification for all sellers",
-      color: "#f59e0b",
+      color: "var(--warning)",
       badge: "PROTECTED",
     },
   ];
@@ -892,7 +888,7 @@ function Carousel({ propertiesList }: { propertiesList: any[] }) {
       <div className="crd-body-side">
         <div className="card-title-side">{prop.title}</div>
         <div className="card-loc">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b8fa0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style={{ stroke: "var(--text-muted)" }} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
             <circle cx="12" cy="10" r="3" />
           </svg>
@@ -944,7 +940,7 @@ function Carousel({ propertiesList }: { propertiesList: any[] }) {
               <div className="crd-body-center">
                 <div className="card-title">{centerProp.title}</div>
                 <div className="card-loc">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b8fa0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style={{ stroke: "var(--text-muted)" }} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                     <circle cx="12" cy="10" r="3" />
                   </svg>
@@ -1213,10 +1209,10 @@ function HowItWorks() {
         <svg className="tl-spine" preserveAspectRatio="none" aria-hidden="true">
           <defs>
             <linearGradient id="tl-spine-fade" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="rgba(0,201,167,0)" />
-              <stop offset="0.09" stopColor="rgba(0,201,167,0.34)" />
-              <stop offset="0.91" stopColor="rgba(0,201,167,0.34)" />
-              <stop offset="1" stopColor="rgba(0,201,167,0)" />
+              <stop offset="0" style={{ stopColor: "rgb(var(--primary-rgb) / 0)" }} />
+              <stop offset="0.09" style={{ stopColor: "rgb(var(--primary-rgb) / 0.34)" }} />
+              <stop offset="0.91" style={{ stopColor: "rgb(var(--primary-rgb) / 0.34)" }} />
+              <stop offset="1" style={{ stopColor: "rgb(var(--primary-rgb) / 0)" }} />
             </linearGradient>
           </defs>
           <path className="tl-spine-path" ref={pathRef} fill="none" />
@@ -1432,7 +1428,7 @@ function Footer() {
       <div className="footer-grid">
         <div>
           <div className="footer-logo">
-            <Image src="/assets/img/HomeSure_Logo.svg" alt="Kasafide" width={28} height={28} style={{ display: "block" }} />
+            <Image src="/assets/img/kasafide-logo.svg" alt="Kasafide logo" width={28} height={28} style={{ display: "block" }} />
             Kasafide
           </div>
           <p className="footer-tagline">

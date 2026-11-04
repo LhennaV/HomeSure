@@ -99,7 +99,7 @@ export async function sendMail({ to, subject, html, text, images }: {
 
 /** The Kasafide mark, attached to every message so it renders with no public URL. */
 export function brandImages(): InlineImage[] {
-  const logo = path.join(process.cwd(), "public", "assets", "img", "image.png");
+  const logo = path.join(process.cwd(), "public", "assets", "img", "kasafide-logo-email.png");
   if (!fs.existsSync(logo)) return [];
   return [{ filename: "kasafide.png", path: logo, cid: "kasafide-logo" }];
 }
@@ -116,11 +116,16 @@ export function appOrigin(request: Request): string {
   return `${proto}://${host}`;
 }
 
-// Brand colours, matching the site.
-const TEAL = "#00c9a7";
-const NAVY = "#0d1b2a";
-const INK = "#0f172a";
-const MUTED = "#64748b";
+// Brand colours, matching the site (public/assets/css/kasafide-theme.css). Email clients do not
+// support CSS variables, so the values are spelled out here once and nowhere else in this file.
+const PEACH = "#FF8A65";
+const PLUM = "#5B3A8E";
+const INK = "#2B1B3D";
+const MUTED = "#6B5A80";
+const SOFT_TEXT = "#4A3B5E";
+const CREAM = "#FBF6F0";
+const LILAC = "#F1E9F7";
+const LINE = "#E3D8EE";
 
 /**
  * The confirmation email.
@@ -159,23 +164,23 @@ export function verificationEmail({ firstName, link }: { firstName: string; link
     <meta name="color-scheme" content="light">
     <title>Confirm your Kasafide email</title>
   </head>
-  <body style="margin:0;padding:0;background:#eef2f6;">
+  <body style="margin:0;padding:0;background:${LILAC};">
     <!-- Shown in the inbox list under the subject, before anyone opens it. -->
     <div style="display:none;max-height:0;overflow:hidden;opacity:0;">
       One tap and you are in. Your Kasafide account is almost ready.
     </div>
 
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#eef2f6;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${LILAC};">
       <tr>
         <td align="center" style="padding:32px 16px;">
 
           <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"
-                 style="width:600px;max-width:100%;background:#ffffff;border-radius:16px;overflow:hidden;
+                 style="width:600px;max-width:100%;background:${CREAM};border-radius:16px;overflow:hidden;
                         box-shadow:0 2px 16px rgba(15,23,42,0.08);">
 
             <!-- Header -->
             <tr>
-              <td style="background:${NAVY};padding:32px 40px;">
+              <td style="background:${PLUM};padding:32px 40px;">
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                   <tr>
                     <td style="padding-right:12px;vertical-align:middle;">
@@ -184,7 +189,7 @@ export function verificationEmail({ firstName, link }: { firstName: string; link
                     </td>
                     <td style="vertical-align:middle;">
                       <div style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:22px;
-                                  font-weight:800;color:#ffffff;letter-spacing:-0.4px;line-height:1;">
+                                  font-weight:800;color:${CREAM};letter-spacing:-0.4px;line-height:1;">
                         Kasafide
                       </div>
                       <div style="font-family:'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;
@@ -198,7 +203,7 @@ export function verificationEmail({ firstName, link }: { firstName: string; link
             </tr>
 
             <!-- Teal rule under the header -->
-            <tr><td style="height:4px;background:${TEAL};font-size:0;line-height:0;">&nbsp;</td></tr>
+            <tr><td style="height:4px;background:${PEACH};font-size:0;line-height:0;">&nbsp;</td></tr>
 
             <!-- Body -->
             <tr>
@@ -207,11 +212,11 @@ export function verificationEmail({ firstName, link }: { firstName: string; link
                   Welcome to Kasafide
                 </div>
                 <p style="font-size:15.5px;color:${INK};line-height:1.7;margin:0 0 14px;">${hello}</p>
-                <p style="font-size:15.5px;color:#334155;line-height:1.75;margin:0 0 14px;">
+                <p style="font-size:15.5px;color:${SOFT_TEXT};line-height:1.75;margin:0 0 14px;">
                   We are glad you are here. One tap below confirms your email, and your account is
                   ready to use.
                 </p>
-                <p style="font-size:15.5px;color:#334155;line-height:1.75;margin:0 0 30px;">
+                <p style="font-size:15.5px;color:${SOFT_TEXT};line-height:1.75;margin:0 0 30px;">
                   After that you can browse listings, message sellers directly, and save the places
                   you want to come back to.
                 </p>
@@ -223,10 +228,10 @@ export function verificationEmail({ firstName, link }: { firstName: string; link
               <td align="center" style="padding:0 40px 32px;">
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                   <tr>
-                    <td align="center" style="background:${TEAL};border-radius:10px;">
+                    <td align="center" style="background:${PEACH};border-radius:10px;">
                       <a href="${escapeHtml(link)}"
                          style="display:inline-block;padding:15px 40px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;
-                                font-size:15px;font-weight:700;color:#04221d;text-decoration:none;letter-spacing:0.2px;">
+                                font-size:15px;font-weight:700;color:${INK};text-decoration:none;letter-spacing:0.2px;">
                         Yes, this is me
                       </a>
                     </td>
@@ -238,11 +243,11 @@ export function verificationEmail({ firstName, link }: { firstName: string; link
             <!-- Fallback link -->
             <tr>
               <td style="padding:0 40px 32px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
-                <div style="border-top:1px solid #e2e8f0;padding-top:20px;">
+                <div style="border-top:1px solid ${LINE};padding-top:20px;">
                   <div style="font-size:12px;color:${MUTED};margin-bottom:6px;">
                     Button not working? Paste this into your browser:
                   </div>
-                  <div style="font-size:12px;color:#334155;word-break:break-all;line-height:1.5;">
+                  <div style="font-size:12px;color:${SOFT_TEXT};word-break:break-all;line-height:1.5;">
                     ${escapeHtml(link)}
                   </div>
                 </div>
@@ -253,13 +258,13 @@ export function verificationEmail({ firstName, link }: { firstName: string; link
             <tr>
               <td style="padding:0 40px 36px;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-                       style="background:#f1f5f9;border-radius:12px;">
+                       style="background:${LILAC};border-radius:12px;">
                   <tr>
                     <td style="padding:18px 20px;">
                       <div style="font-size:13.5px;font-weight:700;color:${INK};margin-bottom:7px;">
                         You are dealing with real people here
                       </div>
-                      <div style="font-size:13px;color:#475569;line-height:1.65;">
+                      <div style="font-size:13px;color:${SOFT_TEXT};line-height:1.65;">
                         We check identity documents and land titles before any listing goes live. No
                         ghost listings, no sellers who cannot prove the property is theirs.
                       </div>
@@ -271,18 +276,18 @@ export function verificationEmail({ firstName, link }: { firstName: string; link
 
             <!-- Footer -->
             <tr>
-              <td style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:24px 40px;
+              <td style="background:${CREAM};border-top:1px solid ${LINE};padding:24px 40px;
                          font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
-                <div style="font-size:12px;color:#64748b;line-height:1.7;">
+                <div style="font-size:12px;color:${MUTED};line-height:1.7;">
                   The link lasts 24 hours. If it expires, just ask for a new one from the sign-in page.
                 </div>
-                <div style="font-size:12px;color:#94a3b8;line-height:1.7;margin-top:10px;">
+                <div style="font-size:12px;color:${MUTED};line-height:1.7;margin-top:10px;">
                   Not you? Nothing to do — ignore this and no account will be created.
                 </div>
-                <div style="font-size:12px;color:#94a3b8;margin-top:16px;">
+                <div style="font-size:12px;color:${MUTED};margin-top:16px;">
                   See you soon,<br>
-                  <span style="color:#64748b;font-weight:600;">The Kasafide team</span><br>
-                  <span style="color:#cbd5e1;">Sta. Maria, Bulacan</span>
+                  <span style="color:${MUTED};font-weight:600;">The Kasafide team</span><br>
+                  <span style="color:${MUTED};">Sta. Maria, Bulacan</span>
                 </div>
               </td>
             </tr>

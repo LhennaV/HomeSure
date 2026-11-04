@@ -551,8 +551,7 @@
     return `
       <div class="hs-sidebar-panel">
       <div class="hs-logo">
-        <img class="hs-logo-img" src="${basePath}assets/img/image.png" alt="Kasafide"
-             onerror="this.style.display='none'" />
+        ${window.KasafideLogo ? KasafideLogo.svg({ size: 28, variant: 'dark', className: 'hs-logo-img' }) : ''}
         <span class="hs-logo-text">Kasafide</span>
       </div>
 

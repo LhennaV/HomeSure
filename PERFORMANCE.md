@@ -97,11 +97,12 @@ Cheap to add and nothing else changes.
 
 | File | Size |
 |---|---|
-| House Icon.svg | 196 KB |
 | house_image.jpg | 179 KB |
 | Sta. Maria Map.svg | 146 KB |
 | CatsTone Logo.png | 144 KB |
 | Team photos (5) | ~110–135 KB each |
+
+(Update, Kasafide rebrand: `House Icon.svg`, 196 KB, was the old logo and has been deleted; the map pins now draw a 300-byte inline icon.)
 
 A 196 KB SVG is unusual — an SVG that large almost always has a raster image embedded in it, which
 defeats the point of the format.

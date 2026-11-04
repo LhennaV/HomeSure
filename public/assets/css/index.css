@@ -756,6 +756,7 @@ nav {
   width: 32px;
   height: 32px;
   background: var(--primary);
+  color: var(--on-primary);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -764,10 +765,8 @@ nav {
   border: 2px solid var(--bg);
 }
 
-.marker-icon img {
-  width: 18px;
-  height: 18px;
-  filter: brightness(0) invert(1);
+.marker-icon svg {
+  display: block;
 }
 
 .marker-tooltip {

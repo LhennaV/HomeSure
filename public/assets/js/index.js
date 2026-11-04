@@ -110,7 +110,12 @@ const searchIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" 
 const shieldIcon = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
 const starIcon = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="0"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
 const lockIcon = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
-const LOGO_SRC = "assets/img/HomeSure_Logo.svg";
+// The brand mark, inline so its outline follows the theme (assets/js/kasafide-logo.js).
+const logoMark = (size) => React.createElement("span", {
+  className: "kf-logo-wrap",
+  style: { display: "inline-flex" },
+  dangerouslySetInnerHTML: { __html: KasafideLogo.svg({ size }) },
+});
 
 // ── React Components ──────────────────────────────────────────────────────────
 
@@ -388,7 +393,7 @@ function HeroMap() {
         pin.innerHTML = `
           <div class="marker-pulse"></div>
           <div class="marker-icon">
-            <img src="assets/img/House Icon.svg" alt="" />
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg>
           </div>
           <div class="marker-tooltip">${n} ${n === 1 ? 'property' : 'properties'} in ${p.barangay}</div>
         `;
@@ -511,11 +516,7 @@ function Navbar() {
     React.createElement(
       "a",
       { className: "nav-logo", href: "#" },
-      React.createElement("span", { className: "nav-catstone-wrap" },
-        React.createElement("img", { src: "assets/img/CatsTone Logo.svg", alt: "CatsTone", className: "nav-catstone-img" }),
-      ),
-      React.createElement("span", { className: "nav-logo-divider" }),
-      React.createElement("img", { src: LOGO_SRC, alt: "Kasafide", height: 30, style: { display: "block" } }),
+      logoMark(32),
       React.createElement("span", { style: { display: "inline-block" } }, "Kasafide"),
     ),
     React.createElement(
@@ -1681,12 +1682,7 @@ function Footer() {
         React.createElement(
           "div",
           { className: "footer-logo" },
-          React.createElement("img", {
-            src: LOGO_SRC,
-            alt: "Kasafide",
-            height: 28,
-            style: { display: "block" },
-          }),
+          logoMark(28),
           "Kasafide",
         ),
         React.createElement(
