@@ -682,37 +682,15 @@ nav {
   max-height: 100%;
   width: auto;
   height: auto;
-  filter:none;
-  animation: shapeGlow 3s ease-in-out infinite;
 }
 
-@keyframes shapeGlow {
-  0%, 100% {
-    filter:none;
-  }
-  50% {
-    filter:none;
-  }
-}
-
-/* Barangay hover effects */
-.hero-map-svg path {
-  /* Named properties rather than "all".
-     With "all", the drop-shadow below was transitioned too — and a drop-shadow on a 450-point
-     polygon is a per-pixel blur of that whole outline, recomputed every frame for 0.3s. Crossing
-     the map set that running on one barangay after another. fill and stroke-width are the only
-     things that actually change, and both are cheap. */
-  transition: fill 0.3s ease, stroke-width 0.3s ease;
-  cursor: pointer;
-}
-
-.hero-map-svg path:hover {
-  fill: rgb(var(--primary-rgb) / 0.3) !important;
-  stroke-width: 3;
-  /* The glow still appears, it just arrives at once instead of being blurred into place frame by
-     frame. At 0.3s nobody could see the difference anyway. */
-  filter:none;
-}
+/* Flat strokes, no glow (the four-layer teal drop-shadow and its pulse animation are gone).
+   Colours come from the theme tokens, so the map follows light/dark. The borders are open
+   paths shared between neighbours, not one closed shape per barangay, so there is no
+   per-barangay hover fill — the pins are what you hover and click. */
+.hero-map-container svg .map-border  { stroke: var(--map-stroke); }
+.hero-map-container svg .map-outline { fill: var(--map-fill); }
+.hero-map-container svg .map-label   { fill: var(--map-label); stroke: none; }
 
 /* Property Markers */
 .property-marker {
@@ -735,7 +713,7 @@ nav {
   transform: translate(-50%, -50%);
   width: 40px;
   height: 40px;
-  background: rgb(var(--primary-rgb) / 0.3);
+  background: rgb(var(--accent-rgb) / 0.35);
   border-radius: 50%;
   animation: pulse 2s ease-out infinite;
 }
@@ -774,8 +752,8 @@ nav {
   top: -40px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0,0,0,0.9);
-  color: var(--primary);
+  background: var(--primary);
+  color: var(--on-primary);
   padding: 6px 12px;
   border-radius: 6px;
   font-size: 11px;
@@ -795,8 +773,8 @@ nav {
   top: 20px;
   right: 20px;
   padding: 8px 16px;
-  background: rgb(var(--k-ink-rgb) / 0.85);
-  border: 1px solid rgb(var(--primary-rgb) / 0.3);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 6px;
   color: var(--primary);
   font-size: 12px;
@@ -810,8 +788,8 @@ nav {
 
 /* ── BARANGAY POPUP TOOLTIP ── */
 .maplibregl-popup.barangay-popup .maplibregl-popup-content {
-  background: rgb(var(--k-ink-rgb) / 0.98);
-  border: 1.5px solid rgb(var(--primary-rgb) / 0.4);
+  background: var(--surface);
+  border: 1.5px solid var(--border);
   border-radius: 8px;
   padding: 10px 14px;
   box-shadow: 0 6px 20px rgba(0,0,0,0.6);
@@ -820,7 +798,7 @@ nav {
 }
 
 .maplibregl-popup.barangay-popup .maplibregl-popup-tip {
-  border-top-color: rgb(var(--k-ink-rgb) / 0.98);
+  border-top-color: var(--surface);
 }
 
 .popup-brgy-name {
@@ -830,11 +808,10 @@ nav {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   margin-bottom: 4px;
-  text-shadow: 0 2px 8px rgb(var(--primary-rgb) / 0.3);
 }
 
 .popup-brgy-listings {
-  color: rgba(255,255,255,0.75);
+  color: var(--text-muted);
   font-size: 11.5px;
   font-weight: 500;
   letter-spacing: 0.02em;
