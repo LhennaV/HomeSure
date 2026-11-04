@@ -3,7 +3,7 @@
 .table-scroll::-webkit-scrollbar { height: 4px; }
 .table-scroll::-webkit-scrollbar-track { background: transparent; }
 .table-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
-.table-scroll::-webkit-scrollbar-thumb:hover { background: rgba(0,201,167,0.4); }
+.table-scroll::-webkit-scrollbar-thumb:hover { background: rgb(var(--primary-rgb) / 0.4); }
 
 /* ── Period Dropdown ── */
 .period-dropdown { position: relative; flex-shrink: 0; }
@@ -31,8 +31,8 @@
   padding: 8px 12px; border-radius: 7px; font-size: 13px; font-weight: 500;
   color: var(--muted2); cursor: pointer; transition: background 0.15s, color 0.15s;
 }
-.period-option:hover { background: var(--teal-faint, rgba(0,201,167,0.1)); color: var(--teal); }
-.period-option.active { color: var(--teal); font-weight: 700; background: var(--teal-faint, rgba(0,201,167,0.1)); }
+.period-option:hover { background: var(--teal-faint, rgb(var(--primary-rgb) / 0.1)); color: var(--teal); }
+.period-option.active { color: var(--teal); font-weight: 700; background: var(--teal-faint, rgb(var(--primary-rgb) / 0.1)); }
 
 /* ── Charts Row ── */
 .charts-row {
@@ -82,21 +82,21 @@
   font-size: 10.5px; font-weight: 700; padding: 3px 9px;
   border-radius: 99px; white-space: nowrap;
 }
-.cat-badge.suspicious { background: #f59e0b; color: #fff; }
-.cat-badge.fake       { background: #ef4444; color: #fff; }
-.cat-badge.scam       { background: #dc2626; color: #fff; }
-.cat-badge.misleading { background: #8b5cf6; color: #fff; }
-.cat-badge.duplicate  { background: #3b82f6; color: #fff; }
-.cat-badge.other      { background: #6b7280; color: #fff; }
+.cat-badge.suspicious { background: var(--warning); color: var(--on-primary); }
+.cat-badge.fake       { background: var(--danger); color: var(--on-primary); }
+.cat-badge.scam       { background: var(--danger); color: var(--on-primary); }
+.cat-badge.misleading { background: var(--info); color: var(--on-primary); }
+.cat-badge.duplicate  { background: var(--info); color: var(--on-primary); }
+.cat-badge.other      { background: var(--text-muted); color: var(--text); }
 
 /* ── Status badges override ── */
-.badge.pending   { background: #f59e0b; color: #fff; }
-.badge.resolved  { background: #00c9a7; color: #fff; }
-.badge.dismissed { background: #6b7280; color: #fff; }
+.badge.pending   { background: var(--warning); color: var(--on-primary); }
+.badge.resolved  { background: var(--primary); color: var(--on-primary); }
+.badge.dismissed { background: var(--text-muted); color: var(--text); }
 
 /* ── Action buttons ── */
-.btn-sm.resolve  { background: #00c9a7; color: #fff; }
-.btn-sm.dismiss  { background: #6b7280; color: #fff; }
+.btn-sm.resolve  { background: var(--primary); color: var(--on-primary); }
+.btn-sm.dismiss  { background: var(--text-muted); color: var(--text); }
 
 /* ── Tighter table for reports ── */
 #reportsTable td, .section-card .data-table th { padding: 11px 12px; }
@@ -111,7 +111,4 @@
 
 /* ── Light mode ── */
 [data-theme="light"] {
-  --bg: #f1f5f9; --card: #ffffff; --card2: #f8fafc;
-  --border: rgba(0,0,0,0.08); --text: #1e293b;
-  --muted: rgba(0,0,0,0.42); --muted2: rgba(0,0,0,0.62);
 }

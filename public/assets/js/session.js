@@ -158,7 +158,7 @@ function hsToast(text, kind) {
   el.textContent = text;
   Object.assign(el.style, {
     position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
-    background: kind === 'error' ? '#b91c1c' : '#253347', color: '#f1f5f9',
+    background: kind === 'error' ? 'var(--danger)' : 'var(--surface-soft)', color: kind === 'error' ? 'var(--on-primary)' : 'var(--text)',
     padding: '10px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: '600',
     boxShadow: '0 4px 20px rgba(0,0,0,0.4)', zIndex: '99999', transition: 'opacity 0.4s',
     opacity: '1', fontFamily: "'Plus Jakarta Sans', sans-serif", maxWidth: '90vw',

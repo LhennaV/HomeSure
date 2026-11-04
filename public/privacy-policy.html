@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="assets/img/image.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="assets/js/kasafide-theme.js"></script>
+  <link rel="stylesheet" href="assets/css/kasafide-theme.css" />
   <title>Kasafide – Privacy Policy</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -379,7 +381,7 @@
 
   <script>
     (function () {
-      const saved = localStorage.getItem('hs-theme') || 'dark';
+      const saved = KasafideTheme.get();
       document.body.className = saved;
       updateThemeIcon(saved);
     })();
@@ -394,7 +396,7 @@
 
     function toggleTheme() {
       const next = document.body.classList.contains('light') ? 'dark' : 'light';
-      localStorage.setItem('hs-theme', next);
+      KasafideTheme.set(next);
       document.body.className = next;
       updateThemeIcon(next);
     }

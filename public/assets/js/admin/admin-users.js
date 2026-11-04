@@ -15,7 +15,7 @@
   let activeFilter = 'all';
 
   const avatarColors = {
-    buyer: '#3b82f6', seller: '#8b5cf6',
+    buyer: 'var(--k-avatar-1)', seller: 'var(--k-avatar-3)',
   };
 
   // ── Render Table ─────────────────────────────────────────────────────────────
@@ -38,7 +38,7 @@
 
     tbody.innerHTML = filtered.map(u => {
       const initials  = (((u.firstName || '')[0] || '') + ((u.lastName || '')[0] || '')).toUpperCase() || '?';
-      const avatarBg  = avatarColors[u.role] || '#6b7280';
+      const avatarBg  = avatarColors[u.role] || 'var(--k-avatar-6)';
       const roleBadge = u.role === 'buyer'
         ? `<span class="badge buyer-role">Buyer</span>`
         : `<span class="badge seller-role">Seller</span>`;

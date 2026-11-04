@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="assets/img/image.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="assets/js/kasafide-theme.js"></script>
+  <link rel="stylesheet" href="assets/css/kasafide-theme.css" />
   <title>Kasafide – FAQs</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
@@ -13,15 +15,6 @@
       box-sizing: border-box;
     }
 
-    :root {
-      --bg: #1a1f2e;
-      --card: #252d3d;
-      --text: #e2e8f0;
-      --muted: #94a3b8;
-      --border: rgba(255, 255, 255, 0.1);
-      --teal: #00c9a7;
-      --accent: #6366f1;
-    }
 
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
@@ -32,7 +25,7 @@
 
     /* Header */
     .faq-header {
-      background: #0F766E;
+      background: var(--primary);
       padding: 16px 24px;
       display: flex;
       align-items: center;
@@ -54,16 +47,16 @@
     .faq-logo-text {
       font-size: 17px;
       font-weight: 800;
-      color: #ffffff;
+      color: var(--on-primary);
       letter-spacing: -0.02em;
     }
 
     .faq-back-btn {
       padding: 8px 16px;
-      background: rgba(255, 255, 255, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgb(var(--k-white-rgb) / 0.15);
+      border: 1px solid rgb(var(--k-white-rgb) / 0.3);
       border-radius: 8px;
-      color: #fff;
+      color: var(--on-primary);
       text-decoration: none;
       font-size: 13px;
       font-weight: 600;
@@ -134,7 +127,7 @@
     .faq-search-input:focus {
       outline: none;
       border-color: var(--teal);
-      background: rgba(0, 201, 167, 0.05);
+      background: rgb(var(--primary-rgb) / 0.05);
     }
 
     .faq-search-input::placeholder {
@@ -166,7 +159,7 @@
     .faq-category-btn.active {
       background: var(--teal);
       border-color: var(--teal);
-      color: #fff;
+      color: var(--on-primary);
     }
 
     /* FAQ Items */
@@ -200,7 +193,7 @@
     }
 
     .faq-item:hover {
-      border-color: rgba(0, 201, 167, 0.3);
+      border-color: rgb(var(--primary-rgb) / 0.3);
     }
 
     .faq-question {
@@ -250,7 +243,7 @@
 
     /* Help CTA */
     .faq-help-cta {
-      background: linear-gradient(135deg, var(--teal) 0%, #00a388 100%);
+      background: linear-gradient(135deg, var(--teal) 0%, var(--primary) 100%);
       border-radius: 16px;
       padding: 32px;
       text-align: center;
@@ -260,7 +253,7 @@
     .faq-help-cta-title {
       font-size: 22px;
       font-weight: 700;
-      color: #fff;
+      color: var(--text);
       margin-bottom: 8px;
     }
 
@@ -272,7 +265,7 @@
 
     .faq-help-btn {
       padding: 12px 24px;
-      background: #fff;
+      background: var(--surface);
       color: var(--teal);
       border: none;
       border-radius: 10px;

@@ -153,11 +153,10 @@
       return;
     }
     // Theme-aware colors because we're not savages
-    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-    const gridColor = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
-    const axisColor = isLight ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)';
-    const textColor = isLight ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.55)';
-    const labelColor = isLight ? 'rgba(0,0,0,0.65)' : 'rgba(255,255,255,0.65)';
+    const gridColor = 'rgb(var(--text-rgb) / 0.08)';
+    const axisColor = 'rgb(var(--text-rgb) / 0.2)';
+    const textColor = 'rgb(var(--text-rgb) / 0.72)';
+    const labelColor = 'rgb(var(--text-rgb) / 0.78)';
 
     const rawMax = Math.max(...items.map(i => i[1]), 1);
     const step   = Math.max(1, Math.ceil(rawMax / 4));
@@ -176,8 +175,8 @@
     const yLabels = Array.from({ length: 5 }, (_, i) => {
       const val = step * (4 - i);
       const y   = padT + Math.round(i / 4 * chartH);
-      return `<line x1="${padL}" y1="${y}" x2="${totalW - padR}" y2="${y}" stroke="${gridColor}" stroke-width="1"/>
-        <text x="${padL - 8}" y="${y + 4}" text-anchor="end" font-size="10" fill="${textColor}" font-weight="600" font-family="Plus Jakarta Sans">${val}</text>`;
+      return `<line x1="${padL}" y1="${y}" x2="${totalW - padR}" y2="${y}" style="stroke:${gridColor}" stroke-width="1"/>
+        <text x="${padL - 8}" y="${y + 4}" text-anchor="end" font-size="10" style="fill:${textColor}" font-weight="600" font-family="Plus Jakarta Sans">${val}</text>`;
     }).join('');
     const bars = items.map(([name, val], i) => {
       const barH = Math.max(Math.round(val / max * chartH), 4);
@@ -188,12 +187,12 @@
       // Names longer than the bar's own pitch would overlap their neighbors — trimmed with an
       // ellipsis rather than left to collide, same idea text-overflow would apply in CSS.
       const label = name.length > 9 ? name.slice(0, 8) + '…' : name;
-      return `<path class="hsc-bar" style="--i:${i}" d="${roundedTopBarPath(x, y, barW, barH, 6)}" fill="#00c9a7" opacity="0.95"><title>${name}: ${val} viewing request${val === 1 ? '' : 's'}</title></path>
-        <text class="hsc-label" style="--i:${i}" x="${labelX}" y="${labelY}" text-anchor="middle" font-size="10" fill="${labelColor}" font-weight="600" font-family="Plus Jakarta Sans">${label}</text>`;
+      return `<path class="hsc-bar" style="--i:${i};fill:var(--primary)" d="${roundedTopBarPath(x, y, barW, barH, 6)}" opacity="0.95"><title>${name}: ${val} viewing request${val === 1 ? '' : 's'}</title></path>
+        <text class="hsc-label" style="--i:${i};fill:${labelColor}" x="${labelX}" y="${labelY}" text-anchor="middle" font-size="10" font-weight="600" font-family="Plus Jakarta Sans">${label}</text>`;
     }).join('');
     const axes = `
-      <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + chartH}" stroke="${axisColor}" stroke-width="2"/>
-      <line x1="${padL}" y1="${padT + chartH}" x2="${totalW - padR}" y2="${padT + chartH}" stroke="${axisColor}" stroke-width="2"/>
+      <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + chartH}" style="stroke:${axisColor}" stroke-width="2"/>
+      <line x1="${padL}" y1="${padT + chartH}" x2="${totalW - padR}" y2="${padT + chartH}" style="stroke:${axisColor}" stroke-width="2"/>
     `;
     document.getElementById('demandChart').innerHTML =
       `<svg viewBox="0 0 ${totalW} ${totalH}" style="width:100%;display:block;overflow:visible;padding:4px">${axes}${yLabels}${bars}</svg>`;
@@ -273,11 +272,10 @@
 
   function drawLineChart(data) {
     // Theme detection: are we in vampire mode or not?
-    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-    const gridColor = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
-    const axisColor = isLight ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)';
-    const textColor = isLight ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.55)';
-    const labelColor = isLight ? 'rgba(0,0,0,0.65)' : 'rgba(255,255,255,0.65)';
+    const gridColor = 'rgb(var(--text-rgb) / 0.08)';
+    const axisColor = 'rgb(var(--text-rgb) / 0.2)';
+    const textColor = 'rgb(var(--text-rgb) / 0.72)';
+    const labelColor = 'rgb(var(--text-rgb) / 0.78)';
 
     const { labels, values, title } = data;
     document.getElementById('trendChartTitle').textContent = title;
@@ -298,28 +296,28 @@
     const grid = Array.from({ length: 5 }, (_, i) => {
       const val = minV + step * (4 - i);
       const y   = toY(val);
-      return `<line x1="${pL}" y1="${y}" x2="${W - pR}" y2="${y}" stroke="${gridColor}" stroke-width="1"/>
-        <text x="${pL - 8}" y="${y + 4}" text-anchor="end" font-size="10" fill="${textColor}" font-weight="600" font-family="Plus Jakarta Sans">${val}</text>`;
+      return `<line x1="${pL}" y1="${y}" x2="${W - pR}" y2="${y}" style="stroke:${gridColor}" stroke-width="1"/>
+        <text x="${pL - 8}" y="${y + 4}" text-anchor="end" font-size="10" style="fill:${textColor}" font-weight="600" font-family="Plus Jakarta Sans">${val}</text>`;
     }).join('');
     const xLabels = labels.map((m, i) =>
-      `<text x="${toX(i)}" y="${H - 8}" text-anchor="middle" font-size="10" fill="${labelColor}" font-weight="600" font-family="Plus Jakarta Sans">${m}</text>`
+      `<text x="${toX(i)}" y="${H - 8}" text-anchor="middle" font-size="10" style="fill:${labelColor}" font-weight="600" font-family="Plus Jakarta Sans">${m}</text>`
     ).join('');
     const ptArr    = values.map((v, i) => `${toX(i)},${toY(v)}`);
     const areaPath = `M ${toX(0)},${pT + cH} ` + values.map((v, i) => `L ${toX(i)},${toY(v)}`).join(' ') + ` L ${toX(values.length - 1)},${pT + cH} Z`;
-    const dots     = values.map((v, i) => `<circle class="hsc-dot" style="--i:${i}" cx="${toX(i)}" cy="${toY(v)}" r="4.5" fill="#00c9a7" stroke="var(--card)" stroke-width="2.5"><title>${labels[i]}: ${v} new account${v === 1 ? '' : 's'}</title></circle>`).join('');
+    const dots     = values.map((v, i) => `<circle class="hsc-dot" style="--i:${i};fill:var(--primary);stroke:var(--card)" cx="${toX(i)}" cy="${toY(v)}" r="4.5" stroke-width="2.5"><title>${labels[i]}: ${v} new account${v === 1 ? '' : 's'}</title></circle>`).join('');
     const axes = `
-      <line x1="${pL}" y1="${pT}" x2="${pL}" y2="${pT + cH}" stroke="${axisColor}" stroke-width="2"/>
-      <line x1="${pL}" y1="${pT + cH}" x2="${W - pR}" y2="${pT + cH}" stroke="${axisColor}" stroke-width="2"/>
+      <line x1="${pL}" y1="${pT}" x2="${pL}" y2="${pT + cH}" style="stroke:${axisColor}" stroke-width="2"/>
+      <line x1="${pL}" y1="${pT + cH}" x2="${W - pR}" y2="${pT + cH}" style="stroke:${axisColor}" stroke-width="2"/>
     `;
     document.getElementById('trendsChart').innerHTML = `
       <svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block;overflow:visible;padding:4px">
         <defs><linearGradient id="lineAreaGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#00c9a7" stop-opacity="0.22"/>
-          <stop offset="100%" stop-color="#00c9a7" stop-opacity="0"/>
+          <stop offset="0%" stop-opacity="0.22" style="stop-color:var(--primary)"/>
+          <stop offset="100%" stop-opacity="0" style="stop-color:var(--primary)"/>
         </linearGradient></defs>
         ${axes}${grid}${xLabels}
         <path class="hsc-area" d="${areaPath}" fill="url(#lineAreaGrad)"/>
-        <polyline class="hsc-line" pathLength="1" points="${ptArr.join(' ')}" fill="none" stroke="#00c9a7" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+        <polyline class="hsc-line" pathLength="1" points="${ptArr.join(' ')}" fill="none" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" style="stroke:var(--primary)"/>
         ${dots}
       </svg>`;
   }

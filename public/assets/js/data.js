@@ -16,9 +16,9 @@ const HS = (function () {
   const PLACEHOLDER_IMG =
     'data:image/svg+xml;utf8,' + encodeURIComponent(
       '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">' +
-      '<rect width="800" height="600" fill="#e2e8f0"/>' +
-      '<path d="M400 190l150 120v150H250V310z" fill="#cbd5e1"/>' +
-      '<text x="400" y="520" font-family="sans-serif" font-size="28" text-anchor="middle" fill="#64748b">No photo</text></svg>'
+      '<rect width="800" height="600" fill="#F1E9F7"/>' +
+      '<path d="M400 190l150 120v150H250V310z" fill="#E3D8EE"/>' +
+      '<text x="400" y="520" font-family="sans-serif" font-size="28" text-anchor="middle" fill="#6B5A80">No photo</text></svg>'
     );
 
   // ── Small helpers ───────────────────────────────────────────────────────────

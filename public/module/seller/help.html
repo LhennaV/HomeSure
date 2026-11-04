@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="../../assets/img/image.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <script src="../../assets/js/kasafide-theme.js"></script>
+  <link rel="stylesheet" href="../../assets/css/kasafide-theme.css" />
   <title>Kasafide – Meowrie</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../../assets/css/seller/seller-dashboard.css" />
@@ -14,7 +16,7 @@
     // deliberately renders neither the sidebar nor the topbar (see the redesign note below), so
     // that side effect never happens unless done here directly, and done before first paint so
     // there's no flash of the wrong theme.
-    document.documentElement.setAttribute('data-theme', localStorage.getItem('hs-theme') || 'dark');
+    document.documentElement.setAttribute('data-theme', KasafideTheme.get());
   </script>
   <style>
     /* ═══════════════════════════════════════════════════════════════════════
@@ -89,7 +91,7 @@
     .ios-navbar-avatar {
       width: 34px; height: 34px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #00c9a7, #0F766E);
+      background: linear-gradient(135deg, var(--primary), var(--primary));
       display: flex; align-items: center; justify-content: center;
       margin-bottom: 2px;
       overflow: hidden;
@@ -103,7 +105,7 @@
     }
     .ios-navbar-status .dot {
       width: 6px; height: 6px; border-radius: 50%;
-      background: #30d158;
+      background: var(--success);
       animation: pulse 2s infinite;
     }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
@@ -137,7 +139,7 @@
       transition: background 0.15s, transform 0.1s;
     }
     .chatbot-quick-btn:active { transform: scale(0.96); }
-    .chatbot-quick-btn:hover { background: var(--teal-faint, rgba(0,201,167,0.12)); }
+    .chatbot-quick-btn:hover { background: var(--teal-faint, rgb(var(--primary-rgb) / 0.12)); }
 
     /* ── iOS Messages-style input bar ── */
     .ios-input-bar {
@@ -181,7 +183,7 @@
       transition: transform 0.12s, opacity 0.15s;
     }
     .ios-send-btn:active { transform: scale(0.9); }
-    .ios-send-btn svg { width: 17px; height: 17px; color: #fff; }
+    .ios-send-btn svg { width: 17px; height: 17px; color: var(--text); }
 
     /* ── Message bubbles (kept — already close to iMessage) ── */
     .chatbot-message { margin-bottom: 10px; display: flex; animation: slideUp 0.25s ease; }
@@ -203,7 +205,7 @@
     }
     .chatbot-message.user .chatbot-message-bubble {
       background: var(--teal);
-      color: #fff;
+      color: var(--on-primary);
       border-bottom-right-radius: 5px;
     }
 

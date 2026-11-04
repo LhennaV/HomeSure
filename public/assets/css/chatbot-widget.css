@@ -11,13 +11,13 @@
   right: 24px;
   width: 60px;
   height: 60px;
-  background: linear-gradient(135deg, #00c9a7 0%, #00a388 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 20px rgba(0, 201, 167, 0.4);
+  box-shadow: 0 4px 20px rgb(var(--primary-rgb) / 0.4);
   transition: all 0.3s ease;
   z-index: 9998;
   animation: bubblePulse 2s ease-in-out infinite;
@@ -25,7 +25,7 @@
 
 .chatbot-bubble:hover {
   transform: scale(1.1);
-  box-shadow: 0 6px 25px rgba(0, 201, 167, 0.6);
+  box-shadow: 0 6px 25px rgb(var(--primary-rgb) / 0.6);
 }
 
 .chatbot-bubble.hidden {
@@ -35,7 +35,7 @@
 .chatbot-bubble svg {
   width: 28px;
   height: 28px;
-  color: #fff;
+  color: var(--text);
 }
 
 .chatbot-bubble-badge {
@@ -44,20 +44,20 @@
   right: -4px;
   width: 20px;
   height: 20px;
-  background: #ef4444;
+  background: var(--danger);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 11px;
   font-weight: 700;
-  color: #fff;
-  border: 2px solid #fff;
+  color: var(--on-primary);
+  border: 2px solid var(--surface);
 }
 
 @keyframes bubblePulse {
-  0%, 100% { box-shadow: 0 4px 20px rgba(0, 201, 167, 0.4); }
-  50% { box-shadow: 0 4px 30px rgba(0, 201, 167, 0.7); }
+  0%, 100% { box-shadow: 0 4px 20px rgb(var(--primary-rgb) / 0.4); }
+  50% { box-shadow: 0 4px 30px rgb(var(--primary-rgb) / 0.7); }
 }
 
 /* ─── Chat Window ───────────────────────────────────────────────────────── */
@@ -96,7 +96,7 @@
 /* ─── Header ────────────────────────────────────────────────────────────── */
 
 .chatbot-header {
-  background: linear-gradient(135deg, #00c9a7 0%, #00a388 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%);
   padding: 16px 20px;
   display: flex;
   align-items: center;
@@ -109,7 +109,7 @@
   height: 40px;
   /* Was 20% opacity — fine for a plain white stroke icon, but the new logo is teal-gradient on a
      teal header, so it barely showed up against it. Solid white gives it something to stand on. */
-  background: #fff;
+  background: var(--surface);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -121,7 +121,7 @@
 .chatbot-avatar img {
   width: 28px;
   height: 28px;
-  color: #fff;
+  color: var(--text);
   display: block;
 }
 
@@ -132,7 +132,7 @@
 .chatbot-header-title {
   font-size: 15px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text);
   margin-bottom: 2px;
 }
 
@@ -147,7 +147,7 @@
 .chatbot-status-dot {
   width: 6px;
   height: 6px;
-  background: #4ade80;
+  background: var(--success);
   border-radius: 50%;
   animation: pulse 2s ease-in-out infinite;
 }
@@ -178,7 +178,7 @@
 .chatbot-close svg {
   width: 18px;
   height: 18px;
-  color: #fff;
+  color: var(--text);
 }
 
 /* ─── Messages Area ─────────────────────────────────────────────────────── */
@@ -248,13 +248,13 @@
 }
 
 .chatbot-message.bot .chatbot-message-avatar {
-  background: rgba(0, 201, 167, 0.15);
+  background: rgb(var(--primary-rgb) / 0.15);
   color: var(--teal);
 }
 
 .chatbot-message.user .chatbot-message-avatar {
-  background: rgba(99, 102, 241, 0.15);
-  color: #6366f1;
+  background: rgb(var(--info-rgb) / 0.15);
+  color: var(--info);
 }
 
 .chatbot-message-bubble {
@@ -273,8 +273,8 @@
 }
 
 .chatbot-message.user .chatbot-message-bubble {
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-  color: #fff;
+  background: linear-gradient(135deg, var(--info) 0%, var(--info) 100%);
+  color: var(--text);
   border-bottom-right-radius: 4px;
 }
 
@@ -341,15 +341,15 @@
 .chatbot-quick-btn:hover {
   background: var(--teal);
   border-color: var(--teal);
-  color: #fff;
+  color: var(--on-primary);
   transform: translateY(-1px);
 }
 
 /* ─── Escalation Card ───────────────────────────────────────────────────── */
 
 .chatbot-escalation {
-  background: rgba(251, 191, 36, 0.1);
-  border: 1px solid rgba(251, 191, 36, 0.3);
+  background: rgb(var(--warning-rgb) / 0.1);
+  border: 1px solid rgb(var(--warning-rgb) / 0.3);
   border-radius: 10px;
   padding: 12px;
   margin-top: 8px;
@@ -364,12 +364,12 @@
 .chatbot-escalation-btn {
   width: 100%;
   padding: 8px 14px;
-  background: #fbbf24;
+  background: var(--warning);
   border: none;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--on-primary);
   cursor: pointer;
   transition: all 0.2s;
   font-family: inherit;
@@ -380,7 +380,7 @@
 }
 
 .chatbot-escalation-btn:hover {
-  background: #f59e0b;
+  background: var(--warning);
   transform: translateY(-1px);
 }
 
@@ -449,7 +449,7 @@
 }
 
 .chatbot-send-btn:hover {
-  background: #00b396;
+  background: var(--primary-hover);
   transform: translateY(-1px);
 }
 
@@ -462,7 +462,7 @@
 .chatbot-send-btn svg {
   width: 18px;
   height: 18px;
-  color: #fff;
+  color: var(--text);
 }
 
 /* ─── Responsive ────────────────────────────────────────────────────────── */

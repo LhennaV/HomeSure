@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="../../assets/img/image.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="../../assets/js/kasafide-theme.js"></script>
+  <link rel="stylesheet" href="../../assets/css/kasafide-theme.css" />
   <title>Kasafide – My Reviews</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../../assets/css/buyer/buyer-dashboard.css" />
@@ -23,7 +25,7 @@
     }
 
     .stat-card {
-      background: linear-gradient(135deg, #253347 0%, #1E293B 100%);
+      background: linear-gradient(135deg, var(--surface-soft) 0%, var(--surface) 100%);
       border: 1.5px solid rgba(255,255,255,0.08);
       border-radius: 16px;
       padding: 24px;
@@ -31,7 +33,7 @@
     }
 
     .stat-card:hover {
-      border-color: rgba(0,201,167,0.3);
+      border-color: rgb(var(--primary-rgb) / 0.3);
       transform: translateY(-4px);
     }
 
@@ -47,12 +49,12 @@
     .stat-value {
       font-size: 32px;
       font-weight: 800;
-      color: #f1f5f9;
+      color: var(--text);
       margin-bottom: 4px;
     }
 
     .stat-value.teal {
-      background: linear-gradient(135deg, #00c9a7, #00a88a);
+      background: linear-gradient(135deg, var(--primary), var(--primary));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -67,7 +69,7 @@
     .stat-stars svg {
       width: 18px;
       height: 18px;
-      fill: #fbbf24;
+      fill: var(--warning);
     }
 
     .stat-subtext {
@@ -98,14 +100,14 @@
     }
 
     .filter-tab:hover {
-      border-color: rgba(0,201,167,0.3);
+      border-color: rgb(var(--primary-rgb) / 0.3);
       color: rgba(255,255,255,0.8);
     }
 
     .filter-tab.active {
-      background: linear-gradient(135deg, #00c9a7, #00a88a);
-      border-color: #00c9a7;
-      color: white;
+      background: linear-gradient(135deg, var(--primary), var(--primary));
+      border-color: var(--primary);
+      color: var(--on-primary);
     }
 
     /* Reviews List */
@@ -116,7 +118,7 @@
     }
 
     .review-card {
-      background: #253347;
+      background: var(--surface-soft);
       border: 1.5px solid rgba(255,255,255,0.08);
       border-radius: 16px;
       padding: 24px;
@@ -124,7 +126,7 @@
     }
 
     .review-card:hover {
-      border-color: rgba(0,201,167,0.2);
+      border-color: rgb(var(--primary-rgb) / 0.2);
     }
 
     .review-header {
@@ -138,7 +140,7 @@
       height: 48px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid rgba(0,201,167,0.3);
+      border: 2px solid rgb(var(--primary-rgb) / 0.3);
     }
 
     .review-user-info {
@@ -148,7 +150,7 @@
     .review-user-name {
       font-size: 15px;
       font-weight: 700;
-      color: #f1f5f9;
+      color: var(--text);
       margin-bottom: 4px;
       display: flex;
       align-items: center;
@@ -158,7 +160,7 @@
     .verified-badge {
       width: 16px;
       height: 16px;
-      background: #00c9a7;
+      background: var(--primary);
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -181,7 +183,7 @@
     .review-stars svg {
       width: 14px;
       height: 14px;
-      fill: #fbbf24;
+      fill: var(--warning);
     }
 
     .review-date {
@@ -201,12 +203,12 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(0,201,167,0.08);
-      border: 1px solid rgba(0,201,167,0.2);
+      background: rgb(var(--primary-rgb) / 0.08);
+      border: 1px solid rgb(var(--primary-rgb) / 0.2);
       border-radius: 8px;
       padding: 6px 12px;
       font-size: 12px;
-      color: #00c9a7;
+      color: var(--primary);
       font-weight: 700;
     }
 

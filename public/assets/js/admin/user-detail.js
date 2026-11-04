@@ -38,7 +38,7 @@
   const listingsCount = u.role === 'seller'
     ? (await HS.listings.bySeller(u.id).catch(() => [])).length
     : await HS.admin.savedCount(u.id).catch(() => 0);
-  const avatarColor = u.role === 'buyer' ? '#3b82f6' : '#8b5cf6';
+  const avatarColor = u.role === 'buyer' ? 'var(--k-avatar-1)' : 'var(--k-avatar-3)';
   const roleLabel   = u.role === 'buyer' ? 'Buyer' : 'Seller';
   const statusLabel = u.accountStatus
     ? u.accountStatus.charAt(0).toUpperCase() + u.accountStatus.slice(1)

@@ -4,6 +4,6 @@
 ───────────────────────────────────────────────────────────────────────────── */
 
 /* Seller card value accent */
-.card-value { color: #00c9a7; }
+.card-value { color: var(--primary); }
 
 /* Add seller-specific module styles below as modules are built */

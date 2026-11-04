@@ -35,28 +35,28 @@
       let expiryBanner = '';
       if (isExpired) {
         expiryBanner = `
-          <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.3);border-radius:10px;padding:14px 16px;margin:0 22px 0;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <div style="display:flex;align-items:flex-start;gap:12px;background:rgb(var(--danger-rgb) / 0.08);border:1px solid rgb(var(--danger-rgb) / 0.3);border-radius:10px;padding:14px 16px;margin:0 22px 0;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;stroke:var(--danger)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             <div style="flex:1">
-              <div style="font-size:13px;font-weight:700;color:#f87171;margin-bottom:3px;">Verification Expired</div>
+              <div style="font-size:13px;font-weight:700;color:var(--danger);margin-bottom:3px;">Verification Expired</div>
               <div style="font-size:12px;color:var(--muted2);line-height:1.5;">Your verification expired on <strong>${expiryFormatted}</strong>. Your listings have been paused. Please re-verify to continue publishing.</div>
             </div>
-            <a href="verification.html?reverify=true" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;background:#f87171;color:#fff;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0;">Re-verify Now</a>
+            <a href="verification.html?reverify=true" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;background:var(--danger);color:var(--on-primary);font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0;">Re-verify Now</a>
           </div>`;
       } else if (isNearExpiry) {
         expiryBanner = `
-          <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.3);border-radius:10px;padding:14px 16px;margin:0 22px 0;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <div style="display:flex;align-items:flex-start;gap:12px;background:rgb(var(--warning-rgb) / 0.08);border:1px solid rgb(var(--warning-rgb) / 0.3);border-radius:10px;padding:14px 16px;margin:0 22px 0;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;stroke:var(--warning)"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             <div style="flex:1">
-              <div style="font-size:13px;font-weight:700;color:#fbbf24;margin-bottom:3px;">Verification Expiring Soon</div>
+              <div style="font-size:13px;font-weight:700;color:var(--warning);margin-bottom:3px;">Verification Expiring Soon</div>
               <div style="font-size:12px;color:var(--muted2);line-height:1.5;">Your verification expires in <strong>${daysLeft} day${daysLeft !== 1 ? 's' : ''}</strong> on <strong>${expiryFormatted}</strong>. Re-verify before it expires to avoid listing interruptions.</div>
             </div>
-            <a href="verification.html?reverify=true" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.4);color:#fbbf24;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0;">Re-verify</a>
+            <a href="verification.html?reverify=true" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;background:rgb(var(--warning-rgb) / 0.15);border:1px solid rgb(var(--warning-rgb) / 0.4);color:var(--warning);font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0;">Re-verify</a>
           </div>`;
       } else {
         expiryBanner = `
-          <div style="display:flex;align-items:center;gap:10px;background:rgba(0,201,167,0.06);border:1px solid rgba(0,201,167,0.18);border-radius:10px;padding:12px 16px;margin:0 22px 0;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <div style="display:flex;align-items:center;gap:10px;background:rgb(var(--primary-rgb) / 0.06);border:1px solid rgb(var(--primary-rgb) / 0.18);border-radius:10px;padding:12px 16px;margin:0 22px 0;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="stroke:var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             <span style="font-size:12px;color:var(--muted2);">Verification valid until <strong style="color:var(--teal)">${expiryFormatted}</strong>${daysLeft ? ' · ' + daysLeft + ' days remaining' : ''}</span>
           </div>`;
       }

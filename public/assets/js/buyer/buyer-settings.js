@@ -314,12 +314,12 @@
 
   // ── Theme Toggle ─────────────────────────────────────────────────────────
   function getTheme() {
-    return localStorage.getItem('hs-theme') || 'dark';
+    return KasafideTheme.get();
   }
 
   function applyTheme(mode) {
     document.documentElement.setAttribute('data-theme', mode);
-    localStorage.setItem('hs-theme', mode);
+    KasafideTheme.set(mode);
     updateThemeButtons(mode);
   }
 

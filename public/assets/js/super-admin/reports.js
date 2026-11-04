@@ -109,10 +109,9 @@
   // ────────────────────────────────────────────────────────────────────────
   function renderUserGrowthChart(period) {
     // Check if user is in "I hate my eyes" mode (light theme)
-    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-    const gridColor = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
-    const axisColor = isLight ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)';
-    const labelColor = isLight ? 'rgba(0,0,0,0.38)' : 'rgba(255,255,255,0.38)';
+    const gridColor = 'rgb(var(--text-rgb) / 0.05)';
+    const axisColor = 'rgb(var(--text-rgb) / 0.2)';
+    const labelColor = 'rgb(var(--text-rgb) / 0.78)';
 
     const { labels, values, sub } = growthData[period];
     document.getElementById('userGrowthSub').textContent = sub;
@@ -127,24 +126,24 @@
     const areaPath = `${linePath} L${xs[xs.length-1]},${H-padB} L${xs[0]},${H-padB} Z`;
     const yGrids   = [0,0.25,0.5,0.75,1].map(p => ({ y: padT + (1-p)*(H-padT-padB), v: Math.round(p * maxVal) }));
     const gridLines = yGrids.map(({ y, v }) =>
-      `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="${gridColor}" stroke-width="1"/>
-       <text x="${padL - 7}" y="${y + 3.5}" text-anchor="end" fill="${labelColor}" font-size="9.5" font-weight="600" font-family="Plus Jakarta Sans">${v}</text>`).join('');
-    const xLabels   = labels.map((m, i) => `<text x="${xs[i]}" y="${H-4}" text-anchor="middle" fill="${labelColor}" font-size="10" font-family="Plus Jakarta Sans">${m}</text>`).join('');
-    const dots      = xs.map((x, i) => `<circle class="hsc-dot" style="--i:${i}" cx="${x}" cy="${ys[i]}" r="4" fill="#00c9a7" stroke="var(--card)" stroke-width="2"><title>${labels[i]}: ${values[i]} new account${values[i] === 1 ? '' : 's'}</title></circle>`).join('');
+      `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" style="stroke:${gridColor}" stroke-width="1"/>
+       <text x="${padL - 7}" y="${y + 3.5}" text-anchor="end" style="fill:${labelColor}" font-size="9.5" font-weight="600" font-family="Plus Jakarta Sans">${v}</text>`).join('');
+    const xLabels   = labels.map((m, i) => `<text x="${xs[i]}" y="${H-4}" text-anchor="middle" style="fill:${labelColor}" font-size="10" font-family="Plus Jakarta Sans">${m}</text>`).join('');
+    const dots      = xs.map((x, i) => `<circle class="hsc-dot" style="--i:${i};fill:var(--primary);stroke:var(--card)" cx="${x}" cy="${ys[i]}" r="4" stroke-width="2"><title>${labels[i]}: ${values[i]} new account${values[i] === 1 ? '' : 's'}</title></circle>`).join('');
     const chartH = H - padT - padB;
     const axes = `
-      <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + chartH}" stroke="${axisColor}" stroke-width="2"/>
-      <line x1="${padL}" y1="${padT + chartH}" x2="${W - padR}" y2="${padT + chartH}" stroke="${axisColor}" stroke-width="2"/>
+      <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + chartH}" style="stroke:${axisColor}" stroke-width="2"/>
+      <line x1="${padL}" y1="${padT + chartH}" x2="${W - padR}" y2="${padT + chartH}" style="stroke:${axisColor}" stroke-width="2"/>
     `;
     document.getElementById('userGrowthChart').setAttribute('viewBox', `0 0 ${W} ${H}`);
     document.getElementById('userGrowthChart').innerHTML = `
       <defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#00c9a7" stop-opacity="0.25"/>
-        <stop offset="100%" stop-color="#00c9a7" stop-opacity="0"/>
+        <stop offset="0%" stop-opacity="0.25" style="stop-color:var(--primary)"/>
+        <stop offset="100%" stop-opacity="0" style="stop-color:var(--primary)"/>
       </linearGradient></defs>
       ${axes}${gridLines}
       <path class="hsc-area" d="${areaPath}" fill="url(#areaGrad)"/>
-      <path class="hsc-line" pathLength="1" d="${linePath}" fill="none" stroke="#00c9a7" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+      <path class="hsc-line" pathLength="1" d="${linePath}" fill="none" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" style="stroke:var(--primary)"/>
       ${dots}${xLabels}`;
   }
 
@@ -187,8 +186,8 @@
       // hsc-seg sweeps each segment in from nothing to its length, one after another
       // (chart-anim.css); the dasharray attribute is what stays if animation is off.
       const el   = dash > 0 ? `<circle class="hsc-seg" cx="${cx}" cy="${cy}" r="${R}"
-        style="--i:${shown};--dash:${dash}px;--gap:${gap}px;--circ:${circ}px"
-        fill="none" stroke="${s.color}" stroke-width="${stroke}"
+        style="--i:${shown};--dash:${dash}px;--gap:${gap}px;--circ:${circ}px;stroke:${s.color}"
+        fill="none" stroke-width="${stroke}"
         stroke-dasharray="${dash} ${gap}"
         stroke-dashoffset="${-offset}"
         transform="rotate(-90 ${cx} ${cy})" />` : '';
@@ -206,9 +205,9 @@
   function renderListingBreakdown(period) {
     const d    = listingPeriodData[period];
     const segs = [
-      { label: 'Approved', count: d.approved, color: '#00c9a7' },
-      { label: 'Pending',  count: d.pending,  color: '#f59e0b' },
-      { label: 'Rejected', count: d.rejected, color: '#ef4444' },
+      { label: 'Approved', count: d.approved, color: 'var(--primary)' },
+      { label: 'Pending',  count: d.pending,  color: 'var(--warning)' },
+      { label: 'Rejected', count: d.rejected, color: 'var(--danger)' },
     ];
     const t = d.approved + d.pending + d.rejected;
     document.getElementById('listingBreakdownSub').textContent = d.sub;

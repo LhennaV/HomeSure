@@ -42,7 +42,7 @@
     return ((parts[0] || '?')[0] + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase();
   }
 
-  const AVATAR_COLORS = ['#0f766e', '#7c3aed', '#b45309', '#be185d', '#0369a1', '#166534'];
+  const AVATAR_COLORS = ['var(--k-avatar-1)', 'var(--k-avatar-3)', 'var(--k-avatar-2)', 'var(--k-avatar-4)', 'var(--k-avatar-6)', 'var(--k-avatar-5)'];
   function avatarColor(seed) {
     let h = 0;
     for (const c of String(seed || '')) h = (h * 31 + c.charCodeAt(0)) >>> 0;

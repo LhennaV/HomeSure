@@ -53,7 +53,7 @@
       // A confirmed payment indicates the property is probably occupied
       const hasConfirmedPayment = paidIds.has(l.id);
       const paymentBadge = hasConfirmedPayment
-        ? `<span style="display:inline-block;background:rgba(251,191,36,0.15);color:#f59e0b;border:1px solid rgba(251,191,36,0.3);padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;margin-left:6px;" title="This listing has confirmed payments - likely occupied">💰 PAYMENT CONFIRMED</span>`
+        ? `<span style="display:inline-block;background:rgb(var(--warning-rgb) / 0.15);color:var(--warning);border:1px solid rgb(var(--warning-rgb) / 0.3);padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;margin-left:6px;" title="This listing has confirmed payments - likely occupied">💰 PAYMENT CONFIRMED</span>`
         : '';
 
       const approveBtn = l.status !== 'approved'
@@ -63,7 +63,7 @@
         ? `<button class="btn-sm reject" onclick="openRejectModal('${l.id}')">Reject</button>`
         : `<button class="btn-sm reject" disabled style="opacity:0.3;cursor:not-allowed">Reject</button>`;
       const closeBtn = l.status === 'approved'
-        ? `<button class="btn-sm" style="background:#f59e0b;border-color:#f59e0b;" onclick="openAdminCloseListing('${l.id}','${l.title.replace(/'/g, "\\'")}','${sellerName}')">Close</button>`
+        ? `<button class="btn-sm" style="background:var(--warning);border-color:var(--warning);" onclick="openAdminCloseListing('${l.id}','${l.title.replace(/'/g, "\\'")}','${sellerName}')">Close</button>`
         : '';
       const eyeBtn = `<button class="btn-sm btn-icon" onclick="window.location.href='listing-detail.html?id=${l.id}'" title="View">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>

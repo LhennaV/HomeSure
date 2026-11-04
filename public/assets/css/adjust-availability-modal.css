@@ -56,7 +56,7 @@
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: rgba(139, 92, 246, 0.15);
+  background: rgb(var(--info-rgb) / 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -66,7 +66,7 @@
 .adjust-avail-icon svg {
   width: 22px;
   height: 22px;
-  color: #a78bfa;
+  color: var(--info);
 }
 
 .adjust-avail-title {
@@ -149,7 +149,7 @@
 
 .adjust-avail-input:focus {
   outline: none;
-  border-color: rgba(139, 92, 246, 0.5);
+  border-color: rgb(var(--info-rgb) / 0.5);
   background: rgba(0, 0, 0, 0.3);
 }
 
@@ -170,8 +170,8 @@
 }
 
 .adjust-avail-notice {
-  background: rgba(59, 130, 246, 0.08);
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  background: rgb(var(--info-rgb) / 0.08);
+  border: 1px solid rgb(var(--info-rgb) / 0.2);
   border-radius: 8px;
   padding: 10px 12px;
   display: flex;
@@ -184,7 +184,7 @@
 .adjust-avail-notice svg {
   width: 18px;
   height: 18px;
-  color: #60a5fa;
+  color: var(--info);
   flex-shrink: 0;
   margin-top: 1px;
 }
@@ -219,14 +219,14 @@
 }
 
 .adjust-avail-btn-confirm {
-  background: #a78bfa;
-  color: #fff;
+  background: var(--info);
+  color: var(--on-primary);
 }
 
 .adjust-avail-btn-confirm:hover {
-  background: #9370ef;
+  background: var(--info);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 4px 12px rgb(var(--info-rgb) / 0.4);
 }
 
 .adjust-avail-btn-confirm:disabled {
@@ -242,7 +242,7 @@
   height: 60px;
   margin: 0 auto 16px;
   border-radius: 50%;
-  background: rgba(0, 201, 167, 0.15);
+  background: rgb(var(--primary-rgb) / 0.15);
   display: flex;
   align-items: center;
   justify-content: center;

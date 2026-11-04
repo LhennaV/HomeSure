@@ -68,17 +68,17 @@ const features = [
   {
     title: "Verified Sellers",
     desc: "All property owners undergo identity verification with government ID and selfie before publishing listings.",
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
   },
   {
     title: "Local Focus",
     desc: "Find properties by barangay within Sta. Maria, Bulacan with easy filtering options.",
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
   },
   {
     title: "Direct Messaging",
     desc: "Connect directly with verified sellers through our secure in-platform messaging system.",
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
   },
 ];
 
@@ -96,14 +96,14 @@ const statsData = [
 
 // ── Theme init (read localStorage, default dark) ──────────────────────────────
 (function () {
-  const t = localStorage.getItem('hs-theme') || 'dark';
+  const t = KasafideTheme.get();
   document.documentElement.setAttribute('data-theme', t);
 })();
 
 // ── SVG Helpers ───────────────────────────────────────────────────────────────
 
-const pinIcon = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b8fa0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
-const checkIcon = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+const pinIcon = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--text-muted)"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
+const checkIcon = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" style="stroke:var(--on-primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 const chevronLeft = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
 const chevronRight = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
 const searchIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
@@ -501,7 +501,7 @@ function Navbar() {
   function toggleTheme() {
     const next = theme === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('hs-theme', next);
+    KasafideTheme.set(next);
     setTheme(next);
   }
 
@@ -673,21 +673,21 @@ function FeatureHighlights() {
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
       title: 'Admin-Verified Listings',
       desc: 'Every listing reviewed before publishing',
-      color: '#00c9a7',
+      color: 'var(--primary)',
       badge: 'VERIFIED'
     },
     {
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3v-8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>`,
       title: 'Secure In-Chat Payments',
       desc: 'Agree on price and send payment requests within the chat',
-      color: '#3b82f6',
+      color: 'var(--accent)',
       badge: 'SECURE'
     },
     {
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>`,
       title: 'Anti-Fraud Protection',
       desc: 'Government ID verification for all sellers',
-      color: '#f59e0b',
+      color: 'var(--warning)',
       badge: 'PROTECTED'
     },
   ];
@@ -1286,10 +1286,10 @@ function HowItWorks() {
           React.createElement(
             'linearGradient',
             { id: 'tl-spine-fade', x1: '0', y1: '0', x2: '0', y2: '1' },
-            React.createElement('stop', { offset: '0', stopColor: 'rgba(0,201,167,0)' }),
-            React.createElement('stop', { offset: '0.09', stopColor: 'rgba(0,201,167,0.34)' }),
-            React.createElement('stop', { offset: '0.91', stopColor: 'rgba(0,201,167,0.34)' }),
-            React.createElement('stop', { offset: '1', stopColor: 'rgba(0,201,167,0)' }),
+            React.createElement('stop', { offset: '0', style: { stopColor: 'rgb(var(--primary-rgb) / 0)' } }),
+            React.createElement('stop', { offset: '0.09', style: { stopColor: 'rgb(var(--primary-rgb) / 0.34)' } }),
+            React.createElement('stop', { offset: '0.91', style: { stopColor: 'rgb(var(--primary-rgb) / 0.34)' } }),
+            React.createElement('stop', { offset: '1', style: { stopColor: 'rgb(var(--primary-rgb) / 0)' } }),
           ),
         ),
         React.createElement('path', { className: 'tl-spine-path', ref: pathRef, fill: 'none' }),

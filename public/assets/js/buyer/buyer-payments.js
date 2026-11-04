@@ -154,7 +154,7 @@
           <div class="pay-card-meta">
             <div class="pay-card-item">
               <span class="pay-card-item-label">Type</span>
-              <span class="pay-card-item-value" style="font-weight:700;color:#00c9a7;">${formatPaymentType(p.paymentType)}</span>
+              <span class="pay-card-item-value" style="font-weight:700;color:var(--primary);">${formatPaymentType(p.paymentType)}</span>
             </div>
             <div class="pay-card-item">
               <span class="pay-card-item-label">Period</span>
@@ -174,7 +174,7 @@
             </div>
           </div>
           ${p.status === 'rejected' && p.rejectionReason
-            ? `<div class="pay-card-item-label" style="margin-top:8px;color:#b91c1c;">
+            ? `<div class="pay-card-item-label" style="margin-top:8px;color:var(--danger);">
                  Your landlord rejected this: ${esc(p.rejectionReason)}
                </div>`
             : ''}
@@ -213,7 +213,7 @@
           <div class="pay-card-meta">
             <div class="pay-card-item">
               <span class="pay-card-item-label">Type</span>
-              <span class="pay-card-item-value" style="font-weight:700;color:#00c9a7;">${formatPaymentType(p.paymentType)}</span>
+              <span class="pay-card-item-value" style="font-weight:700;color:var(--primary);">${formatPaymentType(p.paymentType)}</span>
             </div>
             <div class="pay-card-item">
               <span class="pay-card-item-label">Period</span>

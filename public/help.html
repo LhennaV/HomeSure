@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="assets/img/image.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="assets/js/kasafide-theme.js"></script>
+  <link rel="stylesheet" href="assets/css/kasafide-theme.css" />
   <title>Kasafide – Help & Support</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/chatbot-widget.css" />
@@ -15,13 +17,6 @@
     }
 
     :root {
-      --bg: #1a1f2e;
-      --card: #252d3d;
-      --text: #e2e8f0;
-      --muted: #94a3b8;
-      --muted2: #cbd5e1;
-      --border: rgba(255, 255, 255, 0.1);
-      --teal: #00c9a7;
     }
 
     body {
@@ -35,7 +30,7 @@
 
     /* Header */
     .help-header {
-      background: #0F766E;
+      background: var(--primary);
       padding: 16px 24px;
       display: flex;
       align-items: center;
@@ -57,16 +52,16 @@
     .help-logo-text {
       font-size: 17px;
       font-weight: 800;
-      color: #ffffff;
+      color: var(--on-primary);
       letter-spacing: -0.02em;
     }
 
     .help-back-btn {
       padding: 8px 16px;
-      background: rgba(255, 255, 255, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgb(var(--k-white-rgb) / 0.15);
+      border: 1px solid rgb(var(--k-white-rgb) / 0.3);
       border-radius: 8px;
-      color: #fff;
+      color: var(--on-primary);
       text-decoration: none;
       font-size: 13px;
       font-weight: 600;

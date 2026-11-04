@@ -57,7 +57,7 @@ function notifRow(n) {
   return `
     <div class="notif-item ${n.unread ? 'unread' : ''}" onclick="markRead('${n.id}')">
       <div class="notif-avatar-wrap">
-        <div class="notif-avatar" style="background:#0F766E">HS</div>
+        <div class="notif-avatar" style="background:var(--primary)">HS</div>
         <div class="notif-badge ${badge.cls}">${badge.icon}</div>
       </div>
       <div class="notif-content">
