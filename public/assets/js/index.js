@@ -516,6 +516,10 @@ function Navbar() {
     React.createElement(
       "a",
       { className: "nav-logo", href: "#" },
+      React.createElement("span", { className: "nav-catstone-wrap" },
+        React.createElement("img", { src: "assets/img/CatsTone Logo.svg", alt: "CatsTone", className: "nav-catstone-img" }),
+      ),
+      React.createElement("span", { className: "nav-logo-divider" }),
       logoMark(32),
       React.createElement("span", { style: { display: "inline-block" } }, "Kasafide"),
     ),

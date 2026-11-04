@@ -492,6 +492,10 @@ function Navbar() {
   return (
     <nav>
       <Link className="nav-logo" href="/">
+        <span className="nav-catstone-wrap">
+          <Image src="/assets/img/CatsTone Logo.svg" alt="CatsTone" width={28} height={28} className="nav-catstone-img" priority />
+        </span>
+        <span className="nav-logo-divider" />
         <Image src="/assets/img/kasafide-logo.svg" alt="Kasafide logo" width={30} height={30} className="img-logo" style={{ display: "block" }} priority />
         <span>Kasafide</span>
       </Link>

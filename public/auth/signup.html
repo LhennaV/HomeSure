@@ -42,7 +42,7 @@
       <p>Every seller is ID-checked and every listing is reviewed before it ever reaches browse.</p>
     </div>
 
-    <div class="auth-card">
+    <div class="auth-card auth-card--wide">
       <a class="auth-card-brand" href="../index.html">
         <span class="kf-logo" data-size="28" role="img" aria-label="Kasafide logo"></span>
         Kasafide
@@ -75,39 +75,43 @@
           </div>
         </div>
 
-        <div class="field-group">
-          <label class="field-label">Email</label>
-          <input class="field-input full" type="email" placeholder="Enter your email" />
-        </div>
+        <div class="field-pair">
+          <div class="field-group">
+            <label class="field-label">Email</label>
+            <input class="field-input full" type="email" placeholder="Enter your email" />
+          </div>
 
-        <div class="field-group">
-          <label class="field-label">Phone Number</label>
-          <div class="phone-input">
-            <span class="phone-prefix">+63</span>
-            <input class="field-input" type="tel" id="phoneLocal" inputmode="numeric" maxlength="10" placeholder="9000000000" />
+          <div class="field-group">
+            <label class="field-label">Phone Number</label>
+            <div class="phone-input">
+              <span class="phone-prefix">+63</span>
+              <input class="field-input" type="tel" id="phoneLocal" inputmode="numeric" maxlength="10" placeholder="9000000000" />
+            </div>
           </div>
         </div>
 
-        <div class="field-group">
-          <label class="field-label">Password</label>
-          <div class="input-eye">
-            <input class="field-input full" type="password" id="pw1" placeholder="Create a strong password" />
-            <button class="eye-btn" onclick="togglePw('pw1', this)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            </button>
+        <div class="field-pair">
+          <div class="field-group">
+            <label class="field-label">Password</label>
+            <div class="input-eye">
+              <input class="field-input full" type="password" id="pw1" placeholder="Create password" />
+              <button class="eye-btn" onclick="togglePw('pw1', this)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
           </div>
-          <span class="field-hint">Must be at least 8 characters long.</span>
-        </div>
 
-        <div class="field-group">
-          <label class="field-label">Confirm Password</label>
-          <div class="input-eye">
-            <input class="field-input full" type="password" id="pw2" placeholder="Create a strong password" />
-            <button class="eye-btn" onclick="togglePw('pw2', this)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            </button>
+          <div class="field-group">
+            <label class="field-label">Confirm Password</label>
+            <div class="input-eye">
+              <input class="field-input full" type="password" id="pw2" placeholder="Re-enter password" />
+              <button class="eye-btn" onclick="togglePw('pw2', this)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
           </div>
         </div>
+        <span class="field-hint field-hint--pair">Must be at least 8 characters long.</span>
 
         <label class="agree-check">
           <input type="checkbox" id="agreeCheck" onchange="toggleSignupBtn()" />
