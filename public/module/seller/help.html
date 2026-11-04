@@ -11,7 +11,7 @@
   <script src="../../assets/js/kasafide-theme.js"></script>
   <script src="../../assets/js/kasafide-logo.js"></script>
   <link rel="stylesheet" href="../../assets/css/kasafide-theme.css" />
-  <title>Kasafide – Meowrie</title>
+  <title>Kasafide Assistant</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../../assets/css/seller/seller-dashboard.css" />
   <link rel="stylesheet" href="../../assets/css/chatbot-widget.css" />
@@ -96,12 +96,12 @@
     .ios-navbar-avatar {
       width: 34px; height: 34px;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--primary), var(--primary));
+      background: transparent;
       display: flex; align-items: center; justify-content: center;
       margin-bottom: 2px;
       overflow: hidden;
     }
-    .ios-navbar-avatar img { width: 24px; height: 24px; display: block; }
+    .ios-navbar-avatar img { width: 34px; height: 34px; display: block; }
 
     .ios-navbar-name { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.2; }
     .ios-navbar-status {
@@ -174,21 +174,21 @@
       outline: none;
       transition: border-color 0.2s;
     }
-    .ios-input:focus { border-color: var(--teal); }
+    .ios-input:focus { border-color: var(--focus-ring); box-shadow: 0 0 0 2px rgb(var(--primary-rgb) / 0.25); }
     .ios-input::placeholder { color: var(--muted); }
 
     .ios-send-btn {
       flex-shrink: 0;
       width: 36px; height: 36px;
       border-radius: 50%;
-      background: var(--teal);
+      background: var(--primary);
       border: none;
       display: flex; align-items: center; justify-content: center;
       cursor: pointer;
       transition: transform 0.12s, opacity 0.15s;
     }
     .ios-send-btn:active { transform: scale(0.9); }
-    .ios-send-btn svg { width: 17px; height: 17px; color: var(--text); }
+    .ios-send-btn svg { width: 17px; height: 17px; color: var(--on-primary); }
 
     /* ── Message bubbles (kept — already close to iMessage) ── */
     .chatbot-message { margin-bottom: 10px; display: flex; animation: slideUp 0.25s ease; }
@@ -204,19 +204,19 @@
       border-radius: 18px;
     }
     .chatbot-message.bot .chatbot-message-bubble {
-      background: var(--card);
+      background: var(--surface-soft);
       color: var(--text);
       border-bottom-left-radius: 5px;
     }
     .chatbot-message.user .chatbot-message-bubble {
-      background: var(--teal);
+      background: var(--primary);
       color: var(--on-primary);
       border-bottom-right-radius: 5px;
     }
 
     .chatbot-typing { display: flex; margin-bottom: 10px; }
     .chatbot-typing .chatbot-message-bubble {
-      background: var(--card); border-bottom-left-radius: 5px;
+      background: var(--surface-soft); border-bottom-left-radius: 5px;
       display: flex; gap: 4px; padding: 13px 16px;
     }
     .chatbot-typing-dot {
@@ -236,8 +236,8 @@
         Dashboard
       </button>
       <div class="ios-navbar-identity">
-        <div class="ios-navbar-avatar"><img src="../../assets/img/homesure-cat.svg" alt="" /></div>
-        <div class="ios-navbar-name">Meowrie</div>
+        <div class="ios-navbar-avatar"><img src="../../assets/img/kasafide-chatbot-avatar.svg" alt="" /></div>
+        <div class="ios-navbar-name">Kasafide Assistant</div>
         <div class="ios-navbar-status"><span class="dot"></span>Online</div>
       </div>
       <div class="ios-navbar-spacer"></div>

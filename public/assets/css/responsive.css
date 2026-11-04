@@ -305,7 +305,7 @@
     transform: translateX(0) !important;
     opacity: 1;
   }
-  /* Matches the Help & Support (Meowrie) nav bar exactly: a plain text+chevron back button, no
+  /* Matches the Help & Support (Kasafide Assistant) nav bar exactly: a plain text+chevron back button, no
      circle background, with the identity block centered and a same-width spacer on the other
      side to keep it actually centered rather than just left-aligned next to the button. */
   .chat-back-btn {

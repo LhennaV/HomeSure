@@ -29,10 +29,10 @@ const ChatbotWidget = (function() {
       <div class="chatbot-window" id="chatbotWindow">
         <div class="chatbot-header">
           <div class="chatbot-avatar">
-            <img src="/assets/img/homesure-cat.svg" alt="Meowrie" />
+            <img src="/assets/img/kasafide-chatbot-avatar.svg" alt="Kasafide Assistant" />
           </div>
           <div class="chatbot-header-info">
-            <div class="chatbot-header-title">Meowrie</div>
+            <div class="chatbot-header-title">Kasafide Assistant</div>
             <div class="chatbot-header-status">
               <span class="chatbot-status-dot"></span>
               Online
@@ -72,7 +72,7 @@ const ChatbotWidget = (function() {
 
     // Send welcome message
     setTimeout(() => {
-      addBotMessage('Hi! 👋 I\'m Meowrie, your Kasafide assistant. How can I help you today?', true);
+      addBotMessage('Hi! 👋 I\'m the Kasafide Assistant. How can I help you today?', true);
     }, 500);
   }
 
@@ -269,7 +269,7 @@ const ChatbotWidget = (function() {
     const container = document.getElementById('chatbotMessages');
     container.insertAdjacentHTML('beforeend', `
       <div class="chatbot-message bot">
-        <div class="chatbot-message-avatar"><img src="/assets/img/homesure-cat.svg" alt="" /></div>
+        <div class="chatbot-message-avatar"><img src="/assets/img/kasafide-chatbot-avatar.svg" alt="" /></div>
         <div style="max-width:75%;">
           <div class="chatbot-escalation">
             <div class="chatbot-escalation-text">
@@ -321,7 +321,7 @@ const ChatbotWidget = (function() {
   function initFullPage() {
     // Send welcome message for full-page mode
     setTimeout(() => {
-      addBotMessage('Hi! 👋 I\'m Meowrie, your Kasafide assistant. How can I help you today?', true);
+      addBotMessage('Hi! 👋 I\'m the Kasafide Assistant. How can I help you today?', true);
     }, 500);
 
     // Focus input
